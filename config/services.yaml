@@ -1,0 +1,18 @@
+parameters:
+    jira.base_url: '%env(JIRA_BASE_URL)%'
+    jira.email: '%env(JIRA_EMAIL)%'
+    jira.api_token: '%env(JIRA_API_TOKEN)%'
+
+services:
+    _defaults:
+        autowire: true
+        autoconfigure: true
+
+    App\:
+        resource: '../src/'
+
+    App\Service\JiraApiService:
+        arguments:
+            $baseUrl: '%jira.base_url%'
+            $email: '%jira.email%'
+            $apiToken: '%jira.api_token%'

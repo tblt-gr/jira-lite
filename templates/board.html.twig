@@ -1,0 +1,224 @@
+<!doctype html>
+<html lang="fr" data-theme="dark">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Jira Lite</title>
+    <link id="page-icon" rel="icon" href="/images/favicon.png" type="image/png">
+    {{ importmap('app') }}
+</head>
+<body
+    data-controller="board"
+    data-board-board-id-value="{{ boardId }}"
+>
+<header class="topbar">
+    <a class="brand brand-link" href="{{ path('app_home') }}">
+        <img
+            id="board-icon"
+            class="brand-mark"
+            src="/images/favicon.png"
+            alt=""
+            aria-hidden="true"
+        >
+        <div class="board-identity">
+            <strong id="board-name">Jira Lite</strong>
+            <span id="sprint-name" class="board-context"></span>
+        </div>
+    </a>
+
+    <div class="search-field">
+        <svg class="ui-icon search-icon" viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="11" cy="11" r="7" />
+            <path d="m16.5 16.5 4 4" />
+        </svg>
+        <input
+            id="search"
+            type="search"
+            placeholder="Rechercher par clé ou résumé"
+            aria-label="Rechercher un ticket"
+        >
+    </div>
+
+    <div class="topbar-actions">
+        <button
+            id="reload"
+            class="secondary-button reload-button"
+            type="button"
+        >
+            <svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M20 11a8 8 0 1 0-2.34 5.66" />
+                <path d="M20 4v7h-7" />
+            </svg>
+            Actualiser
+        </button>
+        <button
+            id="theme-toggle"
+            class="icon-button theme-toggle-button"
+            data-theme-toggle
+            type="button"
+            title="Changer de thème"
+            aria-label="Changer de thème"
+        >
+            <svg
+                class="ui-icon theme-icon"
+                data-theme-icon="light"
+                viewBox="0 0 24 24"
+                aria-hidden="true"
+            >
+                <circle cx="12" cy="12" r="4" />
+                <path d="M12 2v2M12 20v2M4.93 4.93l1.42 1.42M17.65 17.65l1.42 1.42M2 12h2M20 12h2M4.93 19.07l1.42-1.42M17.65 6.35l1.42-1.42" />
+            </svg>
+            <svg
+                class="ui-icon theme-icon"
+                data-theme-icon="dark"
+                viewBox="0 0 24 24"
+                aria-hidden="true"
+                hidden
+            >
+                <path d="M20.5 15.5A8.5 8.5 0 0 1 8.5 3.5a8.5 8.5 0 1 0 12 12Z" />
+            </svg>
+        </button>
+    </div>
+</header>
+
+<main>
+    <section class="toolbar">
+        <div id="epic-filter" class="epic-multiselect">
+            <button
+                id="epic-filter-trigger"
+                class="epic-filter-trigger"
+                type="button"
+                aria-haspopup="listbox"
+                aria-expanded="false"
+            >
+                <span id="epic-filter-label">Tous les epics actifs</span>
+                <span id="epic-filter-count" class="epic-filter-count"></span>
+                <svg
+                    class="epic-filter-chevron"
+                    viewBox="0 0 20 20"
+                    aria-hidden="true"
+                    focusable="false"
+                >
+                    <path d="m5 7.5 5 5 5-5" />
+                </svg>
+            </button>
+            <div
+                id="epic-filter-menu"
+                class="epic-filter-menu"
+                role="listbox"
+                aria-multiselectable="true"
+                hidden
+            ></div>
+        </div>
+
+        <button
+            id="toggle-all-epics"
+            class="secondary-button epic-toggle-all"
+            type="button"
+            hidden
+        >Tout réduire</button>
+
+        <div class="view-switch" aria-label="Mode d’affichage">
+            <button
+                class="view-option"
+                type="button"
+                data-view="board"
+                aria-pressed="false"
+            >Board unique</button>
+            <button
+                class="view-option is-active"
+                type="button"
+                data-view="epic"
+                aria-pressed="true"
+            >Groupé par epic</button>
+        </div>
+
+        <span id="counter" class="counter"></span>
+    </section>
+
+    <section id="board" class="board">
+        <div class="loading">Chargement...</div>
+    </section>
+</main>
+
+<dialog id="issue-dialog">
+    <div class="dialog-head">
+        <div class="issue-heading">
+            <div id="issue-key" class="issue-key"></div>
+            <h2 id="issue-summary"></h2>
+        </div>
+        <div class="dialog-actions">
+            <a
+                id="open-issue"
+                class="open-issue-button"
+                target="_blank"
+                rel="noopener noreferrer"
+            >Ouvrir dans Jira
+                <svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M14 5h5v5M19 5l-9 9" />
+                    <path d="M19 13v5a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h5" />
+                </svg>
+            </a>
+            <button
+                id="close-dialog"
+                type="button"
+                aria-label="Fermer"
+                title="Fermer"
+            >
+                <svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M6 6l12 12M18 6 6 18" />
+                </svg>
+            </button>
+        </div>
+    </div>
+
+    <div class="issue-dialog-layout">
+        <div class="issue-dialog-main">
+            <section class="issue-content-section">
+                <h3>Description</h3>
+                <div id="issue-description" class="description"></div>
+            </section>
+
+            <section id="issue-attachments" class="issue-content-section" hidden>
+                <h3>Pièces jointes</h3>
+                <div
+                    id="issue-attachments-list"
+                    class="issue-attachments-list"
+                ></div>
+            </section>
+
+            <section id="issue-links" class="issue-content-section" hidden>
+                <h3>Tickets liés</h3>
+                <div id="issue-links-list" class="issue-links-list"></div>
+            </section>
+
+            <section id="issue-comments" class="issue-content-section">
+                <h3>Commentaires</h3>
+                <div id="issue-comments-list" class="issue-comments-list"></div>
+            </section>
+        </div>
+
+        <aside class="issue-sidebar">
+            <h3>Informations</h3>
+            <div class="transition-row">
+                <label for="transition">État</label>
+                <select id="transition"></select>
+                <button id="apply-transition" type="button">
+                    Appliquer
+                </button>
+            </div>
+
+            <div id="issue-meta" class="issue-meta"></div>
+        </aside>
+    </div>
+</dialog>
+
+<div
+    id="toast-region"
+    class="toast-region"
+    role="status"
+    aria-live="polite"
+></div>
+
+</body>
+</html>

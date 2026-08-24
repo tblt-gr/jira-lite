@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="fr" data-theme="dark">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Boards · Jira Lite</title>
+    <link rel="icon" href="/images/favicon.png" type="image/png">
+    {{ importmap('app') }}
+</head>
+<body class="home-page">
+<header class="topbar">
+    <a class="brand brand-link" href="{{ path('app_home') }}">
+        <img class="brand-mark" src="/images/favicon.png" alt="">
+        <div>
+            <strong>Jira Lite</strong>
+            <span class="board-context">Sélection des boards</span>
+        </div>
+    </a>
+    <div class="topbar-actions">
+        <button
+            class="icon-button theme-toggle-button"
+            data-theme-toggle
+            type="button"
+            title="Changer de thème"
+            aria-label="Changer de thème"
+        >
+            <svg
+                class="ui-icon theme-icon"
+                data-theme-icon="light"
+                viewBox="0 0 24 24"
+                aria-hidden="true"
+            >
+                <circle cx="12" cy="12" r="4" />
+                <path d="M12 2v2M12 20v2M4.93 4.93l1.42 1.42M17.65 17.65l1.42 1.42M2 12h2M20 12h2M4.93 19.07l1.42-1.42M17.65 6.35l1.42-1.42" />
+            </svg>
+            <svg
+                class="ui-icon theme-icon"
+                data-theme-icon="dark"
+                viewBox="0 0 24 24"
+                aria-hidden="true"
+                hidden
+            >
+                <path d="M20.5 15.5A8.5 8.5 0 0 1 8.5 3.5a8.5 8.5 0 1 0 12 12Z" />
+            </svg>
+        </button>
+    </div>
+</header>
+
+<main class="home-main">
+    <section class="home-shell">
+        <div class="home-heading">
+            <div>
+                <span class="home-eyebrow">Jira</span>
+                <h1>Choisissez un board</h1>
+                <p>Ouvrez le board que vous souhaitez consulter.</p>
+            </div>
+            <span class="home-board-count">
+                {{ boards|length }} board{{ boards|length > 1 ? 's' : '' }}
+            </span>
+        </div>
+
+        {% if error %}
+            <div class="home-message home-message-error">{{ error }}</div>
+        {% elseif boards is empty %}
+            <div class="home-message">Aucun board Jira disponible.</div>
+        {% else %}
+            <div class="home-board-grid">
+                {% for board in boards %}
+                    {% set icon = board.location.avatarURI
+                        ?? board.location.avatarUrl
+                        ?? null %}
+                    {% set location = board.location.displayName
+                        ?? board.location.projectName
+                        ?? board.location.name
+                        ?? null %}
+                    <a
+                        class="home-board-card"
+                        href="{{ path('app_board', { boardId: board.id }) }}"
+                    >
+                        <span class="home-board-icon">
+                            {% if icon %}
+                                <img
+                                    src="{{ path('app_jira_media', { url: icon }) }}"
+                                    alt=""
+                                    loading="lazy"
+                                >
+                            {% else %}
+                                {{ board.name|default('?')|first|upper }}
+                            {% endif %}
+                        </span>
+                        <span class="home-board-copy">
+                            <strong>{{ board.name|default('Board sans nom') }}</strong>
+                            <span>
+                                {{ [location, board.type|default(null)]
+                                    |filter(value => value)
+                                    |join(' · ') }}
+                            </span>
+                        </span>
+                        <svg
+                            class="home-board-arrow"
+                            viewBox="0 0 20 20"
+                            aria-hidden="true"
+                        >
+                            <path d="m7.5 5 5 5-5 5" />
+                        </svg>
+                    </a>
+                {% endfor %}
+            </div>
+        {% endif %}
+    </section>
+</main>
+</body>
+</html>
