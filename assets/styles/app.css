@@ -722,13 +722,13 @@ main {
     height: auto;
     overflow-y: visible;
     padding: 8px;
+    border: 1px solid transparent;
     border-radius: var(--radius);
     background: var(--column);
     background-clip: padding-box;
     scrollbar-gutter: stable;
     scroll-snap-align: start;
-    transition: border-color 140ms ease, background 140ms ease,
-        box-shadow 140ms ease;
+    transition: border-color 140ms ease, background 140ms ease;
 }
 
 .board.is-grouped .column {
@@ -740,8 +740,6 @@ main {
 .column.is-drag-over {
     border-color: var(--primary);
     background: color-mix(in srgb, var(--primary) 10%, var(--column));
-    box-shadow: inset 0 0 0 1px var(--primary),
-        0 0 0 3px color-mix(in srgb, var(--primary) 12%, transparent);
 }
 
 .column.is-updating {
@@ -1646,7 +1644,7 @@ dialog::backdrop {
 .comment-form-footer {
     justify-content: space-between;
     gap: 12px;
-    padding: 6px 2px 0 7px;
+    padding: 6px 2px 0 39px;
 }
 
 .comment-form-footer span {
@@ -1657,6 +1655,66 @@ dialog::backdrop {
 .comment-form-footer button {
     padding: 6px 10px;
     font-size: 11px;
+}
+
+.emoji-picker {
+    position: absolute;
+    bottom: 10px;
+    left: 10px;
+    z-index: 6;
+}
+
+.emoji-picker-trigger {
+    width: 29px;
+    height: 29px;
+    display: grid;
+    place-items: center;
+    border: 0;
+    background: transparent;
+    color: var(--text-muted);
+    padding: 0;
+    font-size: 17px;
+}
+
+.emoji-picker-trigger:hover,
+.emoji-picker-trigger[aria-expanded="true"] {
+    background: var(--primary-soft);
+}
+
+.emoji-menu {
+    width: 258px;
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    gap: 2px;
+    position: absolute;
+    bottom: calc(100% + 6px);
+    left: 0;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface-raised);
+    padding: 6px;
+    box-shadow: 0 16px 38px #02061775;
+}
+
+.emoji-menu[hidden] {
+    display: none;
+}
+
+.emoji-option {
+    width: 28px;
+    height: 28px;
+    display: grid;
+    place-items: center;
+    border: 0;
+    background: transparent;
+    padding: 0;
+    font-size: 17px;
+}
+
+.emoji-option:hover,
+.emoji-option:focus-visible {
+    background: var(--primary-soft);
+    transform: scale(1.08);
 }
 
 .mention-menu {

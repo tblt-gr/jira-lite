@@ -21,6 +21,13 @@ import {
     issueEpicObject
 } from './jira.js';
 
+const COMMENT_EMOJIS = [
+    '😀', '😃', '😊', '😂', '😉', '😍', '🥳', '🤔',
+    '😅', '😢', '😮', '😬', '👍', '👎', '👏', '🙏',
+    '💪', '🤝', '👌', '👀', '❤️', '💜', '🔥', '✨',
+    '🎉', '✅', '❌', '⚠️', '🚀', '💡', '🐛', '⏳'
+];
+
 export function mountBoard(root, boardId) {
     const state = {
         data: null,
@@ -60,6 +67,11 @@ export function mountBoard(root, boardId) {
     const commentForm = document.querySelector('#comment-form');
     const commentInput = document.querySelector('#comment-input');
     const mentionMenu = document.querySelector('#mention-menu');
+    const emojiPicker = document.querySelector('#emoji-picker');
+    const emojiPickerTrigger = document.querySelector(
+        '#emoji-picker-trigger'
+    );
+    const emojiMenu = document.querySelector('#emoji-menu');
     const replyContext = document.querySelector('#comment-reply-context');
     const worklogForm = document.querySelector('#worklog-form');
     let mentionSearchTimer = null;
@@ -2199,6 +2211,43 @@ export function mountBoard(root, boardId) {
         activeMentionRange = null;
     }
 
+    function closeEmojiMenu() {
+        emojiMenu.hidden = true;
+        emojiPickerTrigger.setAttribute('aria-expanded', 'false');
+    }
+
+    function insertCommentEmoji(emoji) {
+        const start = commentInput.selectionStart ?? commentInput.value.length;
+        const end = commentInput.selectionEnd ?? start;
+        const value = commentInput.value;
+
+        commentInput.value = value.slice(0, start)
+            + emoji
+            + value.slice(end);
+        const caret = start + emoji.length;
+
+        closeEmojiMenu();
+        commentInput.focus();
+        commentInput.setSelectionRange(caret, caret);
+    }
+
+    function renderEmojiMenu() {
+        emojiMenu.replaceChildren();
+
+        COMMENT_EMOJIS.forEach(emoji => {
+            const button = document.createElement('button');
+
+            button.type = 'button';
+            button.className = 'emoji-option';
+            button.textContent = emoji;
+            button.setAttribute('aria-label', `Insérer ${emoji}`);
+            button.addEventListener('click', () => {
+                insertCommentEmoji(emoji);
+            });
+            emojiMenu.append(button);
+        });
+    }
+
     function selectMentionUser(user) {
         if (!activeMentionRange) {
             return;
@@ -2270,6 +2319,7 @@ export function mountBoard(root, boardId) {
     }
 
     function scheduleMentionSearch() {
+        closeEmojiMenu();
         window.clearTimeout(mentionSearchTimer);
         const caret = commentInput.selectionStart;
         const beforeCaret = commentInput.value.slice(0, caret);
@@ -2375,6 +2425,7 @@ export function mountBoard(root, boardId) {
         replyContext.hidden = true;
         replyContext.removeAttribute('data-account-id');
         closeMentionMenu();
+        closeEmojiMenu();
         document.querySelector('#worklog-time').value = '';
         document.querySelector('#worklog-comment').value = '';
         ['summary', 'description', 'fields', 'worklog']
@@ -2575,6 +2626,7 @@ export function mountBoard(root, boardId) {
             state.commentMentions = [];
             replyContext.hidden = true;
             closeMentionMenu();
+            closeEmojiMenu();
             await refreshIssueComments();
             showToast('Commentaire ajouté', 'success');
         } catch (error) {
@@ -2720,14 +2772,23 @@ export function mountBoard(root, boardId) {
             epicFilterTrigger.setAttribute('aria-expanded', 'false');
             epicFilter.classList.remove('is-open');
         }
+
+        if (!emojiPicker.contains(event.target)) {
+            closeEmojiMenu();
+        }
     });
 
     document.addEventListener('keydown', event => {
         if (event.key === 'Escape') {
+            const epicWasOpen = !epicFilterMenu.hidden;
             epicFilterMenu.hidden = true;
             epicFilterTrigger.setAttribute('aria-expanded', 'false');
             epicFilter.classList.remove('is-open');
-            epicFilterTrigger.focus();
+            closeEmojiMenu();
+
+            if (epicWasOpen) {
+                epicFilterTrigger.focus();
+            }
         }
     });
 
@@ -2810,6 +2871,15 @@ export function mountBoard(root, boardId) {
     fieldsForm.addEventListener('submit', submitEditableFields);
     commentForm.addEventListener('submit', submitComment);
     worklogForm.addEventListener('submit', submitWorklog);
+    renderEmojiMenu();
+    emojiPickerTrigger.addEventListener('click', event => {
+        event.stopPropagation();
+        const open = emojiMenu.hidden;
+
+        closeMentionMenu();
+        emojiMenu.hidden = !open;
+        emojiPickerTrigger.setAttribute('aria-expanded', String(open));
+    });
     document.querySelector('#cancel-reply').addEventListener('click', () => {
         const accountId = replyContext.dataset.accountId;
         const mention = state.commentMentions.find(candidate =>
