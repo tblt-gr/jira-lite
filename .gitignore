@@ -2,6 +2,7 @@
 .env
 .env.*
 !.env.example
+!.env.test
 ###> symfony/framework-bundle ###
 /.env.local
 /.env.local.php

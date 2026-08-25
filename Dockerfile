@@ -45,6 +45,12 @@ ENV APP_ENV=prod
 
 COPY --link . .
 
-RUN composer install --no-dev --no-progress --no-interaction --optimize-autoloader && \
+# .env is never committed (it holds real Jira credentials); Symfony's dotenv
+# loader requires the file to exist regardless. The placeholder values below
+# are only used to compile the container and warm the cache at build time —
+# actual runtime values are injected as real environment variables by
+# compose.yaml and take precedence over anything in this file.
+RUN cp .env.example .env && \
+    composer install --no-dev --no-progress --no-interaction --optimize-autoloader && \
     php bin/console asset-map:compile && \
     php bin/console cache:warmup

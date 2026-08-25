@@ -29,6 +29,9 @@ jobs:
           extensions: ctype, iconv, intl
           coverage: pcov
 
+      - name: Create .env file for build scripts
+        run: cp .env.example .env
+
       - uses: ramsey/composer-install@v3
 
       - name: composer validate
@@ -36,6 +39,9 @@ jobs:
 
       - name: composer cs
         run: composer cs
+
+      - name: warm dev container for PHPStan
+        run: php bin/console cache:warmup --env=dev
 
       - name: phpstan
         run: vendor/bin/phpstan analyse --no-progress
