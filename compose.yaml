@@ -1,3 +1,8 @@
+# Jira Lite is a local tool. It binds to the loopback interface by default.
+#
+# BIND_ADDRESS must stay 127.0.0.1 unless the application has been given
+# authentication and authorization. Publishing on 0.0.0.0 exposes a Jira
+# write API to every machine on the local network.
 services:
   app:
     build:
@@ -6,7 +11,7 @@ services:
     container_name: jira-lite-app
     restart: unless-stopped
     ports:
-      - "${PORT:-5472}:80"
+      - "${BIND_ADDRESS:-127.0.0.1}:${PORT:-5472}:80"
     environment:
       SERVER_NAME: :80
       APP_ENV: ${APP_ENV:-dev}

@@ -49,6 +49,14 @@ php -S 127.0.0.1:8000 -t public public/index.php
 
 Open <http://127.0.0.1:8000>, select a Jira board, and use the board view to inspect or transition issues.
 
+Alternatively, run the application with Docker:
+
+```bash
+docker compose up -d
+```
+
+The container port is published on `127.0.0.1:5472` only. Both `BIND_ADDRESS` and `PORT` are configurable in `.env.local`; see the Security section before changing `BIND_ADDRESS`.
+
 ## Development Checks
 
 Run the project checks before committing:
@@ -70,7 +78,11 @@ This validates Composer metadata and checks the Symfony container, YAML configur
 
 ## Security
 
-Do not commit `.env.local` or Jira credentials. The current prototype uses one server-side Jira identity and does not yet provide application-level authentication or authorization. Keep deployments private until access control and POST request protection are implemented.
+Jira Lite is a local tool. It is designed to run on your own machine and listens on the loopback interface only: `php -S 127.0.0.1:8000` for the built-in server, and `127.0.0.1:${PORT}` for the Docker setup.
+
+Do not commit `.env.local` or Jira credentials.
+
+The application uses one server-side Jira identity that can write to issues, and it has no application-level authentication or authorization. Loopback binding is therefore the boundary that keeps it safe. Setting `BIND_ADDRESS` to anything other than `127.0.0.1` — or otherwise publishing the port — hands a Jira write API to every machine that can reach it. Add authentication, CSRF protection, and TLS before doing so.
 
 ## License
 
