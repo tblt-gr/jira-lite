@@ -1,0 +1,177 @@
+common.save: Enregistrer
+common.cancel: Annuler
+common.edit: Modifier
+common.delete: Supprimer
+common.close: Fermer
+common.none: Aucune
+common.anonymous: Anonyme
+common.unassigned: Non assigné
+common.unnamed_board: Board sans nom
+common.empty_comment: Commentaire vide.
+app.title: Jira Lite
+app.jira: Jira
+
+theme.change: Changer de thème
+theme.activate_light: Activer le thème clair
+theme.activate_dark: Activer le thème sombre
+
+home.page_title: Boards · Jira Lite
+home.context: Sélection des boards
+home.choose_title: Choisissez un board
+home.choose_help: Ouvrez le board que vous souhaitez consulter.
+home.board_count_one: '%count% board'
+home.board_count_many: '%count% boards'
+home.no_boards: Aucun board Jira disponible.
+home.load_error: Impossible de charger les boards Jira pour le moment.
+
+board.search_placeholder: Rechercher par clé ou résumé
+board.search_aria: Rechercher un ticket
+board.reload: Actualiser
+board.all_active_epics: Tous les epics actifs
+board.collapse_all: Tout réduire
+board.expand_all: Tout développer
+board.collapse_epic: Replier cet epic
+board.expand_epic: Déplier cet epic
+board.view_label: Mode d’affichage
+board.view_single: Board unique
+board.view_by_epic: Groupé par epic
+board.loading: Chargement…
+board.epics_title: Epics du sprint
+board.clear_all: Tout effacer
+board.selected_epics: '{count} epics sélectionnés'
+board.no_active_epic: Aucun epic avec un ticket actif dans ce sprint.
+board.no_issue_title: Aucun ticket à afficher
+board.no_issue_help: Modifiez les filtres ou la recherche.
+board.issue_count_one: '{count} ticket'
+board.issue_count_many: '{count} tickets'
+board.ticket_label_one: ticket
+board.ticket_label_many: tickets
+board.group_count_one: '{count} groupe'
+board.group_count_many: '{count} groupes'
+board.without_key: Sans clé
+board.without_epic: Sans epic
+board.open_epic_hint: Ctrl/Cmd + clic pour ouvrir dans Jira
+board.single_board_count: board unique
+board.load_error: Impossible de charger le board.
+
+card.type: Type
+card.story_points: Story points
+card.more_labels: '+{count}'
+
+drag.no_transition: Aucune transition vers « {column} ».
+drag.failed_one: '{count} ticket non déplacé'
+drag.failed_many: '{count} tickets non déplacés'
+
+dialog.edit_title: Modifier le titre
+dialog.open_in_jira: Ouvrir dans Jira
+dialog.description: Description
+dialog.description_placeholder: Décrire le ticket…
+dialog.attachments: Pièces jointes
+dialog.linked_issues: Tickets liés
+dialog.activity: Activité
+dialog.activity_type: Type d’activité
+dialog.comments: Commentaires
+dialog.cancel_reply: Annuler la réponse
+dialog.comment_placeholder: Ajouter un commentaire…
+dialog.mention_people: Personnes à mentionner
+dialog.add_emoji: Ajouter un émoji
+dialog.choose_emoji: Choisir un émoji
+dialog.comment_hint: Tapez @ pour mentionner · Ctrl + Entrée pour envoyer
+dialog.comment_action: Commenter
+dialog.new_status: Nouvel état
+dialog.change_status: Changer l’état
+dialog.time_tracking: Suivi temporel
+dialog.log_work: Consigner du temps
+dialog.no_logged_time: Aucun temps consigné
+dialog.time_spent: Temps passé
+dialog.time_example: Ex. 1h 30m
+dialog.time_formats: 'Formats Jira acceptés : 2w, 3d, 4h, 30m.'
+dialog.optional_note: Note (facultatif)
+dialog.log_action: Consigner
+dialog.editable_fields: Champs modifiables
+dialog.labels: Étiquettes
+dialog.labels_placeholder: frontend, urgent
+dialog.due_date: Échéance
+dialog.original_estimate: Estimation originale
+dialog.original_estimate_example: Ex. 2h
+dialog.remaining_time: Temps restant
+dialog.remaining_time_example: Ex. 45m
+dialog.details: Détails
+dialog.comments_unavailable: Commentaires indisponibles.
+dialog.no_comments: Aucun commentaire.
+dialog.edited: modifié
+dialog.reply: Répondre
+dialog.delete_comment_confirm: Supprimer définitivement ce commentaire ?
+dialog.comment_deleted: Commentaire supprimé
+dialog.reply_to: Réponse à {name}
+dialog.insert_emoji: Insérer {emoji}
+dialog.no_user: Aucune personne trouvée
+dialog.issue_updated: Ticket mis à jour
+dialog.current_status: 'État : {status}'
+dialog.choose_status: Changer l’état…
+dialog.open_error_log: Impossible d’ouvrir le ticket.
+dialog.transition_error_log: Impossible de changer l’état du ticket.
+dialog.status_updated: État du ticket mis à jour
+dialog.comment_added: Commentaire ajouté
+dialog.comment_updated: Commentaire modifié
+dialog.work_logged: Temps consigné
+
+issue.logged_time: '{value} consigné'
+issue.remaining_time_value: '{value} restant'
+issue.days_short: '{count}j'
+issue.hours_short: '{count}h'
+issue.minutes_short: '{count}min'
+issue.no_estimate: Non estimé
+issue.estimate: Estimation
+issue.type: Type
+issue.priority: Priorité
+issue.parent: Parent
+issue.project: Projet
+issue.assignee: Assigné
+issue.reporter: Rapporteur
+issue.creator: Créateur
+issue.sprint: Sprint
+issue.story_points: Story points
+issue.story_points_value: '{count} points'
+issue.resolution: Résolution
+issue.components: Composants
+issue.fix_versions: Versions cibles
+issue.affected_versions: Versions affectées
+issue.created: Créé
+issue.updated: Mis à jour
+issue.votes: Votes
+issue.watchers: Abonnés
+issue.subtasks: Sous-tâches
+issue.attachments: Pièces jointes
+issue.no_description: Aucune description.
+issue.without_title: Sans titre
+issue.attachment: Pièce jointe
+issue.open: Ouvrir
+issue.preview_unavailable: Prévisualisation indisponible
+issue.attached_file: Fichier joint
+issue.open_modal: Ouvrir {key} dans la modale
+issue.open_new_tab: Ouvrir {name} dans un nouvel onglet
+
+refresh.error_log: Échec du rafraîchissement du board.
+refresh.failed: Le rafraîchissement automatique a échoué.
+
+api.since_required: Le paramètre since est requis.
+api.since_invalid: Le paramètre since est invalide.
+api.summary_length: Le titre doit contenir entre 1 et 255 caractères.
+api.labels_list: Les étiquettes doivent être une liste.
+api.due_date_invalid: La date d’échéance est invalide.
+api.duration_invalid: La durée « %value% » est invalide.
+api.no_editable_field: Aucun champ modifiable fourni.
+api.empty_comment: Le commentaire ne peut pas être vide.
+api.worklog_format: Le temps doit utiliser un format Jira, par exemple 1h 30m.
+api.transition_required: Le paramètre transitionId est requis.
+api.http_error: Erreur HTTP {status}
+
+media.invalid_attachment: Identifiant de pièce jointe invalide.
+media.invalid_redirect: Redirection média invalide.
+media.unavailable: Média Jira indisponible.
+media.too_large: Média Jira trop volumineux.
+media.type_not_allowed: Type de média Jira non autorisé.
+media.too_many_redirects: Trop de redirections média.
+media.url_not_allowed: URL de média non autorisée.
+media.domain_not_allowed: Domaine de média non autorisé.

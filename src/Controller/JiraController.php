@@ -2,10 +2,12 @@
 
 namespace App\Controller;
 
+use App\Board\BoardSnapshotProvider;
 use App\Service\JiraApiService;
 use DateTimeImmutable;
 use Symfony\Contracts\Cache\CacheInterface;
 use Symfony\Contracts\Cache\ItemInterface;
+use Symfony\Contracts\Translation\TranslatorInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -17,50 +19,15 @@ final class JiraController
     public function __construct(
         private readonly JiraApiService $jira,
         private readonly CacheInterface $cache,
+        private readonly BoardSnapshotProvider $snapshots,
+        private readonly TranslatorInterface $translator,
     ) {
     }
 
     #[Route('/board/{boardId}', methods: ['GET'])]
     public function board(int $boardId): JsonResponse
     {
-        return new JsonResponse([
-            'board' => $this->cache->get(
-                sprintf('jira.board.%d', $boardId),
-                function (ItemInterface $item) use ($boardId): array {
-                    $item->expiresAfter(300);
-
-                    return $this->jira->getBoard($boardId);
-                }
-            ),
-            'configuration' => $this->cache->get(
-                sprintf('jira.board.%d.configuration', $boardId),
-                function (ItemInterface $item) use ($boardId): array {
-                    $item->expiresAfter(300);
-
-                    return $this->jira->getBoardConfiguration($boardId);
-                }
-            ),
-            'epics' => $this->cache->get(
-                sprintf('jira.board.%d.epics', $boardId),
-                function (ItemInterface $item) use ($boardId): array {
-                    $item->expiresAfter(300);
-
-                    return $this->jira->getBoardEpics($boardId);
-                }
-            ),
-            'issues' => $this->cache->get(
-                sprintf('jira.board.%d.issues', $boardId),
-                function (ItemInterface $item) use ($boardId): array {
-                    $item->expiresAfter(60);
-
-                    $issues = $this->jira->getBoardIssues($boardId);
-                    $issues['snapshotAt'] =
-                        (new DateTimeImmutable())->format(DATE_ATOM);
-
-                    return $issues;
-                }
-            ),
-        ]);
+        return new JsonResponse($this->snapshots->getSnapshot($boardId));
     }
 
     #[Route('/board/{boardId}/changes', methods: ['GET'])]
@@ -70,7 +37,7 @@ final class JiraController
 
         if ($sinceValue === '') {
             return new JsonResponse([
-                'error' => 'Le paramètre since est requis.',
+                'error' => $this->translator->trans('api.since_required'),
             ], 400);
         }
 
@@ -78,66 +45,16 @@ final class JiraController
             $since = new DateTimeImmutable($sinceValue);
         } catch (\Exception) {
             return new JsonResponse([
-                'error' => 'Le paramètre since est invalide.',
+                'error' => $this->translator->trans('api.since_invalid'),
             ], 400);
         }
 
-        $response = $this->jira->getBoardIssueChanges($boardId, $since);
-        $issues = is_array($response['issues'] ?? null)
-            ? $response['issues']
-            : [];
-        $active = [];
-        $removed = [];
-
-        foreach ($issues as $issue) {
-            if (!is_array($issue) || !isset($issue['key'])) {
-                continue;
-            }
-
-            if ($this->isInActiveSprint($issue)) {
-                $active[] = $issue;
-            } else {
-                $removed[] = (string) $issue['key'];
-            }
-        }
-
-        return new JsonResponse([
-            'cursor' => (new DateTimeImmutable())->format(DATE_ATOM),
-            'issues' => $active,
-            'removed' => array_values(array_unique($removed)),
-        ], headers: [
+        return new JsonResponse($this->snapshots->getChanges(
+            $boardId,
+            $since
+        ), headers: [
             'Cache-Control' => 'no-store',
         ]);
-    }
-
-    private function isInActiveSprint(array $issue): bool
-    {
-        $fields = is_array($issue['fields'] ?? null)
-            ? $issue['fields']
-            : [];
-
-        foreach ($fields as $field => $value) {
-            if (!str_contains(strtolower((string) $field), 'sprint')) {
-                continue;
-            }
-
-            if (!is_array($value)) {
-                continue;
-            }
-
-            $sprints = isset($value['state']) ? [$value] : $value;
-
-            foreach ($sprints as $sprint) {
-                if (
-                    is_array($sprint) &&
-                    strtolower((string) ($sprint['state'] ?? '')) === 'active'
-                ) {
-                    return true;
-                }
-            }
-        }
-
-        return false;
     }
 
     #[Route('/issue/{issueKey}', methods: ['GET'])]
@@ -266,7 +183,7 @@ final class JiraController
 
             if ($summary === '' || mb_strlen($summary) > 255) {
                 return new JsonResponse([
-                    'error' => 'Le titre doit contenir entre 1 et 255 caractères.',
+                    'error' => $this->translator->trans('api.summary_length'),
                 ], 400);
             }
 
@@ -283,7 +200,7 @@ final class JiraController
         if (array_key_exists('labels', $data)) {
             if (!is_array($data['labels'])) {
                 return new JsonResponse([
-                    'error' => 'Les étiquettes doivent être une liste.',
+                    'error' => $this->translator->trans('api.labels_list'),
                 ], 400);
             }
 
@@ -304,7 +221,9 @@ final class JiraController
                 && !preg_match('/^\d{4}-\d{2}-\d{2}$/', $dueDate)
             ) {
                 return new JsonResponse([
-                    'error' => 'La date d’échéance est invalide.',
+                    'error' => $this->translator->trans(
+                        'api.due_date_invalid'
+                    ),
                 ], 400);
             }
 
@@ -325,7 +244,10 @@ final class JiraController
 
             if ($value !== '' && !$this->isJiraDuration($value)) {
                 return new JsonResponse([
-                    'error' => sprintf('La durée « %s » est invalide.', $value),
+                    'error' => $this->translator->trans(
+                        'api.duration_invalid',
+                        ['%value%' => $value]
+                    ),
                 ], 400);
             }
 
@@ -340,7 +262,7 @@ final class JiraController
 
         if ($fields === []) {
             return new JsonResponse([
-                'error' => 'Aucun champ modifiable fourni.',
+                'error' => $this->translator->trans('api.no_editable_field'),
             ], 400);
         }
 
@@ -359,7 +281,7 @@ final class JiraController
 
         if ($comment === '') {
             return new JsonResponse([
-                'error' => 'Le commentaire ne peut pas être vide.',
+                'error' => $this->translator->trans('api.empty_comment'),
             ], 400);
         }
 
@@ -388,7 +310,7 @@ final class JiraController
 
         if ($comment === '') {
             return new JsonResponse([
-                'error' => 'Le commentaire ne peut pas être vide.',
+                'error' => $this->translator->trans('api.empty_comment'),
             ], 400);
         }
 
@@ -427,7 +349,7 @@ final class JiraController
 
         if (!$this->isJiraDuration($timeSpent)) {
             return new JsonResponse([
-                'error' => 'Le temps doit utiliser un format Jira, par exemple 1h 30m.',
+                'error' => $this->translator->trans('api.worklog_format'),
             ], 400);
         }
 
@@ -451,7 +373,9 @@ final class JiraController
 
         if (!is_string($transitionId) || $transitionId === '') {
             return new JsonResponse([
-                'error' => 'transitionId is required',
+                'error' => $this->translator->trans(
+                    'api.transition_required'
+                ),
             ], 400);
         }
 
@@ -459,9 +383,14 @@ final class JiraController
             $issueKey,
             $transitionId
         );
+        $boardId = $data['boardId'] ?? null;
 
-        return new JsonResponse([
-            'success' => true,
+        if (is_int($boardId) || ctype_digit((string) $boardId)) {
+            $this->snapshots->invalidateIssues((int) $boardId);
+        }
+
+        return new JsonResponse($this->jira->getIssue($issueKey), headers: [
+            'Cache-Control' => 'no-store',
         ]);
     }
 

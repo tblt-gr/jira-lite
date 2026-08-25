@@ -11,7 +11,13 @@ services:
     App\:
         resource: '../src/'
 
-    App\Service\JiraApiService:
+    App\Jira\JiraClient:
+        arguments:
+            $baseUrl: '%jira.base_url%'
+            $email: '%jira.email%'
+            $apiToken: '%jira.api_token%'
+
+    App\Jira\JiraMediaProxy:
         arguments:
             $baseUrl: '%jira.base_url%'
             $email: '%jira.email%'

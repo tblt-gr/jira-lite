@@ -1,3 +1,5 @@
+import { trans } from './i18n.js';
+
 export async function api(url, options = {}) {
     const response = await fetch(url, {
         headers: {
@@ -21,7 +23,7 @@ export async function api(url, options = {}) {
         const message = details?.error
             || details?.errorMessages?.filter(Boolean).join(' · ')
             || fieldErrors
-            || `Erreur HTTP ${response.status}`;
+            || trans('api.http_error', { status: response.status });
 
         throw new Error(message);
     }

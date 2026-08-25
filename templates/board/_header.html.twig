@@ -1,0 +1,71 @@
+<header class="topbar">
+    <a class="brand brand-link" href="{{ path('app_home') }}">
+        <img
+            id="board-icon"
+            class="brand-mark"
+            src="/images/favicon.png"
+            alt=""
+            aria-hidden="true"
+        >
+        <div class="board-identity">
+            <strong id="board-name">{{ 'app.title'|trans }}</strong>
+            <span id="sprint-name" class="board-context"></span>
+        </div>
+    </a>
+
+    <div class="search-field">
+        <svg class="ui-icon search-icon" viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="11" cy="11" r="7" />
+            <path d="m16.5 16.5 4 4" />
+        </svg>
+        <input
+            id="search"
+            type="search"
+            placeholder="{{ 'board.search_placeholder'|trans }}"
+            aria-label="{{ 'board.search_aria'|trans }}"
+        >
+    </div>
+
+    <div class="topbar-actions">
+        <button
+            id="reload"
+            class="secondary-button reload-button"
+            type="button"
+        >
+            <svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M20 11a8 8 0 1 0-2.34 5.66" />
+                <path d="M20 4v7h-7" />
+            </svg>
+            {{ 'board.reload'|trans }}
+        </button>
+        <button
+            id="theme-toggle"
+            class="icon-button theme-toggle-button"
+            data-theme-toggle
+            data-theme-light-label="{{ 'theme.activate_light'|trans }}"
+            data-theme-dark-label="{{ 'theme.activate_dark'|trans }}"
+            type="button"
+            title="{{ 'theme.change'|trans }}"
+            aria-label="{{ 'theme.change'|trans }}"
+        >
+            <svg
+                class="ui-icon theme-icon"
+                data-theme-icon="light"
+                viewBox="0 0 24 24"
+                aria-hidden="true"
+            >
+                <circle cx="12" cy="12" r="4" />
+                <path d="M12 2v2M12 20v2M4.93 4.93l1.42 1.42M17.65 17.65l1.42 1.42M2 12h2M20 12h2M4.93 19.07l1.42-1.42M17.65 6.35l1.42-1.42" />
+            </svg>
+            <svg
+                class="ui-icon theme-icon"
+                data-theme-icon="dark"
+                viewBox="0 0 24 24"
+                aria-hidden="true"
+                hidden
+            >
+                <path d="M20.5 15.5A8.5 8.5 0 0 1 8.5 3.5a8.5 8.5 0 1 0 12 12Z" />
+            </svg>
+        </button>
+    </div>
+</header>

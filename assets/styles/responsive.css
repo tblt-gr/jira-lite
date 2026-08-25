@@ -1,0 +1,182 @@
+@media (max-width: 900px) {
+    .topbar {
+        gap: 12px;
+    }
+
+    .topbar .search-field {
+        width: auto;
+        min-width: 180px;
+        margin-inline: 0;
+    }
+
+    .workflow-board {
+        grid-auto-columns: minmax(275px, 78vw);
+    }
+
+    .board {
+        --workflow-column-width: max(275px, 78vw);
+    }
+}
+
+@media (max-width: 760px) {
+    dialog {
+        width: calc(100vw - 20px);
+        height: min(94vh, 920px);
+    }
+
+    .dialog-head {
+        padding: 16px 18px;
+    }
+
+    .issue-dialog-layout {
+        height: auto;
+        display: block;
+        overflow-y: auto;
+    }
+
+    .issue-dialog-main,
+    .issue-sidebar {
+        overflow: visible;
+    }
+
+    .issue-dialog-main {
+        padding: 20px 18px;
+    }
+
+    .issue-sidebar {
+        border-top: 1px solid var(--border-soft);
+        border-left: 0;
+        padding: 20px 18px 28px;
+    }
+
+    .quiet-icon-button {
+        opacity: 1;
+    }
+
+    .sidebar-fields-form {
+        grid-template-columns: 1fr;
+    }
+
+    .sidebar-fields-form .inline-edit-actions {
+        grid-column: 1;
+    }
+}
+
+@media (max-width: 650px) {
+    .topbar {
+        gap: 8px;
+        padding: 0 12px;
+    }
+
+    .topbar .brand > div {
+        display: none;
+    }
+
+    .topbar .search-field {
+        min-width: 0;
+    }
+
+    .secondary-button {
+        width: 36px;
+        height: 36px;
+        justify-content: center;
+        padding: 0;
+        font-size: 0;
+    }
+
+    .secondary-button .ui-icon {
+        width: 18px;
+        height: 18px;
+    }
+
+    main {
+        padding: 10px;
+    }
+
+    .toolbar {
+        flex-wrap: wrap;
+    }
+
+    .view-switch {
+        flex: 1;
+    }
+
+    .view-option {
+        flex: 1;
+    }
+
+    .counter {
+        width: 100%;
+        margin-left: 0;
+    }
+
+    .epic-multiselect {
+        width: 100%;
+        flex: 1 1 100%;
+    }
+
+    .epic-toggle-all {
+        flex: 1;
+        justify-content: center;
+    }
+
+    .board-group {
+        padding: 9px;
+        grid-template-rows: auto 410px;
+    }
+
+    .group-stats span,
+    .assignee-name {
+        display: none;
+    }
+
+    .workflow-board {
+        grid-auto-columns: minmax(270px, 86vw);
+    }
+
+    .board {
+        --workflow-column-width: max(270px, 86vw);
+    }
+
+    .dialog-head {
+        gap: 10px;
+    }
+
+    .open-issue-button {
+        width: 34px;
+        height: 34px;
+        justify-content: center;
+        padding: 0;
+        font-size: 0;
+    }
+
+    .open-issue-button .ui-icon {
+        width: 17px;
+        height: 17px;
+    }
+
+    .issue-link-card,
+    .issue-link-identity {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 5px;
+    }
+
+    .issue-link-details {
+        white-space: normal;
+    }
+
+    .home-main {
+        padding: 26px 14px;
+    }
+
+    .home-heading {
+        align-items: start;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .home-board-grid {
+        grid-template-columns: 1fr;
+    }
+}

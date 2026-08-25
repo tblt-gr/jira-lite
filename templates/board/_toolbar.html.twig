@@ -1,0 +1,53 @@
+<section class="toolbar">
+    <div id="epic-filter" class="epic-multiselect">
+        <button
+            id="epic-filter-trigger"
+            class="epic-filter-trigger"
+            type="button"
+            aria-haspopup="listbox"
+            aria-expanded="false"
+        >
+            <span id="epic-filter-label">{{ 'board.all_active_epics'|trans }}</span>
+            <span id="epic-filter-count" class="epic-filter-count"></span>
+            <svg
+                class="epic-filter-chevron"
+                viewBox="0 0 20 20"
+                aria-hidden="true"
+                focusable="false"
+            >
+                <path d="m5 7.5 5 5 5-5" />
+            </svg>
+        </button>
+        <div
+            id="epic-filter-menu"
+            class="epic-filter-menu"
+            role="listbox"
+            aria-multiselectable="true"
+            hidden
+        ></div>
+    </div>
+
+    <button
+        id="toggle-all-epics"
+        class="secondary-button epic-toggle-all"
+        type="button"
+        hidden
+    >{{ 'board.collapse_all'|trans }}</button>
+
+    <div class="view-switch" aria-label="{{ 'board.view_label'|trans }}">
+        <button
+            class="view-option"
+            type="button"
+            data-view="board"
+            aria-pressed="false"
+        >{{ 'board.view_single'|trans }}</button>
+        <button
+            class="view-option is-active"
+            type="button"
+            data-view="epic"
+            aria-pressed="true"
+        >{{ 'board.view_by_epic'|trans }}</button>
+    </div>
+
+    <span id="counter" class="counter"></span>
+</section>

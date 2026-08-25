@@ -17,8 +17,8 @@ function selectedTheme() {
 function updateToggle(button, theme) {
     const targetTheme = theme === 'dark' ? 'light' : 'dark';
     const label = targetTheme === 'light'
-        ? 'Activer le thème clair'
-        : 'Activer le thème sombre';
+        ? button.dataset.themeLightLabel
+        : button.dataset.themeDarkLabel;
 
     button.querySelectorAll('[data-theme-icon]').forEach(icon => {
         icon.hidden = icon.dataset.themeIcon !== targetTheme;

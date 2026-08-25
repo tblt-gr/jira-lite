@@ -1,0 +1,223 @@
+<dialog id="issue-dialog">
+    <div class="dialog-head">
+        <div class="issue-heading">
+            <div class="issue-breadcrumb">
+                <img id="issue-type-icon" class="issue-type-icon" alt="">
+                <span id="issue-key" class="issue-key"></span>
+            </div>
+            <div class="issue-summary-row">
+                <h2 id="issue-summary"></h2>
+                <button
+                    id="edit-summary"
+                    class="quiet-icon-button"
+                    type="button"
+                    title="{{ 'dialog.edit_title'|trans }}"
+                    aria-label="{{ 'dialog.edit_title'|trans }}"
+                >
+                    <svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="m4 20 4.5-1 10-10a2.1 2.1 0 0 0-3-3l-10 10L4 20Z" />
+                        <path d="m14 7 3 3" />
+                    </svg>
+                </button>
+            </div>
+            <form id="summary-form" class="inline-edit-form" hidden>
+                <input id="summary-input" name="summary" required maxlength="255">
+                <div class="inline-edit-actions">
+                    <button type="submit">{{ 'common.save'|trans }}</button>
+                    <button class="secondary-button" type="button" data-cancel-edit="summary">{{ 'common.cancel'|trans }}</button>
+                </div>
+            </form>
+        </div>
+        <div class="dialog-actions">
+            <a
+                id="open-issue"
+                class="open-issue-button"
+                target="_blank"
+                rel="noopener noreferrer"
+            >{{ 'dialog.open_in_jira'|trans }}
+                <svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M14 5h5v5M19 5l-9 9" />
+                    <path d="M19 13v5a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h5" />
+                </svg>
+            </a>
+            <button
+                id="close-dialog"
+                type="button"
+                aria-label="{{ 'common.close'|trans }}"
+                title="{{ 'common.close'|trans }}"
+            >
+                <svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M6 6l12 12M18 6 6 18" />
+                </svg>
+            </button>
+        </div>
+    </div>
+
+    <div class="issue-dialog-layout">
+        <div class="issue-dialog-main">
+            <section class="issue-content-section">
+                <div class="issue-section-heading">
+                    <h3>{{ 'dialog.description'|trans }}</h3>
+                    <button id="edit-description" class="section-edit-button" type="button">
+                        {{ 'common.edit'|trans }}
+                    </button>
+                </div>
+                <div id="issue-description" class="description"></div>
+                <form id="description-form" class="stacked-edit-form" hidden>
+                    <textarea
+                        id="description-input"
+                        name="description"
+                        rows="8"
+                        placeholder="{{ 'dialog.description_placeholder'|trans }}"
+                    ></textarea>
+                    <div class="inline-edit-actions">
+                        <button type="submit">{{ 'common.save'|trans }}</button>
+                        <button class="secondary-button" type="button" data-cancel-edit="description">{{ 'common.cancel'|trans }}</button>
+                    </div>
+                </form>
+            </section>
+
+            <section id="issue-attachments" class="issue-content-section" hidden>
+                <h3>{{ 'dialog.attachments'|trans }}</h3>
+                <div
+                    id="issue-attachments-list"
+                    class="issue-attachments-list"
+                ></div>
+            </section>
+
+            <section id="issue-links" class="issue-content-section" hidden>
+                <h3>{{ 'dialog.linked_issues'|trans }}</h3>
+                <div id="issue-links-list" class="issue-links-list"></div>
+            </section>
+
+            <section id="issue-comments" class="issue-content-section">
+                <div class="activity-heading">
+                    <h3>{{ 'dialog.activity'|trans }}</h3>
+                    <div class="activity-tabs" aria-label="{{ 'dialog.activity_type'|trans }}">
+                        <button class="activity-tab is-active" type="button" aria-pressed="true">
+                            {{ 'dialog.comments'|trans }}
+                        </button>
+                    </div>
+                </div>
+                <form id="comment-form" class="comment-form">
+                    <div id="comment-reply-context" class="comment-reply-context" hidden>
+                        <span id="comment-reply-label"></span>
+                        <button id="cancel-reply" type="button" aria-label="{{ 'dialog.cancel_reply'|trans }}">×</button>
+                    </div>
+                    <textarea
+                        id="comment-input"
+                        name="comment"
+                        rows="3"
+                        required
+                        placeholder="{{ 'dialog.comment_placeholder'|trans }}"
+                    ></textarea>
+                    <div
+                        id="mention-menu"
+                        class="mention-menu"
+                        role="listbox"
+                        aria-label="{{ 'dialog.mention_people'|trans }}"
+                        hidden
+                    ></div>
+                    <div id="emoji-picker" class="emoji-picker">
+                        <button
+                            id="emoji-picker-trigger"
+                            class="emoji-picker-trigger"
+                            type="button"
+                            aria-label="{{ 'dialog.add_emoji'|trans }}"
+                            aria-haspopup="true"
+                            aria-expanded="false"
+                            title="{{ 'dialog.add_emoji'|trans }}"
+                        >😊</button>
+                        <div
+                            id="emoji-menu"
+                            class="emoji-menu"
+                            role="group"
+                            aria-label="{{ 'dialog.choose_emoji'|trans }}"
+                            hidden
+                        ></div>
+                    </div>
+                    <div class="comment-form-footer">
+                        <span>{{ 'dialog.comment_hint'|trans }}</span>
+                        <button type="submit">{{ 'dialog.comment_action'|trans }}</button>
+                    </div>
+                </form>
+                <div id="issue-comments-list" class="issue-comments-list"></div>
+            </section>
+        </div>
+
+        <aside class="issue-sidebar">
+            <div class="transition-row">
+                <label class="sr-only" for="transition">{{ 'dialog.new_status'|trans }}</label>
+                <select id="transition"></select>
+                <button id="apply-transition" type="button">
+                    {{ 'dialog.change_status'|trans }}
+                </button>
+            </div>
+
+            <section class="issue-sidebar-panel">
+                <div class="sidebar-panel-heading">
+                    <h3>{{ 'dialog.time_tracking'|trans }}</h3>
+                    <button id="toggle-worklog" class="section-edit-button" type="button">
+                        {{ 'dialog.log_work'|trans }}
+                    </button>
+                </div>
+                <div class="time-tracking-summary">
+                    <div class="time-progress" aria-hidden="true">
+                        <span id="time-progress-bar"></span>
+                    </div>
+                    <div class="time-tracking-values">
+                        <span id="time-spent">{{ 'dialog.no_logged_time'|trans }}</span>
+                        <span id="time-remaining"></span>
+                    </div>
+                </div>
+                <form id="worklog-form" class="stacked-edit-form worklog-form" hidden>
+                    <label for="worklog-time">{{ 'dialog.time_spent'|trans }}</label>
+                    <input
+                        id="worklog-time"
+                        name="timeSpent"
+                        required
+                        placeholder="{{ 'dialog.time_example'|trans }}"
+                    >
+                    <small>{{ 'dialog.time_formats'|trans }}</small>
+                    <label for="worklog-comment">{{ 'dialog.optional_note'|trans }}</label>
+                    <textarea id="worklog-comment" name="comment" rows="3"></textarea>
+                    <div class="inline-edit-actions">
+                        <button type="submit">{{ 'dialog.log_action'|trans }}</button>
+                        <button class="secondary-button" type="button" data-cancel-edit="worklog">{{ 'common.cancel'|trans }}</button>
+                    </div>
+                </form>
+            </section>
+
+            <section class="issue-sidebar-panel">
+                <div class="sidebar-panel-heading">
+                    <h3>{{ 'dialog.editable_fields'|trans }}</h3>
+                    <button id="edit-fields" class="section-edit-button" type="button">
+                        {{ 'common.edit'|trans }}
+                    </button>
+                </div>
+                <div id="editable-fields-preview" class="issue-meta"></div>
+                <form id="fields-form" class="sidebar-fields-form" hidden>
+                    <label for="labels-input">{{ 'dialog.labels'|trans }}</label>
+                    <input id="labels-input" name="labels" placeholder="{{ 'dialog.labels_placeholder'|trans }}">
+                    <label for="due-date-input">{{ 'dialog.due_date'|trans }}</label>
+                    <input id="due-date-input" name="dueDate" type="date">
+                    <label for="original-estimate-input">{{ 'dialog.original_estimate'|trans }}</label>
+                    <input id="original-estimate-input" name="originalEstimate" placeholder="{{ 'dialog.original_estimate_example'|trans }}">
+                    <label for="remaining-estimate-input">{{ 'dialog.remaining_time'|trans }}</label>
+                    <input id="remaining-estimate-input" name="remainingEstimate" placeholder="{{ 'dialog.remaining_time_example'|trans }}">
+                    <div class="inline-edit-actions">
+                        <button type="submit">{{ 'common.save'|trans }}</button>
+                        <button class="secondary-button" type="button" data-cancel-edit="fields">{{ 'common.cancel'|trans }}</button>
+                    </div>
+                </form>
+            </section>
+
+            <section class="issue-sidebar-panel">
+                <div class="sidebar-panel-heading">
+                    <h3>{{ 'dialog.details'|trans }}</h3>
+                </div>
+                <div id="issue-meta" class="issue-meta"></div>
+            </section>
+        </aside>
+    </div>
+</dialog>

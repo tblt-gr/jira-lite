@@ -1,0 +1,86 @@
+:root {
+    color-scheme: dark;
+    --bg: #0b0f17;
+    --surface: #111827;
+    --surface-raised: #172033;
+    --surface-soft: #0f1624;
+    --column: #101725;
+    --card: #182235;
+    --card-hover: #1d2a40;
+    --border: #263248;
+    --border-soft: #1d293b;
+    --text: #f1f5f9;
+    --text-muted: #94a3b8;
+    --text-subtle: #64748b;
+    --primary: #7c6df2;
+    --primary-hover: #9184ff;
+    --primary-soft: #7c6df21f;
+    --focus: #38bdf8;
+    --shadow: 0 14px 35px #02061742;
+    --radius: 8px;
+}
+
+[data-theme="light"] {
+    color-scheme: light;
+    --bg: #f4f6fa;
+    --surface: #ffffff;
+    --surface-raised: #ffffff;
+    --surface-soft: #f8fafc;
+    --column: #edf1f7;
+    --card: #ffffff;
+    --card-hover: #ffffff;
+    --border: #d7deea;
+    --border-soft: #e5eaf1;
+    --text: #182235;
+    --text-muted: #5f6f85;
+    --text-subtle: #8290a3;
+    --primary: #6554e8;
+    --primary-hover: #5443d4;
+    --primary-soft: #6554e814;
+    --shadow: 0 12px 30px #33415516;
+}
+
+* {
+    box-sizing: border-box;
+    scrollbar-color: var(--border) transparent;
+    scrollbar-width: thin;
+}
+
+html,
+body {
+    height: 100%;
+}
+
+body {
+    margin: 0;
+    overflow: hidden;
+    background: var(--bg);
+    color: var(--text);
+    font: 14px/1.45 Inter, ui-sans-serif, -apple-system,
+        BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+button,
+select,
+input {
+    font: inherit;
+}
+
+button,
+select {
+    cursor: pointer;
+}
+
+button:focus-visible,
+select:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+.card:focus-visible,
+.dialog-head a:focus-visible,
+.issue-link-card:focus-visible,
+.issue-reference:focus-visible,
+.issue-attachment-card a:focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+}
+

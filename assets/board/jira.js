@@ -165,8 +165,8 @@ export function epicColor(epic) {
     return EPIC_COLORS[value] || '#8b7cf6';
 }
 
-export function epicLabel(epic) {
-    return epic?.summary || epic?.name || epic?.key || 'Sans epic';
+export function epicLabel(epic, fallback = '') {
+    return epic?.summary || epic?.name || epic?.key || fallback;
 }
 
 export function epicIds(epic) {

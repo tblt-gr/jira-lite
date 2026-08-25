@@ -1,0 +1,34 @@
+<?php
+
+namespace App\Tests\Translation;
+
+use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
+use Twig\Environment;
+
+final class FrontendCatalogTest extends KernelTestCase
+{
+    public function testFrontendCatalogContainsTranslatedMessages(): void
+    {
+        self::bootKernel();
+        $twig = self::getContainer()->get(Environment::class);
+        $html = $twig->render('board/_translations.html.twig');
+
+        self::assertMatchesRegularExpression(
+            '/<script[^>]*>(.*)<\/script>/s',
+            $html
+        );
+        preg_match('/<script[^>]*>(.*)<\/script>/s', $html, $matches);
+        $catalog = json_decode(
+            trim($matches[1]),
+            true,
+            flags: JSON_THROW_ON_ERROR
+        );
+
+        self::assertSame('Chargement…', $catalog['board.loading']);
+        self::assertSame(
+            'Ticket mis à jour',
+            $catalog['dialog.issue_updated']
+        );
+        self::assertArrayHasKey('api.http_error', $catalog);
+    }
+}

@@ -18,6 +18,7 @@
         "symfony/http-client": "7.4.*",
         "symfony/runtime": "7.4.*",
         "symfony/stimulus-bundle": "^2.9",
+        "symfony/translation": "7.4.*",
         "symfony/twig-bundle": "7.4.*",
         "symfony/yaml": "7.4.*",
         "twig/extra-bundle": "^3.24"
@@ -54,12 +55,18 @@
     "scripts": {
         "check": [
             "@composer validate --strict --no-check-publish",
-            "@lint"
+            "@lint",
+            "@test"
         ],
         "lint": [
             "@php bin/console lint:container",
+            "@php bin/console lint:translations --locale=fr",
             "@php bin/console lint:yaml config",
             "@php bin/console lint:twig templates"
+        ],
+        "test": [
+            "@php bin/phpunit",
+            "node --test tests/js/*.test.mjs"
         ],
         "auto-scripts": {
             "cache:clear": "symfony-cmd",
@@ -81,5 +88,8 @@
             "allow-contrib": false,
             "require": "7.4.*"
         }
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^11.5"
     }
 }

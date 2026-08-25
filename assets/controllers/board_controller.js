@@ -18,5 +18,7 @@ export default class extends Controller {
     disconnect() {
         window.clearInterval(this.timer);
         document.removeEventListener('visibilitychange', this.refresh);
+        this.board?.destroy();
+        this.board = null;
     }
 }

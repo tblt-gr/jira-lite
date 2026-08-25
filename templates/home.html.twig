@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="fr" data-theme="dark">
+<html lang="{{ app.request.locale }}" data-theme="dark">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Boards · Jira Lite</title>
+    <title>{{ 'home.page_title'|trans }}</title>
     <link rel="icon" href="/images/favicon.png" type="image/png">
     {{ importmap('app') }}
 </head>
@@ -12,17 +12,19 @@
     <a class="brand brand-link" href="{{ path('app_home') }}">
         <img class="brand-mark" src="/images/favicon.png" alt="">
         <div>
-            <strong>Jira Lite</strong>
-            <span class="board-context">Sélection des boards</span>
+            <strong>{{ 'app.title'|trans }}</strong>
+            <span class="board-context">{{ 'home.context'|trans }}</span>
         </div>
     </a>
     <div class="topbar-actions">
         <button
             class="icon-button theme-toggle-button"
             data-theme-toggle
+            data-theme-light-label="{{ 'theme.activate_light'|trans }}"
+            data-theme-dark-label="{{ 'theme.activate_dark'|trans }}"
             type="button"
-            title="Changer de thème"
-            aria-label="Changer de thème"
+            title="{{ 'theme.change'|trans }}"
+            aria-label="{{ 'theme.change'|trans }}"
         >
             <svg
                 class="ui-icon theme-icon"
@@ -50,19 +52,22 @@
     <section class="home-shell">
         <div class="home-heading">
             <div>
-                <span class="home-eyebrow">Jira</span>
-                <h1>Choisissez un board</h1>
-                <p>Ouvrez le board que vous souhaitez consulter.</p>
+                <span class="home-eyebrow">{{ 'app.jira'|trans }}</span>
+                <h1>{{ 'home.choose_title'|trans }}</h1>
+                <p>{{ 'home.choose_help'|trans }}</p>
             </div>
             <span class="home-board-count">
-                {{ boards|length }} board{{ boards|length > 1 ? 's' : '' }}
+                {{ (boards|length == 1
+                    ? 'home.board_count_one'
+                    : 'home.board_count_many')
+                    |trans({'%count%': boards|length}) }}
             </span>
         </div>
 
         {% if error %}
             <div class="home-message home-message-error">{{ error }}</div>
         {% elseif boards is empty %}
-            <div class="home-message">Aucun board Jira disponible.</div>
+            <div class="home-message">{{ 'home.no_boards'|trans }}</div>
         {% else %}
             <div class="home-board-grid">
                 {% for board in boards %}
@@ -89,7 +94,7 @@
                             {% endif %}
                         </span>
                         <span class="home-board-copy">
-                            <strong>{{ board.name|default('Board sans nom') }}</strong>
+                            <strong>{{ board.name|default('common.unnamed_board'|trans) }}</strong>
                             <span>
                                 {{ [location, board.type|default(null)]
                                     |filter(value => value)

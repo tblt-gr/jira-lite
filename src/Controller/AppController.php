@@ -6,6 +6,7 @@ use App\Service\JiraApiService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Contracts\Cache\CacheInterface;
 use Symfony\Contracts\Cache\ItemInterface;
+use Symfony\Contracts\Translation\TranslatorInterface;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
@@ -15,6 +16,7 @@ final class AppController extends AbstractController
     public function index(
         JiraApiService $jira,
         CacheInterface $cache,
+        TranslatorInterface $translator,
     ): Response {
         try {
             $boards = $cache->get(
@@ -28,7 +30,7 @@ final class AppController extends AbstractController
             $error = null;
         } catch (\Throwable) {
             $boards = [];
-            $error = 'Impossible de charger les boards Jira pour le moment.';
+            $error = $translator->trans('home.load_error');
         }
 
         return $this->render('home.html.twig', [
