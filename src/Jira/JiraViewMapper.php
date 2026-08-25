@@ -9,6 +9,7 @@ final class JiraViewMapper
         'status',
         'statusCategory',
         'issuetype',
+        'fixVersions',
         'priority',
         'labels',
         'assignee',

@@ -56,6 +56,7 @@ export function createIssueRefresher(context) {
             );
 
             context.renderEpics();
+            context.renderFilters();
             context.writeEpicsToUrl(true);
             context.renderBoard(false);
         } catch (error) {

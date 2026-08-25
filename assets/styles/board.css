@@ -182,6 +182,7 @@ main {
 
 .toolbar {
     flex: 0 0 auto;
+    flex-wrap: wrap;
     gap: 10px;
     margin-bottom: 11px;
 }
@@ -283,13 +284,26 @@ main {
     white-space: nowrap;
 }
 
-.epic-multiselect {
+.epic-multiselect,
+.filter-multiselect {
     position: relative;
     width: min(270px, 28vw);
     flex: 0 0 auto;
 }
 
-.epic-filter-trigger {
+.filter-multiselect {
+    width: min(180px, 18vw);
+}
+
+.filter-option-icon {
+    width: 14px;
+    height: 14px;
+    flex: 0 0 auto;
+    object-fit: contain;
+}
+
+.epic-filter-trigger,
+.filter-trigger {
     width: 100%;
     height: 38px;
     display: flex;
@@ -303,12 +317,15 @@ main {
 }
 
 .epic-filter-trigger:hover,
-.epic-multiselect.is-open .epic-filter-trigger {
+.filter-trigger:hover,
+.epic-multiselect.is-open .epic-filter-trigger,
+.filter-multiselect.is-open .filter-trigger {
     background: var(--surface-raised);
     border-color: var(--primary);
 }
 
-#epic-filter-label {
+#epic-filter-label,
+.filter-label {
     min-width: 0;
     flex: 1;
     overflow: hidden;
@@ -317,7 +334,8 @@ main {
     white-space: nowrap;
 }
 
-.epic-filter-count {
+.epic-filter-count,
+.filter-count {
     min-width: 20px;
     border-radius: var(--radius);
     background: var(--primary-soft);
@@ -327,11 +345,13 @@ main {
     text-align: center;
 }
 
-.epic-filter-count:empty {
+.epic-filter-count:empty,
+.filter-count:empty {
     display: none;
 }
 
-.epic-filter-chevron {
+.epic-filter-chevron,
+.filter-chevron {
     width: 16px;
     height: 16px;
     flex: 0 0 auto;
@@ -344,11 +364,13 @@ main {
     transition: transform 140ms ease;
 }
 
-.epic-multiselect.is-open .epic-filter-chevron {
+.epic-multiselect.is-open .epic-filter-chevron,
+.filter-multiselect.is-open .filter-chevron {
     transform: rotate(180deg);
 }
 
-.epic-filter-menu {
+.epic-filter-menu,
+.filter-menu {
     width: min(360px, calc(100vw - 24px));
     max-height: min(430px, 65vh);
     position: absolute;
@@ -363,11 +385,17 @@ main {
     box-shadow: 0 20px 48px #0206177a;
 }
 
-.epic-filter-menu[hidden] {
+.epic-filter-menu[hidden],
+.filter-menu[hidden] {
     display: none;
 }
 
-.epic-filter-menu-head {
+.filter-menu {
+    width: min(280px, calc(100vw - 24px));
+}
+
+.epic-filter-menu-head,
+.filter-menu-head {
     position: sticky;
     top: -6px;
     z-index: 1;
@@ -384,7 +412,8 @@ main {
     font-weight: 650;
 }
 
-.epic-filter-clear {
+.epic-filter-clear,
+.filter-clear {
     border: 0;
     background: transparent;
     color: var(--primary-hover);
@@ -392,16 +421,19 @@ main {
     font-size: 10px;
 }
 
-.epic-filter-clear:hover {
+.epic-filter-clear:hover,
+.filter-clear:hover {
     background: var(--primary-soft);
 }
 
-.epic-filter-clear:disabled {
+.epic-filter-clear:disabled,
+.filter-clear:disabled {
     opacity: .4;
     cursor: default;
 }
 
-.epic-filter-option {
+.epic-filter-option,
+.filter-option {
     --epic-color: #8b7cf6;
     min-height: 38px;
     display: grid;
@@ -415,19 +447,23 @@ main {
 }
 
 .epic-filter-option:hover,
-.epic-filter-option.is-selected {
+.filter-option:hover,
+.epic-filter-option.is-selected,
+.filter-option.is-selected {
     background: color-mix(in srgb, var(--epic-color) 10%, transparent);
     color: var(--text);
 }
 
-.epic-filter-option input {
+.epic-filter-option input,
+.filter-option input {
     width: 14px;
     height: 14px;
     margin: 0;
     accent-color: var(--epic-color);
 }
 
-.epic-filter-option > span:nth-of-type(2) {
+.epic-filter-option > span:nth-of-type(2),
+.filter-option > span:nth-of-type(2) {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -446,7 +482,8 @@ main {
     box-shadow: 0 0 0 3px color-mix(in srgb, var(--epic-color) 16%, transparent);
 }
 
-.epic-count {
+.epic-count,
+.filter-option-count {
     min-width: 20px;
     padding: 1px 5px;
     border-radius: var(--radius);
@@ -456,7 +493,8 @@ main {
     text-align: center;
 }
 
-.epic-filter-empty {
+.epic-filter-empty,
+.filter-empty {
     color: var(--text-muted);
     padding: 16px 10px;
     font-size: 11px;

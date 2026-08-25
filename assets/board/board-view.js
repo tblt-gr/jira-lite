@@ -88,7 +88,10 @@ export function createBoardView(context) {
             data: state.data,
             selectedEpicIds: state.selectedEpicIds,
             view: state.view,
-            searchQuery: context.search.value
+            searchQuery: context.search.value,
+            selectedVersionIds: state.selectedVersionIds,
+            selectedTypeIds: state.selectedTypeIds,
+            selectedColumnIds: state.selectedColumnIds
         });
         const sprintLabel = currentSprintName(model.issues);
 

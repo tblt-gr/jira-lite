@@ -110,7 +110,8 @@
         margin-left: 0;
     }
 
-    .epic-multiselect {
+    .epic-multiselect,
+    .filter-multiselect {
         width: 100%;
         flex: 1 1 100%;
     }

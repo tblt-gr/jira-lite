@@ -39,6 +39,15 @@ board.loading: Chargement…
 board.epics_title: Epics du sprint
 board.clear_all: Tout effacer
 board.selected_epics: '{count} epics sélectionnés'
+board.all_versions: Toutes les versions
+board.all_types: Tous les types
+board.all_columns: Toutes les colonnes
+board.versions_title: Versions du board
+board.types_title: Types de ticket
+board.columns_title: Colonnes du board
+board.selected_values: '{count} sélectionnés'
+board.without_version: Sans version
+board.no_filter_value: Aucune valeur disponible.
 board.no_active_epic: Aucun epic avec un ticket actif dans ce sprint.
 board.no_issue_title: Aucun ticket à afficher
 board.no_issue_help: Modifiez les filtres ou la recherche.

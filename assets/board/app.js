@@ -7,9 +7,15 @@ import { createBoardView, currentSprintName } from './board-view.js';
 import { createIssueDialog } from './issue-dialog.js';
 import { createDragDrop } from './drag-drop.js';
 import { trans } from './i18n.js';
+import { createMultiSelect } from './multi-select.js';
 import {
+    WITHOUT_VERSION_ID,
+    availableColumns as selectAvailableColumns,
     availableEpics as selectAvailableEpics,
+    availableIssueTypes as selectAvailableIssueTypes,
+    availableVersions as selectAvailableVersions,
     epicForIssue as selectEpicForIssue,
+    statusColumnMap,
     storyPoints as selectStoryPoints
 } from './board-model.js';
 import {
@@ -30,6 +36,9 @@ export function mountBoard(root, boardId) {
         data: null,
         issue: null,
         selectedEpicIds: new Set(),
+        selectedVersionIds: new Set(),
+        selectedTypeIds: new Set(),
+        selectedColumnIds: new Set(),
         collapsedEpicIds: new Set(),
         view: 'epic',
         drag: {
@@ -53,6 +62,9 @@ export function mountBoard(root, boardId) {
     const epicFilterLabel = root.querySelector('#epic-filter-label');
     const epicFilterCount = root.querySelector('#epic-filter-count');
     const epicFilterMenu = root.querySelector('#epic-filter-menu');
+    const versionFilter = root.querySelector('#version-filter');
+    const typeFilter = root.querySelector('#type-filter');
+    const columnFilter = root.querySelector('#column-filter');
     const counter = root.querySelector('#counter');
     let boardView = null;
     let dragDrop = null;
@@ -439,6 +451,121 @@ export function mountBoard(root, boardId) {
         updateEpicFilter();
     }
 
+    function boardIssues() {
+        return state.data?.issues?.issues || [];
+    }
+
+    function filterCatalogs() {
+        const issues = boardIssues();
+        const statusToColumn = statusColumnMap(
+            state.data?.configuration?.columnConfig?.columns || []
+        );
+        const versions = selectAvailableVersions(state.data).map(version => ({
+            ...version,
+            count: issues.filter(issue =>
+                (issue.fields?.fixVersions || []).some(candidate =>
+                    String(candidate?.id ?? candidate?.name) === version.id
+                )
+            ).length
+        }));
+        const withoutVersion = issues.filter(issue =>
+            !(issue.fields?.fixVersions || []).length
+        ).length;
+
+        if (withoutVersion) {
+            versions.push({
+                id: WITHOUT_VERSION_ID,
+                name: trans('board.without_version'),
+                count: withoutVersion
+            });
+        }
+
+        const types = selectAvailableIssueTypes(state.data).map(type => ({
+            ...type,
+            count: issues.filter(issue => {
+                const issueType = issue.fields?.issuetype;
+
+                return String(issueType?.id ?? issueType?.name) === type.id;
+            }).length
+        }));
+
+        const columns = selectAvailableColumns(state.data).map(column => ({
+            ...column,
+            count: issues.filter(issue => {
+                const statusId = issue.fields?.status?.id;
+
+                return statusId !== undefined
+                    && statusId !== null
+                    && statusToColumn.get(String(statusId))?.name
+                        === column.name;
+            }).length
+        }));
+
+        return { versions, types, columns };
+    }
+
+    function filterEntries() {
+        return [
+            ['version', state.selectedVersionIds],
+            ['type', state.selectedTypeIds],
+            ['column', state.selectedColumnIds]
+        ];
+    }
+
+    function writeFiltersToUrl(replace = false) {
+        const url = new URL(window.location.href);
+
+        filterEntries().forEach(([param, selected]) => {
+            url.searchParams.delete(param);
+            selected.forEach(value => url.searchParams.append(param, value));
+        });
+
+        window.history[replace ? 'replaceState' : 'pushState']({}, '', url);
+    }
+
+    function restoreFiltersFromUrl() {
+        const url = new URL(window.location.href);
+
+        filterEntries().forEach(([param, selected]) => {
+            selected.clear();
+            url.searchParams
+                .getAll(param)
+                .filter(Boolean)
+                .forEach(value => selected.add(value));
+        });
+    }
+
+    function renderFilters() {
+        const catalogs = filterCatalogs();
+        const targets = [
+            [versionSelect, catalogs.versions, state.selectedVersionIds],
+            [typeSelect, catalogs.types, state.selectedTypeIds],
+            [columnSelect, catalogs.columns, state.selectedColumnIds]
+        ];
+        let purged = false;
+
+        targets.forEach(([select, options, selected]) => {
+            const allowed = new Set(options.map(option => option.id));
+
+            Array.from(selected).forEach(id => {
+                if (!allowed.has(id)) {
+                    selected.delete(id);
+                    purged = true;
+                }
+            });
+
+            select.setOptions(options);
+        });
+
+        if (purged) {
+            writeFiltersToUrl(true);
+        }
+    }
+
+    function hasActiveFilter() {
+        return filterEntries().some(([, selected]) => selected.size > 0);
+    }
+
     function epicForIssue(issue, epicCatalog = availableEpics()) {
         return selectEpicForIssue(issue, epicCatalog);
     }
@@ -491,8 +618,12 @@ export function mountBoard(root, boardId) {
 
             restoreViewFromUrl();
             renderEpics();
+            restoreFiltersFromUrl();
+            renderFilters();
             updateViewButtons();
-            renderBoard(state.selectedEpicIds.size > 0);
+            renderBoard(
+                state.selectedEpicIds.size > 0 || hasActiveFilter()
+            );
             await issueRefresher.refresh();
         } catch (error) {
             if (error.name === 'AbortError') {
@@ -554,10 +685,47 @@ export function mountBoard(root, boardId) {
         trans,
         availableEpics,
         renderEpics,
+        renderFilters,
         writeEpicsToUrl,
         renderBoard,
         onError: message => showToast(message, 'error')
     });
+
+    function createFilterSelect(container, keys, selected) {
+        return createMultiSelect({
+            container,
+            labels: {
+                all: trans(keys.all),
+                title: trans(keys.title),
+                clear: trans('board.clear_all'),
+                empty: trans('board.no_filter_value'),
+                selected: count =>
+                    trans('board.selected_values', { count })
+            },
+            selected,
+            onChange: () => {
+                writeFiltersToUrl();
+                renderBoard(false);
+            },
+            signal: lifecycleController.signal
+        });
+    }
+
+    const versionSelect = createFilterSelect(
+        versionFilter,
+        { all: 'board.all_versions', title: 'board.versions_title' },
+        state.selectedVersionIds
+    );
+    const typeSelect = createFilterSelect(
+        typeFilter,
+        { all: 'board.all_types', title: 'board.types_title' },
+        state.selectedTypeIds
+    );
+    const columnSelect = createFilterSelect(
+        columnFilter,
+        { all: 'board.all_columns', title: 'board.columns_title' },
+        state.selectedColumnIds
+    );
 
     restoreCollapsedEpics();
 
@@ -617,9 +785,13 @@ export function mountBoard(root, boardId) {
         if (state.data) {
             restoreViewFromUrl();
             restoreEpicsFromUrl();
+            restoreFiltersFromUrl();
+            renderFilters();
             updateViewButtons();
             updateEpicFilter();
-            renderBoard(state.selectedEpicIds.size > 0);
+            renderBoard(
+                state.selectedEpicIds.size > 0 || hasActiveFilter()
+            );
         }
     }
 

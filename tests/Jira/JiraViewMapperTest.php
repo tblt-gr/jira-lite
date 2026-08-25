@@ -35,6 +35,21 @@ final class JiraViewMapperTest extends TestCase
         );
     }
 
+    public function testItKeepsFixVersionsForTheVersionFilter(): void
+    {
+        $result = (new JiraViewMapper())->boardIssue([
+            'key' => 'APP-3',
+            'fields' => [
+                'fixVersions' => [['id' => '10', 'name' => '1.4.0']],
+            ],
+        ]);
+
+        self::assertSame(
+            [['id' => '10', 'name' => '1.4.0']],
+            $result['fields']['fixVersions']
+        );
+    }
+
     public function testItAcceptsMissingFields(): void
     {
         $result = (new JiraViewMapper())->boardIssue(['key' => 'APP-2']);

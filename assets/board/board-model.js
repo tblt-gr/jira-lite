@@ -71,6 +71,73 @@ export function availableEpics(data) {
         );
 }
 
+export const WITHOUT_VERSION_ID = 'none';
+
+function boardIssuesOf(data) {
+    return data?.issues?.issues || [];
+}
+
+function byName(first, second) {
+    return first.name.localeCompare(second.name);
+}
+
+export function availableVersions(data) {
+    const versions = new Map();
+
+    boardIssuesOf(data).forEach(issue => {
+        (issue.fields?.fixVersions || []).forEach(version => {
+            const id = version?.id ?? version?.name;
+
+            if (id === undefined || id === null) {
+                return;
+            }
+
+            const key = String(id);
+
+            if (!versions.has(key)) {
+                versions.set(key, {
+                    id: key,
+                    name: String(version.name ?? key)
+                });
+            }
+        });
+    });
+
+    return Array.from(versions.values()).sort(byName);
+}
+
+export function availableIssueTypes(data) {
+    const types = new Map();
+
+    boardIssuesOf(data).forEach(issue => {
+        const type = issue.fields?.issuetype;
+        const id = type?.id ?? type?.name;
+
+        if (id === undefined || id === null) {
+            return;
+        }
+
+        const key = String(id);
+
+        if (!types.has(key)) {
+            types.set(key, {
+                id: key,
+                name: String(type.name ?? key),
+                iconUrl: type.iconUrl ? String(type.iconUrl) : null
+            });
+        }
+    });
+
+    return Array.from(types.values()).sort(byName);
+}
+
+export function availableColumns(data) {
+    return (data?.configuration?.columnConfig?.columns || [])
+        .map(column => String(column?.name ?? ''))
+        .filter(Boolean)
+        .map(name => ({ id: name, name }));
+}
+
 export function issueMatchesSearch(issue, query) {
     const normalizedQuery = String(query || '').trim().toLowerCase();
 
@@ -82,6 +149,48 @@ export function issueMatchesSearch(issue, query) {
         .join(' ')
         .toLowerCase()
         .includes(normalizedQuery);
+}
+
+function issueMatchesVersions(issue, selectedIds) {
+    if (!selectedIds?.size) {
+        return true;
+    }
+
+    const versions = issue.fields?.fixVersions || [];
+
+    if (!versions.length) {
+        return selectedIds.has(WITHOUT_VERSION_ID);
+    }
+
+    return versions.some(version =>
+        selectedIds.has(String(version?.id ?? version?.name))
+    );
+}
+
+function issueMatchesTypes(issue, selectedIds) {
+    if (!selectedIds?.size) {
+        return true;
+    }
+
+    const type = issue.fields?.issuetype;
+    const id = type?.id ?? type?.name;
+
+    return id !== undefined
+        && id !== null
+        && selectedIds.has(String(id));
+}
+
+function issueMatchesColumns(issue, selectedIds, statusToColumn) {
+    if (!selectedIds?.size) {
+        return true;
+    }
+
+    const statusId = issue.fields?.status?.id;
+    const column = statusId === undefined || statusId === null
+        ? null
+        : statusToColumn.get(String(statusId));
+
+    return Boolean(column) && selectedIds.has(String(column.name));
 }
 
 export function epicForIssue(issue, epicCatalog) {
@@ -108,12 +217,19 @@ export function createBoardViewModel({
     data,
     selectedEpicIds,
     view,
-    searchQuery
+    searchQuery,
+    selectedVersionIds,
+    selectedTypeIds,
+    selectedColumnIds
 }) {
     const columns = data?.configuration?.columnConfig?.columns || [];
     const issues = data?.issues?.issues || [];
+    const statusToColumn = statusColumnMap(columns);
     const matchingIssues = issues.filter(issue =>
         issueMatchesSearch(issue, searchQuery)
+        && issueMatchesVersions(issue, selectedVersionIds)
+        && issueMatchesTypes(issue, selectedTypeIds)
+        && issueMatchesColumns(issue, selectedColumnIds, statusToColumn)
     );
     const epics = availableEpics(data);
     const epicsById = new Map(
@@ -131,14 +247,17 @@ export function createBoardViewModel({
 
     if (view === 'epic') {
         const displayedEpics = selectedEpics.length ? selectedEpics : epics;
-        const hasSearch = String(searchQuery || '').trim() !== '';
+        const hidesEmptyGroups = String(searchQuery || '').trim() !== ''
+            || Boolean(selectedVersionIds?.size)
+            || Boolean(selectedTypeIds?.size)
+            || Boolean(selectedColumnIds?.size);
 
         groups = displayedEpics.map(epic => ({
             epic,
             issues: matchingIssues.filter(issue =>
                 issueBelongsToEpic(issue, canonicalEpicId(epic))
             )
-        })).filter(group => !hasSearch || group.issues.length > 0);
+        })).filter(group => !hidesEmptyGroups || group.issues.length > 0);
 
         if (!selectedEpics.length) {
             const withoutEpic = matchingIssues.filter(issue =>
@@ -158,7 +277,7 @@ export function createBoardViewModel({
         epics,
         groups,
         issues,
-        statusToColumn: statusColumnMap(columns),
+        statusToColumn,
         visibleIssueCount: new Set(
             groups.flatMap(group => group.issues.map(issue => issue.key))
         ).size
