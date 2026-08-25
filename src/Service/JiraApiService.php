@@ -194,6 +194,153 @@ final class JiraApiService
         ];
     }
 
+    public function getCurrentUser(): array
+    {
+        return $this->request('GET', '/rest/api/3/myself');
+    }
+
+    /**
+     * @return list<array{accountId: string, displayName: string, avatarUrl: ?string}>
+     */
+    public function searchUsers(string $query): array
+    {
+        $response = $this->request('GET', '/rest/api/3/user/picker', [
+            'query' => [
+                'query' => $query,
+                'maxResults' => 10,
+                'showAvatar' => true,
+                'excludeConnectUsers' => true,
+            ],
+        ]);
+        $users = is_array($response['users'] ?? null)
+            ? $response['users']
+            : [];
+        $result = [];
+
+        foreach ($users as $user) {
+            $accountId = trim((string) ($user['accountId'] ?? ''));
+            $displayName = trim((string) ($user['displayName'] ?? ''));
+
+            if ($accountId === '' || $displayName === '') {
+                continue;
+            }
+
+            $result[] = [
+                'accountId' => $accountId,
+                'displayName' => $displayName,
+                'avatarUrl' => isset($user['avatarUrl'])
+                    ? (string) $user['avatarUrl']
+                    : null,
+            ];
+        }
+
+        return $result;
+    }
+
+    /**
+     * @param array<string, mixed> $fields
+     */
+    public function updateIssue(string $issueKey, array $fields): void
+    {
+        $this->request(
+            'PUT',
+            sprintf('/rest/api/3/issue/%s', rawurlencode($issueKey)),
+            [
+                'json' => [
+                    'fields' => $fields,
+                ],
+            ]
+        );
+    }
+
+    /**
+     * @param list<array{accountId: string, text: string}> $mentions
+     */
+    public function addIssueComment(
+        string $issueKey,
+        string $comment,
+        array $mentions = [],
+    ): array {
+        return $this->request(
+            'POST',
+            sprintf(
+                '/rest/api/3/issue/%s/comment',
+                rawurlencode($issueKey)
+            ),
+            [
+                'json' => [
+                    'body' => $this->plainTextDocument($comment, $mentions),
+                ],
+            ]
+        );
+    }
+
+    /**
+     * @param list<array{accountId: string, text: string}> $mentions
+     */
+    public function updateIssueComment(
+        string $issueKey,
+        string $commentId,
+        string $comment,
+        array $mentions = [],
+    ): array {
+        return $this->request(
+            'PUT',
+            sprintf(
+                '/rest/api/3/issue/%s/comment/%s',
+                rawurlencode($issueKey),
+                rawurlencode($commentId)
+            ),
+            [
+                'json' => [
+                    'body' => $this->plainTextDocument($comment, $mentions),
+                ],
+            ]
+        );
+    }
+
+    public function deleteIssueComment(
+        string $issueKey,
+        string $commentId,
+    ): void {
+        $this->request(
+            'DELETE',
+            sprintf(
+                '/rest/api/3/issue/%s/comment/%s',
+                rawurlencode($issueKey),
+                rawurlencode($commentId)
+            )
+        );
+    }
+
+    public function addIssueWorklog(
+        string $issueKey,
+        string $timeSpent,
+        ?string $comment = null,
+    ): array {
+        $payload = [
+            'timeSpent' => $timeSpent,
+        ];
+
+        if ($comment !== null && $comment !== '') {
+            $payload['comment'] = $this->plainTextDocument($comment);
+        }
+
+        return $this->request(
+            'POST',
+            sprintf(
+                '/rest/api/3/issue/%s/worklog',
+                rawurlencode($issueKey)
+            ),
+            [
+                'query' => [
+                    'adjustEstimate' => 'auto',
+                ],
+                'json' => $payload,
+            ]
+        );
+    }
+
     /**
      * @return array{content: string, contentType: string}
      */
@@ -357,6 +504,101 @@ final class JiraApiService
         );
 
         return $this->decode($response);
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function plainTextDocument(string $text, array $mentions = []): array
+    {
+        $paragraphs = preg_split('/\R/u', trim($text)) ?: [];
+
+        return [
+            'type' => 'doc',
+            'version' => 1,
+            'content' => array_map(
+                fn (string $paragraph): array => [
+                    'type' => 'paragraph',
+                    'content' => $this->plainTextInlineContent(
+                        $paragraph,
+                        $mentions
+                    ),
+                ],
+                $paragraphs
+            ),
+        ];
+    }
+
+    /**
+     * @param list<array{accountId: string, text: string}> $mentions
+     * @return list<array<string, mixed>>
+     */
+    private function plainTextInlineContent(
+        string $text,
+        array $mentions,
+    ): array {
+        if ($text === '') {
+            return [];
+        }
+
+        $content = [];
+        $cursor = 0;
+        $length = strlen($text);
+
+        while ($cursor < $length) {
+            $next = null;
+
+            foreach ($mentions as $mention) {
+                $mentionText = (string) ($mention['text'] ?? '');
+
+                if ($mentionText === '') {
+                    continue;
+                }
+
+                $position = strpos($text, $mentionText, $cursor);
+
+                if (
+                    $position !== false
+                    && ($next === null || $position < $next['position'])
+                ) {
+                    $next = [
+                        'position' => $position,
+                        'accountId' => (string) $mention['accountId'],
+                        'text' => $mentionText,
+                    ];
+                }
+            }
+
+            if ($next === null) {
+                $content[] = [
+                    'type' => 'text',
+                    'text' => substr($text, $cursor),
+                ];
+                break;
+            }
+
+            if ($next['position'] > $cursor) {
+                $content[] = [
+                    'type' => 'text',
+                    'text' => substr(
+                        $text,
+                        $cursor,
+                        $next['position'] - $cursor
+                    ),
+                ];
+            }
+
+            $content[] = [
+                'type' => 'mention',
+                'attrs' => [
+                    'id' => $next['accountId'],
+                    'text' => $next['text'],
+                ],
+            ];
+            $cursor = $next['position'] + strlen($next['text']);
+        }
+
+        return $content;
     }
 
     private function validateMediaUrl(string $url): bool

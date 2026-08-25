@@ -20,6 +20,10 @@ export function adfToText(node) {
         return node.text || '';
     }
 
+    if (node.type === 'mention') {
+        return node.attrs?.text || '@utilisateur';
+    }
+
     if (!Array.isArray(node.content)) {
         return '';
     }
@@ -49,7 +53,16 @@ export function adfToSegments(node) {
 
         return [{
             text: node.text || '',
-            href: link?.attrs?.href || null
+            href: link?.attrs?.href || null,
+            mention: false
+        }];
+    }
+
+    if (node.type === 'mention') {
+        return [{
+            text: node.attrs?.text || '@utilisateur',
+            href: null,
+            mention: true
         }];
     }
 
@@ -74,6 +87,32 @@ export function adfToSegments(node) {
     }
 
     return segments;
+}
+
+export function adfMentions(node) {
+    if (!node) {
+        return [];
+    }
+
+    if (node.type === 'mention' && node.attrs?.id) {
+        return [{
+            accountId: String(node.attrs.id),
+            text: String(node.attrs.text || '@utilisateur')
+        }];
+    }
+
+    if (!Array.isArray(node.content)) {
+        return [];
+    }
+
+    const mentions = node.content.flatMap(adfMentions);
+
+    return mentions.filter((mention, index) =>
+        mentions.findIndex(candidate =>
+            candidate.accountId === mention.accountId
+            && candidate.text === mention.text
+        ) === index
+    );
 }
 
 export function issueEpicObject(issue) {

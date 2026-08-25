@@ -8,7 +8,9 @@ import {
 import { createIssueRefresher } from './refresh.js';
 import {
     activeSprintNames,
+    adfMentions,
     adfToSegments,
+    adfToText,
     canonicalEpicId,
     epicColor,
     epicIds,
@@ -33,6 +35,8 @@ export function mountBoard(root, boardId) {
         draggedWorkflow: null,
         selectedIssueKeys: new Set(),
         selectedColumnId: null,
+        currentUser: null,
+        commentMentions: [],
         justDragged: false
     };
 
@@ -46,6 +50,21 @@ export function mountBoard(root, boardId) {
     const counter = document.querySelector('#counter');
     const dialog = document.querySelector('#issue-dialog');
     const transition = document.querySelector('#transition');
+    const summaryElement = document.querySelector('#issue-summary');
+    const summaryForm = document.querySelector('#summary-form');
+    const summaryInput = document.querySelector('#summary-input');
+    const descriptionElement = document.querySelector('#issue-description');
+    const descriptionForm = document.querySelector('#description-form');
+    const descriptionInput = document.querySelector('#description-input');
+    const fieldsForm = document.querySelector('#fields-form');
+    const commentForm = document.querySelector('#comment-form');
+    const commentInput = document.querySelector('#comment-input');
+    const mentionMenu = document.querySelector('#mention-menu');
+    const replyContext = document.querySelector('#comment-reply-context');
+    const worklogForm = document.querySelector('#worklog-form');
+    let mentionSearchTimer = null;
+    let mentionRequestToken = 0;
+    let activeMentionRange = null;
     const viewOptions = document.querySelectorAll('[data-view]');
     const toggleAllEpics = document.querySelector('#toggle-all-epics');
     const toastRegion = document.querySelector('#toast-region');
@@ -1362,6 +1381,83 @@ export function mountBoard(root, boardId) {
         return activeSprintNames(value);
     }
 
+    function formatSeconds(value) {
+        const seconds = Number(value);
+
+        if (!Number.isFinite(seconds) || seconds <= 0) {
+            return '';
+        }
+
+        const days = Math.floor(seconds / 28_800);
+        const hours = Math.floor((seconds % 28_800) / 3600);
+        const minutes = Math.floor((seconds % 3600) / 60);
+
+        return [
+            days ? `${days}j` : '',
+            hours ? `${hours}h` : '',
+            minutes ? `${minutes}min` : ''
+        ].filter(Boolean).join(' ');
+    }
+
+    function renderTimeTracking(issue) {
+        const tracking = issue.fields?.timetracking || {};
+        const spentSeconds = Number(tracking.timeSpentSeconds || 0);
+        const remainingSeconds = Number(
+            tracking.remainingEstimateSeconds || 0
+        );
+        const total = spentSeconds + remainingSeconds;
+        const progress = total > 0
+            ? Math.min(100, Math.round((spentSeconds / total) * 100))
+            : 0;
+
+        document.querySelector('#time-progress-bar').style.width =
+            `${progress}%`;
+        document.querySelector('#time-spent').textContent = spentSeconds > 0
+            ? `${tracking.timeSpent || formatSeconds(spentSeconds)} consigné`
+            : 'Aucun temps consigné';
+        document.querySelector('#time-remaining').textContent =
+            tracking.remainingEstimate
+                ? `${tracking.remainingEstimate} restant`
+                : '';
+    }
+
+    function renderEditableFields(issue) {
+        const fields = issue.fields || {};
+        const tracking = fields.timetracking || {};
+        const preview = document.querySelector('#editable-fields-preview');
+
+        preview.replaceChildren();
+        addIssueMeta(
+            preview,
+            'Étiquettes',
+            fieldNames(fields.labels) || 'Aucune'
+        );
+        addIssueMeta(
+            preview,
+            'Échéance',
+            formatIssueDate(fields.duedate) || 'Aucune'
+        );
+        addIssueMeta(
+            preview,
+            'Estimation',
+            tracking.originalEstimate || 'Non estimé'
+        );
+        addIssueMeta(
+            preview,
+            'Temps restant',
+            tracking.remainingEstimate || 'Non estimé'
+        );
+
+        document.querySelector('#labels-input').value =
+            Array.isArray(fields.labels) ? fields.labels.join(', ') : '';
+        document.querySelector('#due-date-input').value =
+            fields.duedate || '';
+        document.querySelector('#original-estimate-input').value =
+            tracking.originalEstimate || '';
+        document.querySelector('#remaining-estimate-input').value =
+            tracking.remainingEstimate || '';
+    }
+
     function renderIssueMeta(issue) {
         const container = document.querySelector('#issue-meta');
         const fields = issue.fields || {};
@@ -1411,7 +1507,6 @@ export function mountBoard(root, boardId) {
         }
 
         addIssueMeta(container, 'Résolution', fields.resolution?.name);
-        addIssueMeta(container, 'Étiquettes', fieldNames(fields.labels));
         addIssueMeta(container, 'Composants', fieldNames(fields.components));
         addIssueMeta(
             container,
@@ -1423,22 +1518,6 @@ export function mountBoard(root, boardId) {
             'Versions affectées',
             fieldNames(fields.versions)
         );
-        addIssueMeta(
-            container,
-            'Estimation',
-            fields.timetracking?.originalEstimate
-        );
-        addIssueMeta(
-            container,
-            'Temps restant',
-            fields.timetracking?.remainingEstimate
-        );
-        addIssueMeta(
-            container,
-            'Temps passé',
-            fields.timetracking?.timeSpent
-        );
-        addIssueMeta(container, 'Échéance', formatIssueDate(fields.duedate));
         addIssueMeta(
             container,
             'Créé',
@@ -1575,6 +1654,14 @@ export function mountBoard(root, boardId) {
 
         segments.forEach(segment => {
             const href = safeExternalUrl(segment.href);
+
+            if (segment.mention) {
+                const mention = document.createElement('span');
+                mention.className = 'comment-mention';
+                mention.textContent = segment.text;
+                container.append(mention);
+                return;
+            }
 
             if (href) {
                 const link = document.createElement('a');
@@ -1801,6 +1888,10 @@ export function mountBoard(root, boardId) {
             ? response.comments
             : (embeddedComments?.comments || []);
 
+        if (response && Object.hasOwn(response, 'currentUser')) {
+            state.currentUser = response.currentUser;
+        }
+
         container.replaceChildren();
 
         if (!comments.length) {
@@ -1816,6 +1907,7 @@ export function mountBoard(root, boardId) {
             const author = document.createElement('div');
             const authorName = document.createElement('strong');
             const date = document.createElement('time');
+            const actions = document.createElement('div');
             const body = document.createElement('div');
             const avatar = createImage(
                 comment.author?.avatarUrls?.['32x32'],
@@ -1825,10 +1917,18 @@ export function mountBoard(root, boardId) {
 
             article.className = 'issue-comment';
             author.className = 'issue-comment-author';
+            actions.className = 'issue-comment-actions';
             authorName.textContent = comment.author?.displayName || 'Anonyme';
             date.textContent = formatCommentDate(
                 comment.updated || comment.created
             );
+            if (
+                comment.updated
+                && comment.created
+                && comment.updated !== comment.created
+            ) {
+                date.textContent += ' · modifié';
+            }
             date.dateTime = comment.updated || comment.created || '';
             body.className = 'issue-comment-body';
 
@@ -1840,11 +1940,439 @@ export function mountBoard(root, boardId) {
             }
 
             author.append(authorName, date);
-            header.append(author);
+            header.append(author, actions);
+
+            if (comment.author?.accountId) {
+                const reply = document.createElement('button');
+                reply.type = 'button';
+                reply.textContent = 'Répondre';
+                reply.addEventListener('click', () => replyToComment(comment));
+                actions.append(reply);
+            }
+
+            if (
+                comment.id
+                && comment.author?.accountId
+                && comment.author.accountId === state.currentUser?.accountId
+            ) {
+                const edit = document.createElement('button');
+                edit.type = 'button';
+                edit.textContent = 'Modifier';
+                edit.addEventListener('click', () => {
+                    openCommentEditor(article, body, comment);
+                });
+                actions.append(edit);
+
+                const remove = document.createElement('button');
+                remove.type = 'button';
+                remove.className = 'comment-delete-button';
+                remove.textContent = 'Supprimer';
+                remove.addEventListener('click', () => {
+                    deleteComment(comment, remove);
+                });
+                actions.append(remove);
+            }
+
             renderRichText(body, comment.body, 'Commentaire vide.');
             article.append(header, body);
             container.append(article);
         });
+    }
+
+    function mergeCommentMention(mention) {
+        state.commentMentions = [
+            ...state.commentMentions.filter(candidate =>
+                candidate.accountId !== mention.accountId
+            ),
+            mention
+        ];
+    }
+
+    async function deleteComment(comment, button) {
+        if (!state.issue || !comment.id) {
+            return;
+        }
+
+        const confirmed = window.confirm(
+            'Supprimer définitivement ce commentaire ?'
+        );
+
+        if (!confirmed) {
+            return;
+        }
+
+        button.disabled = true;
+
+        try {
+            await api(
+                `/api/jira/issue/${encodeURIComponent(state.issue.key)}`
+                + `/comments/${encodeURIComponent(comment.id)}`,
+                { method: 'DELETE' }
+            );
+            await refreshIssueComments();
+            showToast('Commentaire supprimé', 'success');
+        } catch (error) {
+            showToast(error.message, 'error');
+            button.disabled = false;
+        }
+    }
+
+    function replyToComment(comment) {
+        const displayName = comment.author?.displayName;
+        const accountId = comment.author?.accountId;
+
+        if (!displayName || !accountId) {
+            return;
+        }
+
+        const mention = {
+            accountId,
+            text: `@${displayName}`
+        };
+        const current = commentInput.value.trimStart();
+
+        if (!current.includes(mention.text)) {
+            commentInput.value = `${mention.text} ${current}`;
+        }
+
+        mergeCommentMention(mention);
+        replyContext.hidden = false;
+        replyContext.dataset.accountId = accountId;
+        document.querySelector('#comment-reply-label').textContent =
+            `Réponse à ${displayName}`;
+        commentInput.focus();
+        commentInput.setSelectionRange(
+            commentInput.value.length,
+            commentInput.value.length
+        );
+    }
+
+    function openCommentEditor(article, body, comment) {
+        if (article.querySelector('.comment-edit-form')) {
+            return;
+        }
+
+        const form = document.createElement('form');
+        const textarea = document.createElement('textarea');
+        const actions = document.createElement('div');
+        const save = document.createElement('button');
+        const cancel = document.createElement('button');
+
+        form.className = 'comment-edit-form';
+        textarea.rows = 4;
+        textarea.required = true;
+        textarea.value = adfToText(comment.body).trim();
+        actions.className = 'inline-edit-actions';
+        save.type = 'submit';
+        save.textContent = 'Enregistrer';
+        cancel.type = 'button';
+        cancel.className = 'secondary-button';
+        cancel.textContent = 'Annuler';
+        actions.append(save, cancel);
+        form.append(textarea, actions);
+        body.hidden = true;
+        article.append(form);
+        textarea.focus();
+
+        cancel.addEventListener('click', () => {
+            form.remove();
+            body.hidden = false;
+        });
+        form.addEventListener('submit', async event => {
+            event.preventDefault();
+            const updatedComment = textarea.value.trim();
+
+            if (!updatedComment || !state.issue) {
+                return;
+            }
+
+            setFormBusy(form, true);
+
+            try {
+                await api(
+                    `/api/jira/issue/${encodeURIComponent(state.issue.key)}`
+                    + `/comments/${encodeURIComponent(comment.id)}`,
+                    {
+                        method: 'PUT',
+                        body: JSON.stringify({
+                            comment: updatedComment,
+                            mentions: adfMentions(comment.body)
+                        })
+                    }
+                );
+                await refreshIssueComments();
+                showToast('Commentaire modifié', 'success');
+            } catch (error) {
+                showToast(error.message, 'error');
+                setFormBusy(form, false);
+            }
+        });
+    }
+
+    function closeMentionMenu() {
+        mentionMenu.hidden = true;
+        mentionMenu.replaceChildren();
+        activeMentionRange = null;
+    }
+
+    function selectMentionUser(user) {
+        if (!activeMentionRange) {
+            return;
+        }
+
+        const mentionText = `@${user.displayName}`;
+        const value = commentInput.value;
+        const before = value.slice(0, activeMentionRange.start);
+        const after = value.slice(activeMentionRange.end).replace(/^\s*/, '');
+        const replacement = `${mentionText} `;
+
+        commentInput.value = `${before}${replacement}${after}`;
+        mergeCommentMention({
+            accountId: user.accountId,
+            text: mentionText
+        });
+        const caret = before.length + replacement.length;
+
+        closeMentionMenu();
+        commentInput.focus();
+        commentInput.setSelectionRange(caret, caret);
+    }
+
+    function renderMentionMenu(users) {
+        mentionMenu.replaceChildren();
+
+        if (!users.length) {
+            const empty = document.createElement('span');
+            empty.className = 'mention-menu-empty';
+            empty.textContent = 'Aucune personne trouvée';
+            mentionMenu.append(empty);
+            mentionMenu.hidden = false;
+            return;
+        }
+
+        users.forEach((user, index) => {
+            const option = document.createElement('button');
+            const identity = document.createElement('span');
+            const avatar = createImage(
+                user.avatarUrl,
+                '',
+                'mention-avatar'
+            );
+
+            option.type = 'button';
+            option.className = 'mention-option';
+            option.mentionUser = user;
+            option.setAttribute('role', 'option');
+            option.classList.toggle('is-active', index === 0);
+            option.setAttribute('aria-selected', String(index === 0));
+            identity.textContent = user.displayName;
+
+            if (avatar) {
+                avatar.addEventListener('error', () => avatar.remove(), {
+                    once: true
+                });
+                option.append(avatar);
+            }
+
+            option.append(identity);
+            option.addEventListener('mousedown', event => {
+                event.preventDefault();
+                selectMentionUser(user);
+            });
+            mentionMenu.append(option);
+        });
+
+        mentionMenu.hidden = false;
+    }
+
+    function scheduleMentionSearch() {
+        window.clearTimeout(mentionSearchTimer);
+        const caret = commentInput.selectionStart;
+        const beforeCaret = commentInput.value.slice(0, caret);
+        const match = beforeCaret.match(/(?:^|\s)@([^\s@]{1,40})$/u);
+
+        if (!match) {
+            closeMentionMenu();
+            return;
+        }
+
+        const query = match[1];
+        activeMentionRange = {
+            start: caret - query.length - 1,
+            end: caret
+        };
+        const requestToken = ++mentionRequestToken;
+
+        mentionSearchTimer = window.setTimeout(async () => {
+            try {
+                const response = await api(
+                    `/api/jira/users?query=${encodeURIComponent(query)}`
+                );
+
+                if (requestToken === mentionRequestToken) {
+                    renderMentionMenu(response.users || []);
+                }
+            } catch {
+                if (requestToken === mentionRequestToken) {
+                    closeMentionMenu();
+                }
+            }
+        }, 220);
+    }
+
+    async function refreshIssueComments() {
+        if (!state.issue) {
+            return;
+        }
+
+        const comments = await api(
+            `/api/jira/issue/${encodeURIComponent(state.issue.key)}/comments`
+        );
+        renderIssueComments(comments);
+    }
+
+    function setFormBusy(form, busy) {
+        form.querySelectorAll('button, input, textarea, select')
+            .forEach(control => {
+                control.disabled = busy;
+            });
+        form.setAttribute('aria-busy', String(busy));
+    }
+
+    function toggleEditor(name, visible) {
+        const configurations = {
+            summary: {
+                form: summaryForm,
+                preview: summaryElement,
+                trigger: document.querySelector('#edit-summary'),
+                focus: summaryInput
+            },
+            description: {
+                form: descriptionForm,
+                preview: descriptionElement,
+                trigger: document.querySelector('#edit-description'),
+                focus: descriptionInput
+            },
+            fields: {
+                form: fieldsForm,
+                preview: document.querySelector('#editable-fields-preview'),
+                trigger: document.querySelector('#edit-fields'),
+                focus: document.querySelector('#labels-input')
+            },
+            worklog: {
+                form: worklogForm,
+                preview: document.querySelector('.time-tracking-summary'),
+                trigger: document.querySelector('#toggle-worklog'),
+                focus: document.querySelector('#worklog-time')
+            }
+        };
+        const editor = configurations[name];
+
+        if (!editor) {
+            return;
+        }
+
+        editor.form.hidden = !visible;
+        editor.preview.hidden = visible;
+        editor.trigger.hidden = visible;
+
+        if (visible) {
+            editor.focus.focus();
+        }
+    }
+
+    function resetIssueEditors(issue) {
+        summaryInput.value = issue.fields?.summary || '';
+        descriptionInput.value = adfToText(
+            issue.fields?.description
+        ).trim();
+        commentInput.value = '';
+        state.commentMentions = [];
+        replyContext.hidden = true;
+        replyContext.removeAttribute('data-account-id');
+        closeMentionMenu();
+        document.querySelector('#worklog-time').value = '';
+        document.querySelector('#worklog-comment').value = '';
+        ['summary', 'description', 'fields', 'worklog']
+            .forEach(name => toggleEditor(name, false));
+    }
+
+    function syncBoardIssue(issue) {
+        const boardIssue = (state.data?.issues?.issues || [])
+            .find(candidate => candidate.key === issue.key);
+
+        if (boardIssue) {
+            boardIssue.fields = {
+                ...boardIssue.fields,
+                ...issue.fields
+            };
+        }
+    }
+
+    function renderIssueDetails(issue) {
+        const fields = issue.fields || {};
+        const typeIcon = document.querySelector('#issue-type-icon');
+
+        state.issue = issue;
+        document.querySelector('#issue-key').textContent = issue.key;
+        summaryElement.textContent = fields.summary || issue.key;
+        summaryInput.value = fields.summary || '';
+        descriptionInput.value = adfToText(fields.description).trim();
+
+        if (fields.issuetype?.iconUrl) {
+            typeIcon.src = jiraMediaUrl(fields.issuetype.iconUrl);
+            typeIcon.hidden = false;
+        } else {
+            typeIcon.removeAttribute('src');
+            typeIcon.hidden = true;
+        }
+
+        renderIssueMeta(issue);
+        renderEditableFields(issue);
+        renderTimeTracking(issue);
+        renderIssueDescription(fields.description);
+        renderIssueLinks(issue);
+        renderIssueAttachments(issue);
+        syncBoardIssue(issue);
+    }
+
+    async function refreshCurrentIssue() {
+        if (!state.issue) {
+            return null;
+        }
+
+        const issue = await api(
+            `/api/jira/issue/${encodeURIComponent(state.issue.key)}`
+        );
+
+        renderIssueDetails(issue);
+
+        return issue;
+    }
+
+    async function submitIssueUpdate(form, fields, editorName) {
+        if (!state.issue) {
+            return;
+        }
+
+        setFormBusy(form, true);
+
+        try {
+            await api(
+                `/api/jira/issue/${encodeURIComponent(state.issue.key)}`,
+                {
+                    method: 'PATCH',
+                    body: JSON.stringify(fields)
+                }
+            );
+            await refreshCurrentIssue();
+            toggleEditor(editorName, false);
+            showToast('Ticket mis à jour', 'success');
+        } catch (error) {
+            showToast(error.message, 'error');
+        } finally {
+            setFormBusy(form, false);
+        }
     }
 
     async function openIssue(issueKey) {
@@ -1857,16 +2385,8 @@ export function mountBoard(root, boardId) {
                     .catch(() => ({ unavailable: true }))
             ]);
 
-            state.issue = issue;
-
-            document.querySelector('#issue-key').textContent =
-                issue.key;
-
             const issueUrl = jiraIssueUrl(issue.key, issue);
-            const summary = document.querySelector('#issue-summary');
             const openIssueLink = document.querySelector('#open-issue');
-
-            summary.textContent = issue.fields?.summary || issue.key;
 
             if (issueUrl) {
                 openIssueLink.href = issueUrl;
@@ -1876,14 +2396,19 @@ export function mountBoard(root, boardId) {
 
             openIssueLink.toggleAttribute('aria-disabled', !issueUrl);
 
-            renderIssueMeta(issue);
-
-            renderIssueDescription(issue.fields?.description);
-            renderIssueLinks(issue);
-            renderIssueAttachments(issue);
+            renderIssueDetails(issue);
+            resetIssueEditors(issue);
             renderIssueComments(comments, issue.fields?.comment);
 
             transition.innerHTML = '';
+
+            const currentStatus = document.createElement('option');
+            currentStatus.value = '';
+            currentStatus.textContent = issue.fields?.status?.name
+                ? `État : ${issue.fields.status.name}`
+                : 'Changer l’état…';
+            currentStatus.selected = true;
+            transition.append(currentStatus);
 
             (transitions.transitions || []).forEach(item => {
                 const option = document.createElement('option');
@@ -1896,7 +2421,7 @@ export function mountBoard(root, boardId) {
             });
 
             document.querySelector('#apply-transition').disabled =
-                !transition.options.length;
+                true;
 
             if (!dialog.open) {
                 dialog.showModal();
@@ -1938,6 +2463,97 @@ export function mountBoard(root, boardId) {
         } finally {
             button.disabled = false;
         }
+    }
+
+    async function submitComment(event) {
+        event.preventDefault();
+
+        const comment = commentInput.value.trim();
+        const mentions = state.commentMentions.filter(mention =>
+            comment.includes(mention.text)
+        );
+
+        if (!state.issue || !comment) {
+            return;
+        }
+
+        setFormBusy(commentForm, true);
+
+        try {
+            await api(
+                `/api/jira/issue/${encodeURIComponent(state.issue.key)}/comments`,
+                {
+                    method: 'POST',
+                    body: JSON.stringify({ comment, mentions })
+                }
+            );
+            commentInput.value = '';
+            state.commentMentions = [];
+            replyContext.hidden = true;
+            closeMentionMenu();
+            await refreshIssueComments();
+            showToast('Commentaire ajouté', 'success');
+        } catch (error) {
+            showToast(error.message, 'error');
+        } finally {
+            setFormBusy(commentForm, false);
+        }
+    }
+
+    async function submitWorklog(event) {
+        event.preventDefault();
+
+        if (!state.issue) {
+            return;
+        }
+
+        const timeSpent = document.querySelector('#worklog-time')
+            .value.trim();
+        const comment = document.querySelector('#worklog-comment')
+            .value.trim();
+
+        if (!timeSpent) {
+            return;
+        }
+
+        setFormBusy(worklogForm, true);
+
+        try {
+            await api(
+                `/api/jira/issue/${encodeURIComponent(state.issue.key)}/worklogs`,
+                {
+                    method: 'POST',
+                    body: JSON.stringify({ timeSpent, comment })
+                }
+            );
+            document.querySelector('#worklog-time').value = '';
+            document.querySelector('#worklog-comment').value = '';
+            await refreshCurrentIssue();
+            toggleEditor('worklog', false);
+            showToast('Temps consigné', 'success');
+        } catch (error) {
+            showToast(error.message, 'error');
+        } finally {
+            setFormBusy(worklogForm, false);
+        }
+    }
+
+    function submitEditableFields(event) {
+        event.preventDefault();
+
+        const labels = document.querySelector('#labels-input').value
+            .split(',')
+            .map(label => label.trim())
+            .filter(Boolean);
+
+        submitIssueUpdate(fieldsForm, {
+            labels,
+            dueDate: document.querySelector('#due-date-input').value,
+            originalEstimate: document
+                .querySelector('#original-estimate-input').value.trim(),
+            remainingEstimate: document
+                .querySelector('#remaining-estimate-input').value.trim()
+        }, 'fields');
     }
 
     async function loadBoard() {
@@ -2051,6 +2667,123 @@ export function mountBoard(root, boardId) {
 
     document.querySelector('#apply-transition')
         .addEventListener('click', applyTransition);
+    transition.addEventListener('change', () => {
+        document.querySelector('#apply-transition').disabled =
+            !transition.value;
+    });
+
+    document.querySelector('#edit-summary')
+        .addEventListener('click', () => toggleEditor('summary', true));
+    document.querySelector('#edit-description')
+        .addEventListener('click', () => toggleEditor('description', true));
+    document.querySelector('#edit-fields')
+        .addEventListener('click', () => toggleEditor('fields', true));
+    document.querySelector('#toggle-worklog')
+        .addEventListener('click', () => toggleEditor('worklog', true));
+
+    document.querySelectorAll('[data-cancel-edit]').forEach(button => {
+        button.addEventListener('click', () => {
+            const editor = button.dataset.cancelEdit;
+
+            if (state.issue) {
+                resetIssueEditors(state.issue);
+                renderEditableFields(state.issue);
+            }
+
+            toggleEditor(editor, false);
+        });
+    });
+
+    summaryForm.addEventListener('submit', event => {
+        event.preventDefault();
+        submitIssueUpdate(summaryForm, {
+            summary: summaryInput.value.trim()
+        }, 'summary');
+    });
+
+    descriptionForm.addEventListener('submit', event => {
+        event.preventDefault();
+        submitIssueUpdate(descriptionForm, {
+            description: descriptionInput.value.trim()
+        }, 'description');
+    });
+
+    fieldsForm.addEventListener('submit', submitEditableFields);
+    commentForm.addEventListener('submit', submitComment);
+    worklogForm.addEventListener('submit', submitWorklog);
+    document.querySelector('#cancel-reply').addEventListener('click', () => {
+        const accountId = replyContext.dataset.accountId;
+        const mention = state.commentMentions.find(candidate =>
+            candidate.accountId === accountId
+        );
+
+        if (mention && commentInput.value.startsWith(`${mention.text} `)) {
+            commentInput.value = commentInput.value.slice(
+                mention.text.length + 1
+            );
+        }
+
+        state.commentMentions = state.commentMentions.filter(candidate =>
+            candidate.accountId !== accountId
+        );
+        replyContext.hidden = true;
+        replyContext.removeAttribute('data-account-id');
+        commentInput.focus();
+    });
+    commentInput.addEventListener('input', scheduleMentionSearch);
+    commentInput.addEventListener('blur', () => {
+        window.setTimeout(() => closeMentionMenu(), 140);
+    });
+    commentInput.addEventListener('keydown', event => {
+        if (!mentionMenu.hidden) {
+            const options = Array.from(
+                mentionMenu.querySelectorAll('.mention-option')
+            );
+            const activeIndex = options.findIndex(option =>
+                option.classList.contains('is-active')
+            );
+
+            if (
+                options.length
+                && (event.key === 'ArrowDown' || event.key === 'ArrowUp')
+            ) {
+                event.preventDefault();
+                const direction = event.key === 'ArrowDown' ? 1 : -1;
+                const nextIndex = (
+                    activeIndex + direction + options.length
+                ) % options.length;
+                options.forEach((option, index) => {
+                    option.classList.toggle('is-active', index === nextIndex);
+                    option.setAttribute(
+                        'aria-selected',
+                        String(index === nextIndex)
+                    );
+                });
+                return;
+            }
+
+            if (event.key === 'Enter' && !event.ctrlKey && !event.metaKey) {
+                const selected = options[activeIndex] || options[0];
+
+                if (selected?.mentionUser) {
+                    event.preventDefault();
+                    selectMentionUser(selected.mentionUser);
+                    return;
+                }
+            }
+
+            if (event.key === 'Escape') {
+                event.preventDefault();
+                closeMentionMenu();
+                return;
+            }
+        }
+
+        if (event.key === 'Enter' && (event.ctrlKey || event.metaKey)) {
+            event.preventDefault();
+            commentForm.requestSubmit();
+        }
+    });
 
     loadBoard();
 

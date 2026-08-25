@@ -144,8 +144,32 @@
 <dialog id="issue-dialog">
     <div class="dialog-head">
         <div class="issue-heading">
-            <div id="issue-key" class="issue-key"></div>
-            <h2 id="issue-summary"></h2>
+            <div class="issue-breadcrumb">
+                <img id="issue-type-icon" class="issue-type-icon" alt="">
+                <span id="issue-key" class="issue-key"></span>
+            </div>
+            <div class="issue-summary-row">
+                <h2 id="issue-summary"></h2>
+                <button
+                    id="edit-summary"
+                    class="quiet-icon-button"
+                    type="button"
+                    title="Modifier le titre"
+                    aria-label="Modifier le titre"
+                >
+                    <svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="m4 20 4.5-1 10-10a2.1 2.1 0 0 0-3-3l-10 10L4 20Z" />
+                        <path d="m14 7 3 3" />
+                    </svg>
+                </button>
+            </div>
+            <form id="summary-form" class="inline-edit-form" hidden>
+                <input id="summary-input" name="summary" required maxlength="255">
+                <div class="inline-edit-actions">
+                    <button type="submit">Enregistrer</button>
+                    <button class="secondary-button" type="button" data-cancel-edit="summary">Annuler</button>
+                </div>
+            </form>
         </div>
         <div class="dialog-actions">
             <a
@@ -175,8 +199,25 @@
     <div class="issue-dialog-layout">
         <div class="issue-dialog-main">
             <section class="issue-content-section">
-                <h3>Description</h3>
+                <div class="issue-section-heading">
+                    <h3>Description</h3>
+                    <button id="edit-description" class="section-edit-button" type="button">
+                        Modifier
+                    </button>
+                </div>
                 <div id="issue-description" class="description"></div>
+                <form id="description-form" class="stacked-edit-form" hidden>
+                    <textarea
+                        id="description-input"
+                        name="description"
+                        rows="8"
+                        placeholder="Décrire le ticket…"
+                    ></textarea>
+                    <div class="inline-edit-actions">
+                        <button type="submit">Enregistrer</button>
+                        <button class="secondary-button" type="button" data-cancel-edit="description">Annuler</button>
+                    </div>
+                </form>
             </section>
 
             <section id="issue-attachments" class="issue-content-section" hidden>
@@ -193,22 +234,115 @@
             </section>
 
             <section id="issue-comments" class="issue-content-section">
-                <h3>Commentaires</h3>
+                <div class="activity-heading">
+                    <h3>Activité</h3>
+                    <div class="activity-tabs" aria-label="Type d’activité">
+                        <button class="activity-tab is-active" type="button" aria-pressed="true">
+                            Commentaires
+                        </button>
+                    </div>
+                </div>
+                <form id="comment-form" class="comment-form">
+                    <div id="comment-reply-context" class="comment-reply-context" hidden>
+                        <span id="comment-reply-label"></span>
+                        <button id="cancel-reply" type="button" aria-label="Annuler la réponse">×</button>
+                    </div>
+                    <textarea
+                        id="comment-input"
+                        name="comment"
+                        rows="3"
+                        required
+                        placeholder="Ajouter un commentaire…"
+                    ></textarea>
+                    <div
+                        id="mention-menu"
+                        class="mention-menu"
+                        role="listbox"
+                        aria-label="Personnes à mentionner"
+                        hidden
+                    ></div>
+                    <div class="comment-form-footer">
+                        <span>Tapez @ pour mentionner · Ctrl + Entrée pour envoyer</span>
+                        <button type="submit">Commenter</button>
+                    </div>
+                </form>
                 <div id="issue-comments-list" class="issue-comments-list"></div>
             </section>
         </div>
 
         <aside class="issue-sidebar">
-            <h3>Informations</h3>
             <div class="transition-row">
-                <label for="transition">État</label>
+                <label class="sr-only" for="transition">Nouvel état</label>
                 <select id="transition"></select>
                 <button id="apply-transition" type="button">
-                    Appliquer
+                    Changer l’état
                 </button>
             </div>
 
-            <div id="issue-meta" class="issue-meta"></div>
+            <section class="issue-sidebar-panel">
+                <div class="sidebar-panel-heading">
+                    <h3>Suivi temporel</h3>
+                    <button id="toggle-worklog" class="section-edit-button" type="button">
+                        Consigner du temps
+                    </button>
+                </div>
+                <div class="time-tracking-summary">
+                    <div class="time-progress" aria-hidden="true">
+                        <span id="time-progress-bar"></span>
+                    </div>
+                    <div class="time-tracking-values">
+                        <span id="time-spent">Aucun temps consigné</span>
+                        <span id="time-remaining"></span>
+                    </div>
+                </div>
+                <form id="worklog-form" class="stacked-edit-form worklog-form" hidden>
+                    <label for="worklog-time">Temps passé</label>
+                    <input
+                        id="worklog-time"
+                        name="timeSpent"
+                        required
+                        placeholder="Ex. 1h 30m"
+                    >
+                    <small>Formats Jira acceptés : 2w, 3d, 4h, 30m.</small>
+                    <label for="worklog-comment">Note (facultatif)</label>
+                    <textarea id="worklog-comment" name="comment" rows="3"></textarea>
+                    <div class="inline-edit-actions">
+                        <button type="submit">Consigner</button>
+                        <button class="secondary-button" type="button" data-cancel-edit="worklog">Annuler</button>
+                    </div>
+                </form>
+            </section>
+
+            <section class="issue-sidebar-panel">
+                <div class="sidebar-panel-heading">
+                    <h3>Champs modifiables</h3>
+                    <button id="edit-fields" class="section-edit-button" type="button">
+                        Modifier
+                    </button>
+                </div>
+                <div id="editable-fields-preview" class="issue-meta"></div>
+                <form id="fields-form" class="sidebar-fields-form" hidden>
+                    <label for="labels-input">Étiquettes</label>
+                    <input id="labels-input" name="labels" placeholder="frontend, urgent">
+                    <label for="due-date-input">Échéance</label>
+                    <input id="due-date-input" name="dueDate" type="date">
+                    <label for="original-estimate-input">Estimation originale</label>
+                    <input id="original-estimate-input" name="originalEstimate" placeholder="Ex. 2h">
+                    <label for="remaining-estimate-input">Temps restant</label>
+                    <input id="remaining-estimate-input" name="remainingEstimate" placeholder="Ex. 45m">
+                    <div class="inline-edit-actions">
+                        <button type="submit">Enregistrer</button>
+                        <button class="secondary-button" type="button" data-cancel-edit="fields">Annuler</button>
+                    </div>
+                </form>
+            </section>
+
+            <section class="issue-sidebar-panel">
+                <div class="sidebar-panel-heading">
+                    <h3>Détails</h3>
+                </div>
+                <div id="issue-meta" class="issue-meta"></div>
+            </section>
         </aside>
     </div>
 </dialog>

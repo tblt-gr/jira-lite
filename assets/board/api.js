@@ -7,7 +7,23 @@ export async function api(url, options = {}) {
     });
 
     if (!response.ok) {
-        throw new Error(`Erreur HTTP ${response.status}`);
+        let details = null;
+
+        try {
+            details = await response.json();
+        } catch {
+            // Certaines erreurs du proxy n'ont pas de corps JSON.
+        }
+
+        const fieldErrors = details?.errors
+            ? Object.values(details.errors).filter(Boolean).join(' · ')
+            : '';
+        const message = details?.error
+            || details?.errorMessages?.filter(Boolean).join(' · ')
+            || fieldErrors
+            || `Erreur HTTP ${response.status}`;
+
+        throw new Error(message);
     }
 
     if (response.status === 204) {
