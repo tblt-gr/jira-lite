@@ -20,12 +20,20 @@
                     </svg>
                 </button>
             </div>
-            <form id="summary-form" class="inline-edit-form" hidden>
+            <form id="summary-form" class="inline-edit-form title-edit-form" hidden>
                 <input id="summary-input" name="summary" required maxlength="255">
-                <div class="inline-edit-actions">
-                    <button type="submit">{{ 'common.save'|trans }}</button>
-                    <button class="secondary-button" type="button" data-cancel-edit="summary">{{ 'common.cancel'|trans }}</button>
-                </div>
+                <button
+                    id="confirm-summary"
+                    class="quiet-icon-button"
+                    type="submit"
+                    hidden
+                    title="{{ 'common.save'|trans }}"
+                    aria-label="{{ 'common.save'|trans }}"
+                >
+                    <svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M4 12.5 9.5 18 20 6" />
+                    </svg>
+                </button>
             </form>
         </div>
         <div class="dialog-actions">

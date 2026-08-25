@@ -492,6 +492,7 @@ export function createIssueDialog(context) {
                 form: summaryForm,
                 preview: summaryElement,
                 trigger: root.querySelector('#edit-summary'),
+                confirmTrigger: root.querySelector('#confirm-summary'),
                 focus: summaryInput
             },
             description: {
@@ -522,6 +523,10 @@ export function createIssueDialog(context) {
         editor.form.hidden = !visible;
         editor.preview.hidden = visible;
         editor.trigger.hidden = visible;
+
+        if (editor.confirmTrigger) {
+            editor.confirmTrigger.hidden = !visible;
+        }
 
         if (visible) {
             editor.focus.focus();
