@@ -17,11 +17,12 @@ final class FrontendCatalogTest extends KernelTestCase
         $twig = self::getContainer()->get(Environment::class);
         $html = $twig->render('board/_translations.html.twig');
 
-        self::assertMatchesRegularExpression(
+        $matched = preg_match(
             '/<script[^>]*>(.*)<\/script>/s',
-            $html
+            $html,
+            $matches
         );
-        preg_match('/<script[^>]*>(.*)<\/script>/s', $html, $matches);
+        self::assertSame(1, $matched);
         $catalog = json_decode(
             trim($matches[1]),
             true,

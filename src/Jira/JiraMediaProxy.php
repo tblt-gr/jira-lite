@@ -14,6 +14,7 @@ use function in_array;
 
 use InvalidArgumentException;
 
+use function is_array;
 use function is_string;
 
 use const PHP_URL_SCHEME;
@@ -197,15 +198,22 @@ final class JiraMediaProxy
         }
 
         $parts = parse_url($source);
+        $scheme = is_array($parts) ? ($parts['scheme'] ?? null) : null;
+        $host = is_array($parts) ? ($parts['host'] ?? null) : null;
+
+        if (!is_string($scheme) || !is_string($host)) {
+            throw new RuntimeException($this->translator->trans('media.invalid_redirect'));
+        }
+
         $origin = sprintf(
             '%s://%s%s',
-            $parts['scheme'],
-            $parts['host'],
+            $scheme,
+            $host,
             isset($parts['port']) ? ':'.$parts['port'] : ''
         );
 
         if (str_starts_with($location, '//')) {
-            return $parts['scheme'].':'.$location;
+            return $scheme.':'.$location;
         }
 
         if (str_starts_with($location, '/')) {

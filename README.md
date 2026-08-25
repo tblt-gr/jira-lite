@@ -67,6 +67,14 @@ composer check
 
 This validates Composer metadata and checks the Symfony container, YAML configuration, and Twig templates. JavaScript is served through Symfony AssetMapper, so no Node.js build step is required.
 
+Node.js is only used for linting and running the JavaScript test suite in `assets/board/`, never to build or serve assets:
+
+```bash
+npm ci
+npm run lint
+npm test
+```
+
 ## Project Structure
 
 - `src/Controller/` contains page and JSON API endpoints.

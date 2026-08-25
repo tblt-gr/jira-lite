@@ -203,7 +203,7 @@ function sprintState(sprint) {
     }
 
     const match = String(sprint || '').match(
-        /(?:^|[\[,])\s*state=([^,\]]+)/i
+        /(?:^|[[,])\s*state=([^,\]]+)/i
     );
 
     return String(match?.[1] || '').trim().toLowerCase();
@@ -215,7 +215,7 @@ function sprintName(sprint) {
     }
 
     const value = String(sprint || '');
-    const match = value.match(/(?:^|[\[,])\s*name=([^,\]]+)/i);
+    const match = value.match(/(?:^|[[,])\s*name=([^,\]]+)/i);
 
     return String(match?.[1] || value).trim();
 }

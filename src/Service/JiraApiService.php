@@ -26,6 +26,9 @@ final class JiraApiService
     ) {
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public function getBoard(int $boardId): array
     {
         return $this->client->request(
@@ -70,6 +73,9 @@ final class JiraApiService
         return $boards;
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public function getBoardConfiguration(int $boardId): array
     {
         return $this->client->request(
@@ -78,6 +84,9 @@ final class JiraApiService
         );
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public function getBoardIssues(int $boardId): array
     {
         return $this->client->getAllIssuePages(
@@ -86,6 +95,9 @@ final class JiraApiService
         );
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public function getBoardIssueChanges(
         int $boardId,
         DateTimeImmutable $since,
@@ -104,6 +116,9 @@ final class JiraApiService
         );
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public function getBoardEpics(int $boardId): array
     {
         return $this->client->request(
@@ -118,6 +133,9 @@ final class JiraApiService
         );
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public function getIssue(string $issueKey): array
     {
         return $this->client->request(
@@ -132,6 +150,9 @@ final class JiraApiService
         );
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public function getTransitions(string $issueKey): array
     {
         return $this->client->request(
@@ -140,6 +161,9 @@ final class JiraApiService
         );
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public function getIssueComments(string $issueKey): array
     {
         $startAt = 0;
@@ -182,6 +206,9 @@ final class JiraApiService
         ];
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public function getCurrentUser(): array
     {
         return $this->client->request('GET', '/rest/api/3/myself');
@@ -243,6 +270,8 @@ final class JiraApiService
 
     /**
      * @param list<array{accountId: string, text: string}> $mentions
+     *
+     * @return array<string, mixed>
      */
     public function addIssueComment(
         string $issueKey,
@@ -265,6 +294,8 @@ final class JiraApiService
 
     /**
      * @param list<array{accountId: string, text: string}> $mentions
+     *
+     * @return array<string, mixed>
      */
     public function updateIssueComment(
         string $issueKey,
@@ -301,6 +332,9 @@ final class JiraApiService
         );
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public function addIssueWorklog(
         string $issueKey,
         string $timeSpent,
@@ -365,6 +399,8 @@ final class JiraApiService
     }
 
     /**
+     * @param list<array{accountId: string, text: string}> $mentions
+     *
      * @return array<string, mixed>
      */
     public function plainTextDocument(string $text, array $mentions = []): array
@@ -408,7 +444,7 @@ final class JiraApiService
             $next = null;
 
             foreach ($mentions as $mention) {
-                $mentionText = (string) ($mention['text'] ?? '');
+                $mentionText = $mention['text'];
 
                 if ('' === $mentionText) {
                     continue;

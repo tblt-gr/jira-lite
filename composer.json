@@ -27,7 +27,8 @@
         "allow-plugins": {
             "php-http/discovery": true,
             "symfony/flex": true,
-            "symfony/runtime": true
+            "symfony/runtime": true,
+            "phpstan/extension-installer": true
         },
         "bump-after-update": true,
         "sort-packages": true
@@ -63,7 +64,8 @@
             "@php bin/console lint:translations --locale=fr",
             "@php bin/console lint:yaml config",
             "@php bin/console lint:twig templates",
-            "@cs"
+            "@cs",
+            "@php vendor/bin/phpstan analyse --no-progress"
         ],
         "cs": "@php vendor/bin/php-cs-fixer fix --dry-run --diff",
         "cs-fix": "@php vendor/bin/php-cs-fixer fix",
@@ -94,6 +96,9 @@
     },
     "require-dev": {
         "friendsofphp/php-cs-fixer": "^3.95",
+        "phpstan/extension-installer": "^1.4",
+        "phpstan/phpstan": "^2.2",
+        "phpstan/phpstan-symfony": "^2.0",
         "phpunit/phpunit": "^11.5"
     }
 }

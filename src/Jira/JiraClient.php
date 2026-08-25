@@ -22,7 +22,11 @@ final class JiraClient
     ) {
     }
 
-    /** @return array<string, mixed> */
+    /**
+     * @param array<string, mixed> $options
+     *
+     * @return array<string, mixed>
+     */
     public function request(
         string $method,
         string $uri,

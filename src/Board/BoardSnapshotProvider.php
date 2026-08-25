@@ -116,6 +116,9 @@ final class BoardSnapshotProvider
         return sprintf('jira.board.%d.issues', $boardId);
     }
 
+    /**
+     * @param array<string, mixed> $issue
+     */
     private function isInActiveSprint(array $issue): bool
     {
         $fields = is_array($issue['fields'] ?? null)

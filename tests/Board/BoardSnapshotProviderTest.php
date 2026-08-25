@@ -71,6 +71,9 @@ final class BoardSnapshotProviderTest extends TestCase
         self::assertSame($first, $second);
     }
 
+    /**
+     * @param array<string, mixed> $data
+     */
     private function json(array $data): MockResponse
     {
         return new MockResponse(json_encode($data, JSON_THROW_ON_ERROR));
