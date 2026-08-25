@@ -65,6 +65,8 @@ export function mountBoard(root, boardId) {
     let mentionSearchTimer = null;
     let mentionRequestToken = 0;
     let activeMentionRange = null;
+    let dragScrollFrame = null;
+    let dragScrollSpeed = 0;
     const viewOptions = document.querySelectorAll('[data-view]');
     const toggleAllEpics = document.querySelector('#toggle-all-epics');
     const toastRegion = document.querySelector('#toast-region');
@@ -515,6 +517,86 @@ export function mountBoard(root, boardId) {
             .forEach(column => column.classList.remove('is-drag-over'));
     }
 
+    function stopDragAutoScroll() {
+        if (dragScrollFrame !== null) {
+            window.cancelAnimationFrame(dragScrollFrame);
+        }
+
+        dragScrollFrame = null;
+        dragScrollSpeed = 0;
+        board.classList.remove(
+            'is-auto-scrolling-left',
+            'is-auto-scrolling-right'
+        );
+    }
+
+    function runDragAutoScroll() {
+        if (!state.draggedCards.length || dragScrollSpeed === 0) {
+            stopDragAutoScroll();
+            return;
+        }
+
+        const maximum = board.scrollWidth - board.clientWidth;
+        const next = Math.max(
+            0,
+            Math.min(maximum, board.scrollLeft + dragScrollSpeed)
+        );
+
+        if (next === board.scrollLeft) {
+            stopDragAutoScroll();
+            return;
+        }
+
+        board.scrollLeft = next;
+        dragScrollFrame = window.requestAnimationFrame(runDragAutoScroll);
+    }
+
+    function updateDragAutoScroll(clientX) {
+        if (!state.draggedCards.length) {
+            stopDragAutoScroll();
+            return;
+        }
+
+        const edgeSize = Math.min(110, board.clientWidth * .18);
+        const bounds = board.getBoundingClientRect();
+        const maximum = board.scrollWidth - board.clientWidth;
+        let direction = 0;
+        let intensity = 0;
+
+        if (clientX < bounds.left + edgeSize && board.scrollLeft > 0) {
+            direction = -1;
+            intensity = (bounds.left + edgeSize - clientX) / edgeSize;
+        } else if (
+            clientX > bounds.right - edgeSize
+            && board.scrollLeft < maximum
+        ) {
+            direction = 1;
+            intensity = (clientX - (bounds.right - edgeSize)) / edgeSize;
+        }
+
+        if (direction === 0) {
+            stopDragAutoScroll();
+            return;
+        }
+
+        dragScrollSpeed = direction * Math.max(
+            2,
+            Math.round(26 * Math.min(1, intensity) ** 2)
+        );
+        board.classList.toggle(
+            'is-auto-scrolling-left',
+            direction < 0
+        );
+        board.classList.toggle(
+            'is-auto-scrolling-right',
+            direction > 0
+        );
+
+        if (dragScrollFrame === null) {
+            dragScrollFrame = window.requestAnimationFrame(runDragAutoScroll);
+        }
+    }
+
     function clearIssueSelection() {
         state.selectedIssueKeys.clear();
         state.selectedColumnId = null;
@@ -605,6 +687,7 @@ export function mountBoard(root, boardId) {
 
         columnElement.addEventListener('drop', event => {
             event.preventDefault();
+            stopDragAutoScroll();
 
             const issues = state.draggedIssues;
             const cards = state.draggedCards;
@@ -1255,6 +1338,7 @@ export function mountBoard(root, boardId) {
                 item.classList.remove('is-dragging')
             );
             clearDropTargets();
+            stopDragAutoScroll();
             state.draggedIssue = null;
             state.draggedIssues = [];
             state.draggedCard = null;
@@ -2604,6 +2688,21 @@ export function mountBoard(root, boardId) {
     });
 
     restoreCollapsedEpics();
+
+    board.addEventListener('dragover', event => {
+        updateDragAutoScroll(event.clientX);
+    });
+    board.addEventListener('dragleave', event => {
+        const bounds = board.getBoundingClientRect();
+        const outside = event.clientX < bounds.left
+            || event.clientX > bounds.right
+            || event.clientY < bounds.top
+            || event.clientY > bounds.bottom;
+
+        if (outside) {
+            stopDragAutoScroll();
+        }
+    });
 
     search.addEventListener('input', () => renderBoard());
     epicFilterTrigger.addEventListener('click', event => {

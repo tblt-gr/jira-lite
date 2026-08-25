@@ -556,6 +556,15 @@ main {
     min-height: 0;
     overflow: auto;
     scrollbar-gutter: stable;
+    transition: box-shadow 120ms ease;
+}
+
+.board.is-auto-scrolling-left {
+    box-shadow: inset 24px 0 20px -22px var(--primary);
+}
+
+.board.is-auto-scrolling-right {
+    box-shadow: inset -24px 0 20px -22px var(--primary);
 }
 
 .board-group {
