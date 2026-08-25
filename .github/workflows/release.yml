@@ -1,0 +1,56 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+permissions:
+  contents: read
+  checks: read
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      checks: read
+      contents: write
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - name: Verify the release source
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          if [[ ! "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "Release tag must use the vMAJOR.MINOR.PATCH format" >&2
+            exit 1
+          fi
+
+          COMPARE_STATUS="$(gh api "repos/$GITHUB_REPOSITORY/compare/$GITHUB_SHA...main" --jq .status)"
+          if [ "$COMPARE_STATUS" != ahead ] && [ "$COMPARE_STATUS" != identical ]; then
+            echo "Release commit is not part of main" >&2
+            exit 1
+          fi
+
+          PACKAGE_VERSION="$(node -p "require('./package.json').version")"
+          if [ "$TAG" != "v$PACKAGE_VERSION" ]; then
+            echo "Release tag does not match package.json version $PACKAGE_VERSION" >&2
+            exit 1
+          fi
+
+          CI_CONCLUSION="$(gh api "repos/$GITHUB_REPOSITORY/commits/$GITHUB_SHA/check-runs" \
+            --jq '([.check_runs[] | select(.name == "CI gate")] | sort_by(.completed_at) | last | .conclusion) // ""')"
+          if [ "$CI_CONCLUSION" != success ]; then
+            echo "CI gate did not succeed for the release commit" >&2
+            exit 1
+          fi
+      - name: Create GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.ref_name }}
+        run: gh release create "$TAG" --title "$TAG" --generate-notes

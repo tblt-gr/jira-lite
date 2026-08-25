@@ -1,6 +1,7 @@
 {
     "name": "tblt-gr/jira-lite",
     "description": "A fast, lightweight interface for common Jira workflows.",
+    "version": "1.0.0",
     "type": "project",
     "license": "proprietary",
     "minimum-stability": "stable",
