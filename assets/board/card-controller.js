@@ -31,6 +31,7 @@ export function connectCard(card, issue, context) {
             'text/plain',
             context.state.drag.issues.map(item => item.key).join('\n')
         );
+        context.beginDragValidation();
     }, { signal: context.signal });
 
     card.addEventListener('dragend', () => {
@@ -38,6 +39,7 @@ export function connectCard(card, issue, context) {
             item.classList.remove('is-dragging')
         );
         context.clearDropTargets();
+        context.endDragValidation();
         context.stopAutoScroll();
         context.state.drag.issues = [];
         context.state.drag.card = null;

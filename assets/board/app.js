@@ -37,6 +37,7 @@ export function mountBoard(root, boardId) {
             cards: [],
             card: null,
             workflow: null,
+            allowedStatusIds: null,
             justDragged: false
         },
         selectedIssueKeys: new Set(),
@@ -459,6 +460,8 @@ export function mountBoard(root, boardId) {
             clearSelection: dragDrop.clearSelection,
             toggleSelection: dragDrop.toggleSelection,
             clearDropTargets: dragDrop.clearDropTargets,
+            beginDragValidation: dragDrop.beginDragValidation,
+            endDragValidation: dragDrop.endDragValidation,
             stopAutoScroll: dragDrop.stopAutoScroll,
             openIssue,
             signal: lifecycleController.signal,

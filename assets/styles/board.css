@@ -642,7 +642,8 @@ main {
     background-clip: padding-box;
     scrollbar-gutter: stable;
     scroll-snap-align: start;
-    transition: border-color 140ms ease, background 140ms ease;
+    transition: border-color 140ms ease, background 140ms ease,
+        opacity 140ms ease;
 }
 
 .board.is-grouped .column {
@@ -654,6 +655,11 @@ main {
 .column.is-drag-over {
     border-color: var(--primary);
     background: color-mix(in srgb, var(--primary) 10%, var(--column));
+}
+
+.column.is-drop-forbidden {
+    opacity: .45;
+    cursor: not-allowed;
 }
 
 .column.is-updating {

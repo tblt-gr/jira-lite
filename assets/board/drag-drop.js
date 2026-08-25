@@ -1,4 +1,5 @@
 import { api } from './api.js';
+import { createTransitionCache } from './transitions.js';
 
 export function createDragDrop(context) {
     const {
@@ -11,12 +12,84 @@ export function createDragDrop(context) {
     } = context;
     const lifecycleController = new AbortController();
     const listenerOptions = { signal: lifecycleController.signal };
+    const transitionCache = createTransitionCache();
+    const columnStatusIds = new WeakMap();
     let dragScrollFrame = null;
     let dragScrollSpeed = 0;
+    let dragToken = 0;
 
     function clearDropTargets() {
         board.querySelectorAll('.column.is-drag-over')
             .forEach(column => column.classList.remove('is-drag-over'));
+    }
+
+    function clearForbiddenTargets() {
+        board.querySelectorAll('.column.is-drop-forbidden')
+            .forEach(column => column.classList.remove('is-drop-forbidden'));
+    }
+
+    function acceptsStatuses(targetStatusIds) {
+        const allowed = state.drag.allowedStatusIds;
+
+        if (!allowed) {
+            return true;
+        }
+
+        return Array.from(targetStatusIds).some(id => allowed.has(id));
+    }
+
+    function markForbiddenColumns(allowed) {
+        const workflow = state.drag.workflow;
+
+        if (!workflow || !allowed) {
+            return;
+        }
+
+        const sourceStatusIds = new Set(state.drag.issues.map(issue =>
+            String(issue.fields?.status?.id || '')
+        ));
+
+        workflow.querySelectorAll('.column').forEach(columnElement => {
+            const statusIds = columnStatusIds.get(columnElement);
+
+            if (!statusIds) {
+                return;
+            }
+
+            const ids = Array.from(statusIds);
+            // La colonne d'origine reste neutre : le drop y est déjà ignoré.
+            const isSource = ids.some(id => sourceStatusIds.has(id));
+
+            columnElement.classList.toggle(
+                'is-drop-forbidden',
+                !isSource && !ids.some(id => allowed.has(id))
+            );
+        });
+    }
+
+    async function beginDragValidation() {
+        const token = ++dragToken;
+        const issues = state.drag.issues;
+        state.drag.allowedStatusIds = null;
+
+        if (!issues.length) {
+            return;
+        }
+
+        const allowed = await transitionCache.allowedStatusIds(issues);
+
+        if (token !== dragToken || !state.drag.issues.length) {
+            return;
+        }
+
+        state.drag.allowedStatusIds = allowed;
+        markForbiddenColumns(allowed);
+    }
+
+    function endDragValidation() {
+        ++dragToken;
+        state.drag.allowedStatusIds = null;
+        clearForbiddenTargets();
     }
 
     function stopDragAutoScroll() {
@@ -160,6 +233,7 @@ export function createDragDrop(context) {
         const targetStatusIds = new Set(
             (column.statuses || []).map(status => String(status.id))
         );
+        columnStatusIds.set(columnElement, targetStatusIds);
 
         columnElement.addEventListener('dragover', event => {
             const valid =
@@ -169,9 +243,11 @@ export function createDragDrop(context) {
                     !targetStatusIds.has(String(
                         issue.fields?.status?.id || ''
                     ))
-                );
+                ) &&
+                acceptsStatuses(targetStatusIds);
 
             if (!valid) {
+                columnElement.classList.remove('is-drag-over');
                 return;
             }
 
@@ -210,6 +286,10 @@ export function createDragDrop(context) {
             if (issues.some(issue => targetStatusIds.has(String(
                 issue.fields?.status?.id || ''
             )))) {
+                return;
+            }
+
+            if (!acceptsStatuses(targetStatusIds)) {
                 return;
             }
 
@@ -361,9 +441,11 @@ export function createDragDrop(context) {
     board.addEventListener('dragleave', handleBoardDragleave, listenerOptions);
 
     return {
+        beginDragValidation,
         clearDropTargets,
         clearSelection: clearIssueSelection,
         enableDropZone,
+        endDragValidation,
         stopAutoScroll: stopDragAutoScroll,
         toggleSelection: toggleIssueSelection,
         updateColumnCount,
@@ -371,6 +453,8 @@ export function createDragDrop(context) {
             lifecycleController.abort();
             stopDragAutoScroll();
             clearDropTargets();
+            endDragValidation();
+            transitionCache.clear();
         }
     };
 }
