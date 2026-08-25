@@ -1,0 +1,91 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+env:
+  APP_ENV: test
+  APP_SECRET: ci-dummy-secret
+  JIRA_BASE_URL: https://ci-dummy.atlassian.net
+  JIRA_EMAIL: ci-dummy@example.test
+  JIRA_API_TOKEN: ci-dummy-token
+
+jobs:
+  php:
+    name: PHP ${{ matrix.php-version }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        php-version: ['8.2', '8.3']
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php-version }}
+          extensions: ctype, iconv, intl
+          coverage: pcov
+
+      - uses: ramsey/composer-install@v3
+
+      - name: composer validate
+        run: composer validate --strict --no-check-publish
+
+      - name: composer cs
+        run: composer cs
+
+      - name: phpstan
+        run: vendor/bin/phpstan analyse --no-progress
+
+      - name: lint:container
+        run: php bin/console lint:container
+
+      - name: lint:container (no-debug)
+        run: php bin/console lint:container --no-debug
+
+      - name: lint:yaml
+        run: php bin/console lint:yaml config
+
+      - name: lint:twig
+        run: php bin/console lint:twig templates
+
+      - name: lint:translations
+        run: php bin/console lint:translations --locale=fr
+
+      - name: phpunit
+        run: php bin/phpunit
+
+  js:
+    name: JavaScript
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+          cache: npm
+
+      - run: npm ci
+      - run: npm run lint
+      - run: npm test
+
+  docker:
+    name: Docker build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/setup-buildx-action@v3
+
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          target: frankenphp_prod
+          push: false
+          tags: jira-lite:ci
+          cache-from: type=gha
+          cache-to: type=gha,mode=max

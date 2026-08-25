@@ -1,5 +1,7 @@
 # Jira Lite
 
+[![CI](https://github.com/tblt-gr/jira-lite/actions/workflows/ci.yml/badge.svg)](https://github.com/tblt-gr/jira-lite/actions/workflows/ci.yml)
+
 Jira Lite is a fast, focused interface for everyday Jira board workflows. It avoids loading Jira's full user interface while retaining the essentials: board navigation, epic filtering, issue details, live updates, and workflow transitions.
 
 The application uses Symfony 7.4 on the server and lightweight JavaScript modules with Stimulus in the browser. Jira credentials remain on the server and are never exposed to the client.
