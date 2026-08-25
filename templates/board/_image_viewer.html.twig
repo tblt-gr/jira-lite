@@ -1,0 +1,34 @@
+<dialog id="image-viewer" class="image-viewer">
+    <div class="image-viewer-head">
+        <span id="image-viewer-title" class="image-viewer-title"></span>
+        <div class="image-viewer-actions">
+            <a
+                id="image-viewer-open"
+                class="open-issue-button"
+                target="_blank"
+                rel="noopener noreferrer"
+            >{{ 'issue.open'|trans }}
+                <svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M14 5h5v5M19 5l-9 9" />
+                    <path d="M19 13v5a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h5" />
+                </svg>
+            </a>
+            <button
+                id="image-viewer-close"
+                type="button"
+                aria-label="{{ 'common.close'|trans }}"
+                title="{{ 'common.close'|trans }}"
+            >
+                <svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M6 6l12 12M18 6 6 18" />
+                </svg>
+            </button>
+        </div>
+    </div>
+    <div class="image-viewer-body">
+        <img id="image-viewer-image" alt="">
+        <span id="image-viewer-unavailable" class="issue-image-unavailable" hidden>
+            {{ 'issue.preview_unavailable'|trans }}
+        </span>
+    </div>
+</dialog>

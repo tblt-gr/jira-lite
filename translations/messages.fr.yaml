@@ -160,6 +160,7 @@ issue.preview_unavailable: Prévisualisation indisponible
 issue.attached_file: Fichier joint
 issue.open_modal: Ouvrir {key} dans la modale
 issue.open_new_tab: Ouvrir {name} dans un nouvel onglet
+issue.expand_image: Agrandir {name}
 
 refresh.error_log: Échec du rafraîchissement du board.
 refresh.failed: Le rafraîchissement automatique a échoué.

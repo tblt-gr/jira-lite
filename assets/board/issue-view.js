@@ -3,6 +3,7 @@ import {
     jiraAttachmentMediaUrl,
     jiraMediaUrl
 } from './dom.js';
+import { createImageViewer } from './image-viewer.js';
 import {
     activeSprintNames,
     adfToSegments
@@ -15,6 +16,10 @@ import {
 export function createIssueView(context) {
     const { root, state, trans } = context;
     const listenerOptions = { signal: context.signal };
+    const imageViewer = createImageViewer({
+        root,
+        signal: context.signal
+    });
 
     function fieldValueByName(issue, pattern) {
         return selectFieldValueByName(
@@ -588,6 +593,12 @@ export function createIssueView(context) {
                     jiraMediaUrl(attachment.thumbnail),
                     jiraMediaUrl(attachment.content)
                 ].filter(Boolean)));
+                const fullSources = Array.from(new Set([
+                    attachmentContent,
+                    jiraMediaUrl(attachment.content),
+                    attachmentThumbnail,
+                    jiraMediaUrl(attachment.thumbnail)
+                ].filter(Boolean)));
                 let previewIndex = 0;
 
                 preview.className = 'issue-image-preview';
@@ -597,6 +608,31 @@ export function createIssueView(context) {
                     preview.target = '_blank';
                     preview.rel = 'noopener noreferrer';
                 }
+
+                preview.setAttribute(
+                    'aria-label',
+                    trans('issue.expand_image', {
+                        name: filename.textContent
+                    })
+                );
+                preview.addEventListener('click', event => {
+                    if (
+                        event.button !== 0 ||
+                        event.ctrlKey ||
+                        event.metaKey ||
+                        event.shiftKey ||
+                        event.altKey
+                    ) {
+                        return;
+                    }
+
+                    event.preventDefault();
+                    imageViewer.open({
+                        sources: fullSources,
+                        name: filename.textContent,
+                        href
+                    });
+                }, listenerOptions);
 
                 unavailable.className = 'issue-image-unavailable';
                 unavailable.textContent = trans(
