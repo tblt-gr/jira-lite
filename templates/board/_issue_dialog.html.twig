@@ -24,7 +24,7 @@
                 <input id="summary-input" name="summary" required maxlength="255">
                 <button
                     id="confirm-summary"
-                    class="quiet-icon-button"
+                    class="quiet-icon-button confirm-button"
                     type="submit"
                     hidden
                     title="{{ 'common.save'|trans }}"
@@ -71,17 +71,25 @@
                     </button>
                 </div>
                 <div id="issue-description" class="description"></div>
-                <form id="description-form" class="stacked-edit-form" hidden>
+                <form id="description-form" class="stacked-edit-form description-edit-form" hidden>
                     <textarea
                         id="description-input"
                         name="description"
                         rows="8"
                         placeholder="{{ 'dialog.description_placeholder'|trans }}"
                     ></textarea>
-                    <div class="inline-edit-actions">
-                        <button type="submit">{{ 'common.save'|trans }}</button>
-                        <button class="secondary-button" type="button" data-cancel-edit="description">{{ 'common.cancel'|trans }}</button>
-                    </div>
+                    <button
+                        id="confirm-description"
+                        class="quiet-icon-button confirm-button"
+                        type="submit"
+                        hidden
+                        title="{{ 'common.save'|trans }}"
+                        aria-label="{{ 'common.save'|trans }}"
+                    >
+                        <svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M4 12.5 9.5 18 20 6" />
+                        </svg>
+                    </button>
                 </form>
             </section>
 

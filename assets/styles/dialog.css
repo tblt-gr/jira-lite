@@ -553,7 +553,7 @@ a.issue-image-preview {
     opacity: 1;
 }
 
-#confirm-summary:not([hidden]) {
+.confirm-button:not([hidden]) {
     opacity: 1;
     color: var(--focus);
 }
@@ -675,6 +675,40 @@ a.issue-image-preview {
 
 .title-edit-form #summary-input:focus {
     box-shadow: 0 0 0 3px color-mix(in srgb, var(--focus) 13%, transparent);
+}
+
+.description-edit-form {
+    position: relative;
+    max-width: none;
+    margin: 0;
+    padding: 0;
+    border: none;
+    border-radius: 0;
+    background: transparent;
+}
+
+.description-edit-form #description-input {
+    width: 100%;
+    min-height: 70px;
+    border: none;
+    border-radius: var(--radius);
+    background: transparent;
+    padding: 2px 4px;
+    margin: -2px -4px;
+    padding-right: 38px;
+    color: var(--text-muted);
+    line-height: 1.65;
+    font: inherit;
+}
+
+.description-edit-form #description-input:focus {
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--focus) 13%, transparent);
+}
+
+.description-edit-form .confirm-button {
+    position: absolute;
+    right: 4px;
+    bottom: 4px;
 }
 
 .stacked-edit-form textarea,

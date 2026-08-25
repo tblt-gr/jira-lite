@@ -499,6 +499,7 @@ export function createIssueDialog(context) {
                 form: descriptionForm,
                 preview: descriptionElement,
                 trigger: root.querySelector('#edit-description'),
+                confirmTrigger: root.querySelector('#confirm-description'),
                 focus: descriptionInput
             },
             fields: {
