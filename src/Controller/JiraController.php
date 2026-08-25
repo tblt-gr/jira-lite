@@ -1,17 +1,31 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Controller;
 
 use App\Board\BoardSnapshotProvider;
 use App\Service\JiraApiService;
+
+use function array_key_exists;
+use function array_slice;
+
 use DateTimeImmutable;
-use Symfony\Contracts\Cache\CacheInterface;
-use Symfony\Contracts\Cache\ItemInterface;
-use Symfony\Contracts\Translation\TranslatorInterface;
+use Exception;
+use InvalidArgumentException;
+
+use function is_array;
+use function is_int;
+use function is_string;
+
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Contracts\Cache\CacheInterface;
+use Symfony\Contracts\Cache\ItemInterface;
+use Symfony\Contracts\Translation\TranslatorInterface;
+use Throwable;
 
 #[Route('/api/jira')]
 final class JiraController
@@ -35,7 +49,7 @@ final class JiraController
     {
         $sinceValue = $request->query->getString('since');
 
-        if ($sinceValue === '') {
+        if ('' === $sinceValue) {
             return new JsonResponse([
                 'error' => $this->translator->trans('api.since_required'),
             ], 400);
@@ -43,7 +57,7 @@ final class JiraController
 
         try {
             $since = new DateTimeImmutable($sinceValue);
-        } catch (\Exception) {
+        } catch (Exception) {
             return new JsonResponse([
                 'error' => $this->translator->trans('api.since_invalid'),
             ], 400);
@@ -70,15 +84,15 @@ final class JiraController
     {
         $url = $request->query->getString('url');
 
-        if ($url === '') {
+        if ('' === $url) {
             return new Response(status: Response::HTTP_BAD_REQUEST);
         }
 
         try {
             $media = $this->jira->getMedia($url);
-        } catch (\InvalidArgumentException) {
+        } catch (InvalidArgumentException) {
             return new Response(status: Response::HTTP_BAD_REQUEST);
-        } catch (\Throwable) {
+        } catch (Throwable) {
             return new Response(status: Response::HTTP_BAD_GATEWAY);
         }
 
@@ -106,11 +120,11 @@ final class JiraController
         try {
             $media = $this->jira->getAttachmentImage(
                 $attachmentId,
-                $variant === 'thumbnail'
+                'thumbnail' === $variant
             );
-        } catch (\InvalidArgumentException) {
+        } catch (InvalidArgumentException) {
             return new Response(status: Response::HTTP_BAD_REQUEST);
-        } catch (\Throwable) {
+        } catch (Throwable) {
             return new Response(status: Response::HTTP_BAD_GATEWAY);
         }
 
@@ -149,7 +163,7 @@ final class JiraController
                 'accountId' => $currentUser['accountId'] ?? null,
                 'displayName' => $currentUser['displayName'] ?? null,
             ];
-        } catch (\Throwable) {
+        } catch (Throwable) {
             $response['currentUser'] = null;
         }
 
@@ -161,7 +175,7 @@ final class JiraController
     {
         $query = trim($request->query->getString('query'));
 
-        if ($query === '' || mb_strlen($query) > 80) {
+        if ('' === $query || mb_strlen($query) > 80) {
             return new JsonResponse(['users' => []]);
         }
 
@@ -181,7 +195,7 @@ final class JiraController
         if (array_key_exists('summary', $data)) {
             $summary = trim((string) $data['summary']);
 
-            if ($summary === '' || mb_strlen($summary) > 255) {
+            if ('' === $summary || mb_strlen($summary) > 255) {
                 return new JsonResponse([
                     'error' => $this->translator->trans('api.summary_length'),
                 ], 400);
@@ -192,7 +206,7 @@ final class JiraController
 
         if (array_key_exists('description', $data)) {
             $description = trim((string) $data['description']);
-            $fields['description'] = $description === ''
+            $fields['description'] = '' === $description
                 ? null
                 : $this->jira->plainTextDocument($description);
         }
@@ -209,7 +223,7 @@ final class JiraController
                     static fn (mixed $label): string => trim((string) $label),
                     $data['labels']
                 ),
-                static fn (string $label): bool => $label !== ''
+                static fn (string $label): bool => '' !== $label
             )));
         }
 
@@ -217,7 +231,7 @@ final class JiraController
             $dueDate = trim((string) $data['dueDate']);
 
             if (
-                $dueDate !== ''
+                '' !== $dueDate
                 && !preg_match('/^\d{4}-\d{2}-\d{2}$/', $dueDate)
             ) {
                 return new JsonResponse([
@@ -227,7 +241,7 @@ final class JiraController
                 ], 400);
             }
 
-            $fields['duedate'] = $dueDate === '' ? null : $dueDate;
+            $fields['duedate'] = '' === $dueDate ? null : $dueDate;
         }
 
         $timeTracking = [];
@@ -242,7 +256,7 @@ final class JiraController
 
             $value = trim((string) $data[$input]);
 
-            if ($value !== '' && !$this->isJiraDuration($value)) {
+            if ('' !== $value && !$this->isJiraDuration($value)) {
                 return new JsonResponse([
                     'error' => $this->translator->trans(
                         'api.duration_invalid',
@@ -251,16 +265,16 @@ final class JiraController
                 ], 400);
             }
 
-            if ($value !== '') {
+            if ('' !== $value) {
                 $timeTracking[$jiraField] = $value;
             }
         }
 
-        if ($timeTracking !== []) {
+        if ([] !== $timeTracking) {
             $fields['timetracking'] = $timeTracking;
         }
 
-        if ($fields === []) {
+        if ([] === $fields) {
             return new JsonResponse([
                 'error' => $this->translator->trans('api.no_editable_field'),
             ], 400);
@@ -279,7 +293,7 @@ final class JiraController
         $data = $request->toArray();
         $comment = trim((string) ($data['comment'] ?? ''));
 
-        if ($comment === '') {
+        if ('' === $comment) {
             return new JsonResponse([
                 'error' => $this->translator->trans('api.empty_comment'),
             ], 400);
@@ -308,7 +322,7 @@ final class JiraController
         $data = $request->toArray();
         $comment = trim((string) ($data['comment'] ?? ''));
 
-        if ($comment === '') {
+        if ('' === $comment) {
             return new JsonResponse([
                 'error' => $this->translator->trans('api.empty_comment'),
             ], 400);
@@ -357,7 +371,7 @@ final class JiraController
             $this->jira->addIssueWorklog(
                 $issueKey,
                 $timeSpent,
-                $comment === '' ? null : $comment
+                '' === $comment ? null : $comment
             ),
             201
         );
@@ -371,7 +385,7 @@ final class JiraController
         $data = $request->toArray();
         $transitionId = $data['transitionId'] ?? null;
 
-        if (!is_string($transitionId) || $transitionId === '') {
+        if (!is_string($transitionId) || '' === $transitionId) {
             return new JsonResponse([
                 'error' => $this->translator->trans(
                     'api.transition_required'
@@ -396,7 +410,7 @@ final class JiraController
 
     private function isJiraDuration(string $value): bool
     {
-        return $value !== '' && (bool) preg_match(
+        return '' !== $value && (bool) preg_match(
             '/^(?:\d+\s*[wdhm]\s*)+$/i',
             $value
         );
@@ -404,6 +418,7 @@ final class JiraController
 
     /**
      * @param array<string, mixed> $data
+     *
      * @return list<array{accountId: string, text: string}>
      */
     private function mentionsFromRequest(array $data): array
@@ -423,8 +438,8 @@ final class JiraController
             $text = trim((string) ($mention['text'] ?? ''));
 
             if (
-                $accountId === ''
-                || $text === ''
+                '' === $accountId
+                || '' === $text
                 || !str_starts_with($text, '@')
                 || mb_strlen($accountId) > 255
                 || mb_strlen($text) > 160

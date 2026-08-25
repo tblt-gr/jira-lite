@@ -1,6 +1,27 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Jira;
+
+use function dirname;
+
+use const FILEINFO_MIME_TYPE;
+
+use finfo;
+
+use function in_array;
+
+use InvalidArgumentException;
+
+use function is_string;
+
+use const PHP_URL_SCHEME;
+
+use RuntimeException;
+
+use function sprintf;
+use function strlen;
 
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
@@ -30,10 +51,8 @@ final class JiraMediaProxy
         string $attachmentId,
         bool $thumbnail,
     ): array {
-        if ($attachmentId === '' || !ctype_digit($attachmentId)) {
-            throw new \InvalidArgumentException(
-                $this->translator->trans('media.invalid_attachment')
-            );
+        if ('' === $attachmentId || !ctype_digit($attachmentId)) {
+            throw new InvalidArgumentException($this->translator->trans('media.invalid_attachment'));
         }
 
         $path = $thumbnail
@@ -77,10 +96,8 @@ final class JiraMediaProxy
             if ($status >= 300 && $status < 400) {
                 $location = $headers['location'][0] ?? null;
 
-                if (!is_string($location) || $location === '') {
-                    throw new \RuntimeException(
-                        $this->translator->trans('media.invalid_redirect')
-                    );
+                if (!is_string($location) || '' === $location) {
+                    throw new RuntimeException($this->translator->trans('media.invalid_redirect'));
                 }
 
                 $url = $this->resolveMediaRedirect($url, $location);
@@ -88,9 +105,7 @@ final class JiraMediaProxy
             }
 
             if ($status < 200 || $status >= 300) {
-                throw new \RuntimeException(
-                    $this->translator->trans('media.unavailable')
-                );
+                throw new RuntimeException($this->translator->trans('media.unavailable'));
             }
 
             $contentType = strtolower(trim(explode(
@@ -100,22 +115,18 @@ final class JiraMediaProxy
             $declaredSize = (int) ($headers['content-length'][0] ?? 0);
 
             if ($declaredSize > self::MAX_MEDIA_SIZE) {
-                throw new \RuntimeException(
-                    $this->translator->trans('media.too_large')
-                );
+                throw new RuntimeException($this->translator->trans('media.too_large'));
             }
 
             $content = $response->getContent(false);
 
             if (strlen($content) > self::MAX_MEDIA_SIZE) {
-                throw new \RuntimeException(
-                    $this->translator->trans('media.too_large')
-                );
+                throw new RuntimeException($this->translator->trans('media.too_large'));
             }
 
             if (!in_array($contentType, self::IMAGE_CONTENT_TYPES, true)) {
-                $detectedType = class_exists(\finfo::class)
-                    ? (new \finfo(FILEINFO_MIME_TYPE))->buffer($content)
+                $detectedType = class_exists(finfo::class)
+                    ? (new finfo(FILEINFO_MIME_TYPE))->buffer($content)
                     : false;
 
                 if (
@@ -126,9 +137,7 @@ final class JiraMediaProxy
                         true
                     )
                 ) {
-                    throw new \RuntimeException(
-                        $this->translator->trans('media.type_not_allowed')
-                    );
+                    throw new RuntimeException($this->translator->trans('media.type_not_allowed'));
                 }
 
                 $contentType = $detectedType;
@@ -137,9 +146,7 @@ final class JiraMediaProxy
             return ['content' => $content, 'contentType' => $contentType];
         }
 
-        throw new \RuntimeException(
-            $this->translator->trans('media.too_many_redirects')
-        );
+        throw new RuntimeException($this->translator->trans('media.too_many_redirects'));
     }
 
     public function isAllowedUrl(string $url): bool
@@ -157,7 +164,7 @@ final class JiraMediaProxy
         $baseHost = strtolower((string) ($baseParts['host'] ?? ''));
         $port = $parts['port'] ?? null;
         $basePort = $baseParts['port'] ?? null;
-        $isJiraHost = $host !== ''
+        $isJiraHost = '' !== $host
             && hash_equals($baseHost, $host)
             && $scheme === $baseScheme
             && $port === $basePort;
@@ -166,10 +173,8 @@ final class JiraMediaProxy
             return true;
         }
 
-        if ($scheme !== 'https' || $port !== null) {
-            throw new \InvalidArgumentException(
-                $this->translator->trans('media.url_not_allowed')
-            );
+        if ('https' !== $scheme || null !== $port) {
+            throw new InvalidArgumentException($this->translator->trans('media.url_not_allowed'));
         }
 
         if (in_array($host, self::MEDIA_HOSTS, true)) {
@@ -182,14 +187,12 @@ final class JiraMediaProxy
             }
         }
 
-        throw new \InvalidArgumentException(
-            $this->translator->trans('media.domain_not_allowed')
-        );
+        throw new InvalidArgumentException($this->translator->trans('media.domain_not_allowed'));
     }
 
     private function resolveMediaRedirect(string $source, string $location): string
     {
-        if (parse_url($location, PHP_URL_SCHEME) !== null) {
+        if (null !== parse_url($location, PHP_URL_SCHEME)) {
             return $location;
         }
 

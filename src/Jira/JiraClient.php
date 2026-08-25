@@ -1,6 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Jira;
+
+use function count;
+use function is_array;
 
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 use Symfony\Contracts\HttpClient\ResponseInterface;
@@ -71,7 +76,7 @@ final class JiraClient
                 );
                 $hasMore = count($pageIssues) >= $pageSize;
             }
-        } while ($pageIssues !== [] && $hasMore);
+        } while ([] !== $pageIssues && $hasMore);
 
         $lastPage['issues'] = $issues;
         $lastPage['startAt'] = 0;
@@ -84,7 +89,7 @@ final class JiraClient
     /** @return array<string, mixed> */
     private function decode(ResponseInterface $response): array
     {
-        if ($response->getStatusCode() === 204) {
+        if (204 === $response->getStatusCode()) {
             return [];
         }
 

@@ -1,14 +1,17 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Controller;
 
 use App\Service\JiraApiService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Contracts\Cache\CacheInterface;
 use Symfony\Contracts\Cache\ItemInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
-use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\Attribute\Route;
+use Throwable;
 
 final class AppController extends AbstractController
 {
@@ -21,14 +24,14 @@ final class AppController extends AbstractController
         try {
             $boards = $cache->get(
                 'jira.boards',
-                function (ItemInterface $item) use ($jira): array {
+                static function (ItemInterface $item) use ($jira): array {
                     $item->expiresAfter(300);
 
                     return $jira->getBoards();
                 }
             );
             $error = null;
-        } catch (\Throwable) {
+        } catch (Throwable) {
             $boards = [];
             $error = $translator->trans('home.load_error');
         }

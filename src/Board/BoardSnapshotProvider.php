@@ -1,10 +1,19 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Board;
 
-use App\Service\JiraApiService;
 use App\Jira\JiraViewMapper;
+use App\Service\JiraApiService;
+
+use const DATE_ATOM;
+
 use DateTimeImmutable;
+
+use function is_array;
+use function sprintf;
+
 use Symfony\Contracts\Cache\CacheInterface;
 use Symfony\Contracts\Cache\ItemInterface;
 
@@ -126,8 +135,8 @@ final class BoardSnapshotProvider
             foreach ($sprints as $sprint) {
                 if (
                     is_array($sprint)
-                    && strtolower((string) ($sprint['state'] ?? ''))
-                        === 'active'
+                    && 'active'
+                        === strtolower((string) ($sprint['state'] ?? ''))
                 ) {
                     return true;
                 }

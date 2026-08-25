@@ -1,11 +1,20 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Service;
 
 use App\Jira\JiraClient;
 use App\Jira\JiraMediaProxy;
+
+use function count;
+
 use DateTimeImmutable;
 use DateTimeZone;
+
+use function is_array;
+use function sprintf;
+use function strlen;
 
 final class JiraApiService
 {
@@ -51,11 +60,11 @@ final class JiraApiService
             }
 
             $startAt += count($values);
-            $isLast = (bool)($page['isLast'] ?? false);
-            $total = isset($page['total']) ? (int)$page['total'] : null;
+            $isLast = (bool) ($page['isLast'] ?? false);
+            $total = isset($page['total']) ? (int) $page['total'] : null;
             $hasMore = !$isLast
-                && $values !== []
-                && ($total === null || $startAt < $total);
+                && [] !== $values
+                && (null === $total || $startAt < $total);
         } while ($hasMore);
 
         return $boards;
@@ -162,8 +171,8 @@ final class JiraApiService
             }
 
             $startAt += count($pageComments);
-            $total = (int)($page['total'] ?? $startAt);
-        } while ($pageComments !== [] && $startAt < $total);
+            $total = (int) ($page['total'] ?? $startAt);
+        } while ([] !== $pageComments && $startAt < $total);
 
         return [
             'startAt' => 0,
@@ -200,7 +209,7 @@ final class JiraApiService
             $accountId = trim((string) ($user['accountId'] ?? ''));
             $displayName = trim((string) ($user['displayName'] ?? ''));
 
-            if ($accountId === '' || $displayName === '') {
+            if ('' === $accountId || '' === $displayName) {
                 continue;
             }
 
@@ -301,7 +310,7 @@ final class JiraApiService
             'timeSpent' => $timeSpent,
         ];
 
-        if ($comment !== null && $comment !== '') {
+        if (null !== $comment && '' !== $comment) {
             $payload['comment'] = $this->plainTextDocument($comment);
         }
 
@@ -380,13 +389,14 @@ final class JiraApiService
 
     /**
      * @param list<array{accountId: string, text: string}> $mentions
+     *
      * @return list<array<string, mixed>>
      */
     private function plainTextInlineContent(
         string $text,
         array $mentions,
     ): array {
-        if ($text === '') {
+        if ('' === $text) {
             return [];
         }
 
@@ -400,15 +410,15 @@ final class JiraApiService
             foreach ($mentions as $mention) {
                 $mentionText = (string) ($mention['text'] ?? '');
 
-                if ($mentionText === '') {
+                if ('' === $mentionText) {
                     continue;
                 }
 
                 $position = strpos($text, $mentionText, $cursor);
 
                 if (
-                    $position !== false
-                    && ($next === null || $position < $next['position'])
+                    false !== $position
+                    && (null === $next || $position < $next['position'])
                 ) {
                     $next = [
                         'position' => $position,
@@ -418,7 +428,7 @@ final class JiraApiService
                 }
             }
 
-            if ($next === null) {
+            if (null === $next) {
                 $content[] = [
                     'type' => 'text',
                     'text' => substr($text, $cursor),

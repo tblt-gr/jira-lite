@@ -1,8 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Tests\Jira;
 
 use App\Jira\JiraMediaProxy;
+use InvalidArgumentException;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpClient\MockHttpClient;
@@ -29,7 +32,7 @@ final class JiraMediaProxyTest extends TestCase
 
     public function testItRejectsUnknownHosts(): void
     {
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(InvalidArgumentException::class);
 
         $this->proxy()->isAllowedUrl('https://example.org/image.png');
     }

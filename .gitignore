@@ -7,6 +7,7 @@
 /.env.local.php
 /.env.*.local
 /config/secrets/*
+/config/reference.php
 /public/bundles/
 /var/
 /vendor/
@@ -21,3 +22,8 @@
 /phpunit.xml
 /.phpunit.cache/
 ###< phpunit/phpunit ###
+
+###> friendsofphp/php-cs-fixer ###
+/.php-cs-fixer.php
+/.php-cs-fixer.cache
+###< friendsofphp/php-cs-fixer ###

@@ -1,8 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Tests\Jira;
 
 use App\Jira\JiraClient;
+
+use const JSON_THROW_ON_ERROR;
+
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpClient\MockHttpClient;
 use Symfony\Component\HttpClient\Response\MockResponse;
@@ -12,7 +17,7 @@ final class JiraClientTest extends TestCase
     public function testItPaginatesBoardIssues(): void
     {
         $requests = 0;
-        $http = new MockHttpClient(function () use (&$requests): MockResponse {
+        $http = new MockHttpClient(static function () use (&$requests): MockResponse {
             ++$requests;
 
             return new MockResponse(json_encode([

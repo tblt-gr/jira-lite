@@ -1,6 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Jira;
+
+use function is_array;
 
 final class JiraViewMapper
 {
@@ -21,6 +25,7 @@ final class JiraViewMapper
 
     /**
      * @param array<string, mixed> $response
+     *
      * @return array<string, mixed>
      */
     public function boardIssues(array $response): array
@@ -44,6 +49,7 @@ final class JiraViewMapper
     /**
      * @param array<string, mixed> $issue
      * @param array<string, mixed> $names
+     *
      * @return array<string, mixed>
      */
     public function boardIssue(array $issue, array $names = []): array
@@ -71,6 +77,6 @@ final class JiraViewMapper
             'key' => $issue['key'] ?? null,
             'self' => $issue['self'] ?? null,
             'fields' => array_intersect_key($sourceFields, $allowedFields),
-        ], static fn (mixed $value): bool => $value !== null);
+        ], static fn (mixed $value): bool => null !== $value);
     }
 }

@@ -62,8 +62,11 @@
             "@php bin/console lint:container",
             "@php bin/console lint:translations --locale=fr",
             "@php bin/console lint:yaml config",
-            "@php bin/console lint:twig templates"
+            "@php bin/console lint:twig templates",
+            "@cs"
         ],
+        "cs": "@php vendor/bin/php-cs-fixer fix --dry-run --diff",
+        "cs-fix": "@php vendor/bin/php-cs-fixer fix",
         "test": [
             "@php bin/phpunit",
             "node --test tests/js/*.test.mjs"
@@ -90,6 +93,7 @@
         }
     },
     "require-dev": {
+        "friendsofphp/php-cs-fixer": "^3.95",
         "phpunit/phpunit": "^11.5"
     }
 }
