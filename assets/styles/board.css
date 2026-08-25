@@ -705,6 +705,7 @@ main {
 }
 
 .column-head {
+    user-select: none;
     min-height: 34px;
     margin: -8px -8px 8px;
     padding: 10px 10px 8px;
