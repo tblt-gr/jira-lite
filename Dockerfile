@@ -1,7 +1,7 @@
 #syntax=docker/dockerfile:1
 
 # Base image with FrankenPHP and PHP 8.3 on Alpine Linux
-FROM dunglas/frankenphp:1-php8.3-alpine AS frankenphp_base
+FROM dunglas/frankenphp:1-php8.5-alpine AS frankenphp_base
 
 WORKDIR /app
 

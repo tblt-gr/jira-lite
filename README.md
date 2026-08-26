@@ -8,7 +8,7 @@ The application uses Symfony 7.4 on the server and lightweight JavaScript module
 
 ## Requirements
 
-- PHP 8.2 or later
+- PHP 8.5 or later
 - Composer
 - A Jira Cloud account with an API token
 
