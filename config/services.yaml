@@ -25,3 +25,9 @@ services:
             $apiToken: '%jira.api_token%'
 
     Symfony\Component\Security\Http\EventListener\IsCsrfTokenValidAttributeListener: ~
+
+    App\Logger\SecretRedactingProcessor:
+        arguments:
+            $apiToken: '%jira.api_token%'
+        tags:
+            - { name: monolog.processor }

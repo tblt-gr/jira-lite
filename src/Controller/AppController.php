@@ -10,6 +10,7 @@ use Collator;
 use function is_int;
 use function is_string;
 
+use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -20,6 +21,10 @@ use Throwable;
 
 final class AppController extends AbstractController
 {
+    public function __construct(private readonly LoggerInterface $logger)
+    {
+    }
+
     #[Route('/', name: 'app_home', methods: ['GET'])]
     public function index(
         JiraApiService $jira,
@@ -29,7 +34,10 @@ final class AppController extends AbstractController
         try {
             $boards = $this->boards($jira, $cache);
             $error = null;
-        } catch (Throwable) {
+        } catch (Throwable $exception) {
+            $this->logger->error('Unable to load Jira boards.', [
+                'exception' => $exception,
+            ]);
             $boards = [];
             $error = $translator->trans('home.load_error');
         }
@@ -53,7 +61,10 @@ final class AppController extends AbstractController
     ): Response {
         try {
             $boards = $this->boards($jira, $cache);
-        } catch (Throwable) {
+        } catch (Throwable $exception) {
+            $this->logger->error('Unable to load Jira boards.', [
+                'exception' => $exception,
+            ]);
             $boards = [];
         }
 

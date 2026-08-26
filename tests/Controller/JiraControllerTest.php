@@ -15,6 +15,7 @@ use const JSON_THROW_ON_ERROR;
 
 use LogicException;
 use PHPUnit\Framework\TestCase;
+use Psr\Log\NullLogger;
 use Symfony\Component\Cache\Adapter\ArrayAdapter;
 use Symfony\Component\HttpClient\MockHttpClient;
 use Symfony\Component\HttpClient\Response\MockResponse;
@@ -54,7 +55,8 @@ final class JiraControllerTest extends TestCase
             $jira,
             $cache,
             new BoardSnapshotProvider($jira, $cache, new JiraViewMapper()),
-            new Translator('fr')
+            new Translator('fr'),
+            new NullLogger()
         );
         $request = Request::create(
             '/api/jira/issue/APP-1/transition',
@@ -252,7 +254,8 @@ final class JiraControllerTest extends TestCase
             $jira,
             $cache,
             new BoardSnapshotProvider($jira, $cache, new JiraViewMapper()),
-            new Translator('fr')
+            new Translator('fr'),
+            new NullLogger()
         );
     }
 }

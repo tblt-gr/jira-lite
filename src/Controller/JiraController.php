@@ -17,6 +17,9 @@ use InvalidArgumentException;
 use function is_array;
 use function is_int;
 use function is_string;
+
+use Psr\Log\LoggerInterface;
+
 use function sprintf;
 
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -37,6 +40,7 @@ final class JiraController
         private readonly CacheInterface $cache,
         private readonly BoardSnapshotProvider $snapshots,
         private readonly TranslatorInterface $translator,
+        private readonly LoggerInterface $logger,
     ) {
     }
 
@@ -261,7 +265,10 @@ final class JiraController
                 'accountId' => $currentUser['accountId'] ?? null,
                 'displayName' => $currentUser['displayName'] ?? null,
             ];
-        } catch (Throwable) {
+        } catch (Throwable $exception) {
+            $this->logger->error('Unable to resolve the current Jira user.', [
+                'exception' => $exception,
+            ]);
             $response['currentUser'] = null;
         }
 
