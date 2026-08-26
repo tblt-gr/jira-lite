@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
-use App\Service\JiraApiService;
+use App\Jira\Repository\BoardRepository;
 use Collator;
 
 use function is_int;
@@ -27,7 +27,7 @@ final class AppController extends AbstractController
 
     #[Route('/', name: 'app_home', methods: ['GET'])]
     public function index(
-        JiraApiService $jira,
+        BoardRepository $jira,
         CacheInterface $cache,
         TranslatorInterface $translator,
     ): Response {
@@ -56,7 +56,7 @@ final class AppController extends AbstractController
     )]
     public function board(
         int $boardId,
-        JiraApiService $jira,
+        BoardRepository $jira,
         CacheInterface $cache,
     ): Response {
         try {
@@ -78,7 +78,7 @@ final class AppController extends AbstractController
      * @return list<array<string, mixed>>
      */
     private function boards(
-        JiraApiService $jira,
+        BoardRepository $jira,
         CacheInterface $cache,
     ): array {
         /** @var list<array<string, mixed>> $boards */

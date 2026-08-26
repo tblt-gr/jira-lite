@@ -8,7 +8,7 @@ use App\Board\BoardSnapshotProvider;
 use App\Jira\JiraClient;
 use App\Jira\JiraMediaProxy;
 use App\Jira\JiraViewMapper;
-use App\Service\JiraApiService;
+use App\Jira\Repository\BoardRepository;
 
 use const JSON_THROW_ON_ERROR;
 
@@ -38,7 +38,7 @@ final class BoardSnapshotProviderTest extends TestCase
                 'total' => 1,
             ]),
         ]);
-        $jira = new JiraApiService(
+        $jira = new BoardRepository(
             new JiraClient(
                 $http,
                 'https://jira.example.test',

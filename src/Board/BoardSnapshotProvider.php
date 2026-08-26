@@ -7,7 +7,7 @@ namespace App\Board;
 use App\Jira\Dto\BoardIssue;
 use App\Jira\Dto\BoardSnapshot;
 use App\Jira\JiraViewMapper;
-use App\Service\JiraApiService;
+use App\Jira\Repository\BoardRepository;
 
 use const DATE_ATOM;
 
@@ -22,7 +22,7 @@ use Symfony\Contracts\Cache\ItemInterface;
 final class BoardSnapshotProvider
 {
     public function __construct(
-        private readonly JiraApiService $jira,
+        private readonly BoardRepository $jira,
         private readonly CacheInterface $cache,
         private readonly JiraViewMapper $mapper,
     ) {

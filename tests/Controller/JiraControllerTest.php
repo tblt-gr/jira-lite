@@ -9,7 +9,7 @@ use App\Controller\JiraController;
 use App\Jira\JiraClient;
 use App\Jira\JiraMediaProxy;
 use App\Jira\JiraViewMapper;
-use App\Service\JiraApiService;
+use App\Jira\Repository\BoardRepository;
 
 use const JSON_THROW_ON_ERROR;
 
@@ -35,7 +35,7 @@ final class JiraControllerTest extends TestCase
                 ],
             ], JSON_THROW_ON_ERROR)),
         ]);
-        $jira = new JiraApiService(
+        $jira = new BoardRepository(
             new JiraClient(
                 $http,
                 'https://jira.example.test',
@@ -237,7 +237,7 @@ final class JiraControllerTest extends TestCase
 
     private function createController(MockHttpClient $http): JiraController
     {
-        $jira = new JiraApiService(
+        $jira = new BoardRepository(
             new JiraClient(
                 $http,
                 'https://jira.example.test',

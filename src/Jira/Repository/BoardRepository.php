@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Service;
+namespace App\Jira\Repository;
 
 use App\Jira\JiraClient;
 use App\Jira\JiraMediaProxy;
@@ -17,7 +17,7 @@ use function is_array;
 use function sprintf;
 use function strlen;
 
-final class JiraApiService
+final class BoardRepository
 {
     private const PAGE_SIZE = 100;
 

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use App\Board\BoardSnapshotProvider;
-use App\Service\JiraApiService;
+use App\Jira\Repository\BoardRepository;
 
 use function array_key_exists;
 use function array_slice;
@@ -36,7 +36,7 @@ use Throwable;
 final class JiraController
 {
     public function __construct(
-        private readonly JiraApiService $jira,
+        private readonly BoardRepository $jira,
         private readonly CacheInterface $cache,
         private readonly BoardSnapshotProvider $snapshots,
         private readonly TranslatorInterface $translator,
