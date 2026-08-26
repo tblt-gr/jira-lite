@@ -205,6 +205,7 @@ export function createBoardView(context) {
                 const head = document.createElement('div');
                 head.className = 'column-head';
                 const title = document.createElement('span');
+                title.className = 'column-title';
                 title.textContent = column.name;
                 const columnIssues = group.issues.filter(issue =>
                     model.statusToColumn.get(
@@ -224,7 +225,9 @@ export function createBoardView(context) {
                 columnIssues.forEach(issue => {
                     wrapper.append(context.createCard(
                         issue,
-                        context.epicForIssue(issue, model.epics)
+                        isCollapsible
+                            ? null
+                            : context.epicForIssue(issue, model.epics)
                     ));
                 });
                 workflow.append(wrapper);

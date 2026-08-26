@@ -257,6 +257,25 @@ export function mountBoard(root, boardId) {
         state.view = value === 'board' ? 'board' : 'epic';
     }
 
+    /**
+     * Un board sans epic (ou avec un seul) n'a rien à grouper :
+     * on bascule alors sur la vue board unique.
+     */
+    function forceSingleBoardWithoutEpics() {
+        if (availableEpics().length > 1 || state.view === 'board') {
+            return;
+        }
+
+        state.view = 'board';
+
+        const url = new URL(window.location.href);
+
+        if (url.searchParams.get('view') !== 'board') {
+            url.searchParams.set('view', 'board');
+            window.history.replaceState({}, '', url);
+        }
+    }
+
     function updateViewButtons() {
         viewOptions.forEach(button => {
             const active = button.dataset.view === state.view;
@@ -617,6 +636,7 @@ export function mountBoard(root, boardId) {
                 currentSprintName(state.data.issues?.issues || []);
 
             restoreViewFromUrl();
+            forceSingleBoardWithoutEpics();
             renderEpics();
             restoreFiltersFromUrl();
             renderFilters();
@@ -784,6 +804,7 @@ export function mountBoard(root, boardId) {
     function handlePopstate() {
         if (state.data) {
             restoreViewFromUrl();
+            forceSingleBoardWithoutEpics();
             restoreEpicsFromUrl();
             restoreFiltersFromUrl();
             renderFilters();
