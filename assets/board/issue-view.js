@@ -13,6 +13,8 @@ import {
     storyPoints
 } from './board-model.js';
 
+const PINNED_FIELDS_STORAGE_KEY = 'jira-lite:pinned-issue-fields';
+
 export function createIssueView(context) {
     const { root, state, trans } = context;
     const listenerOptions = { signal: context.signal };
@@ -33,7 +35,91 @@ export function createIssueView(context) {
         return context.openIssue(issueKey);
     }
 
-    function addIssueMeta(container, label, value, iconUrl = null) {
+    function readPinnedFieldKeys() {
+        try {
+            const storedValue = JSON.parse(
+                window.localStorage.getItem(PINNED_FIELDS_STORAGE_KEY) || '[]'
+            );
+
+            return Array.isArray(storedValue)
+                ? [...new Set(storedValue.filter(value =>
+                    typeof value === 'string'
+                ))]
+                : [];
+        } catch {
+            return [];
+        }
+    }
+
+    let pinnedFieldKeys = readPinnedFieldKeys();
+
+    function savePinnedFieldKeys() {
+        try {
+            window.localStorage.setItem(
+                PINNED_FIELDS_STORAGE_KEY,
+                JSON.stringify(pinnedFieldKeys)
+            );
+        } catch {
+            // The dialog remains usable when storage is unavailable.
+        }
+    }
+
+    function togglePinnedField(fieldKey) {
+        if (pinnedFieldKeys.includes(fieldKey)) {
+            pinnedFieldKeys = pinnedFieldKeys.filter(key => key !== fieldKey);
+        } else {
+            pinnedFieldKeys.push(fieldKey);
+        }
+
+        savePinnedFieldKeys();
+
+        if (state.issue) {
+            renderIssueFieldGroups(state.issue);
+        }
+    }
+
+    function createPinButton(fieldKey, label) {
+        const button = document.createElement('button');
+        const namespace = 'http://www.w3.org/2000/svg';
+        const svg = document.createElementNS(namespace, 'svg');
+        const pin = document.createElementNS(namespace, 'path');
+        const stem = document.createElementNS(namespace, 'path');
+        const isPinned = pinnedFieldKeys.includes(fieldKey);
+
+        button.type = 'button';
+        button.className = 'field-pin-button';
+        button.classList.toggle('is-pinned', isPinned);
+        button.setAttribute('aria-pressed', String(isPinned));
+        button.setAttribute(
+            'aria-label',
+            trans(isPinned ? 'dialog.unpin_field' : 'dialog.pin_field', {
+                field: label
+            })
+        );
+        button.title = button.getAttribute('aria-label');
+        svg.classList.add('ui-icon');
+        svg.setAttribute('viewBox', '0 0 24 24');
+        svg.setAttribute('aria-hidden', 'true');
+        pin.setAttribute('d', 'M9 3h6l-1 6 3 3v2H7v-2l3-3-1-6Z');
+        stem.setAttribute('d', 'M12 14v7');
+        svg.append(pin, stem);
+        button.append(svg);
+        button.addEventListener(
+            'click',
+            () => togglePinnedField(fieldKey),
+            listenerOptions
+        );
+
+        return button;
+    }
+
+    function addIssueMeta(
+        container,
+        label,
+        value,
+        iconUrl = null,
+        fieldKey = null
+    ) {
         if (value === undefined || value === null || value === '') {
             return;
         }
@@ -59,6 +145,12 @@ export function createIssueView(context) {
             value instanceof Node ? value : String(value)
         );
         item.append(labelElement, valueElement);
+
+        if (fieldKey) {
+            item.dataset.fieldKey = fieldKey;
+            item.append(createPinButton(fieldKey, label));
+        }
+
         container.append(item);
     }
 
@@ -167,32 +259,59 @@ export function createIssueView(context) {
                 : '';
     }
 
+    function editableFieldDefinitions(issue) {
+        const fields = issue.fields || {};
+        const tracking = fields.timetracking || {};
+
+        return [
+            {
+                key: 'labels',
+                label: trans('dialog.labels'),
+                value: fieldNames(fields.labels) || trans('common.none')
+            },
+            {
+                key: 'due-date',
+                label: trans('dialog.due_date'),
+                value: formatIssueDate(fields.duedate) || trans('common.none')
+            },
+            {
+                key: 'original-estimate',
+                label: trans('issue.estimate'),
+                value: tracking.originalEstimate || trans('issue.no_estimate')
+            },
+            {
+                key: 'remaining-estimate',
+                label: trans('dialog.remaining_time'),
+                value: tracking.remainingEstimate || trans('issue.no_estimate')
+            }
+        ];
+    }
+
+    function renderFieldDefinitions(container, definitions, pinned = false) {
+        const orderedDefinitions = pinned
+            ? pinnedFieldKeys
+                .map(key => definitions.find(field => field.key === key))
+                .filter(Boolean)
+            : definitions.filter(field =>
+                !pinnedFieldKeys.includes(field.key)
+            );
+
+        container.replaceChildren();
+        orderedDefinitions.forEach(field => addIssueMeta(
+            container,
+            field.label,
+            field.value,
+            field.iconUrl,
+            field.key
+        ));
+    }
+
     function renderEditableFields(issue) {
         const fields = issue.fields || {};
         const tracking = fields.timetracking || {};
         const preview = root.querySelector('#editable-fields-preview');
 
-        preview.replaceChildren();
-        addIssueMeta(
-            preview,
-            trans('dialog.labels'),
-            fieldNames(fields.labels) || trans('common.none')
-        );
-        addIssueMeta(
-            preview,
-            trans('dialog.due_date'),
-            formatIssueDate(fields.duedate) || trans('common.none')
-        );
-        addIssueMeta(
-            preview,
-            trans('issue.estimate'),
-            tracking.originalEstimate || trans('issue.no_estimate')
-        );
-        addIssueMeta(
-            preview,
-            trans('dialog.remaining_time'),
-            tracking.remainingEstimate || trans('issue.no_estimate')
-        );
+        renderFieldDefinitions(preview, editableFieldDefinitions(issue));
 
         root.querySelector('#labels-input').value =
             Array.isArray(fields.labels) ? fields.labels.join(', ') : '';
@@ -204,108 +323,147 @@ export function createIssueView(context) {
             tracking.remainingEstimate || '';
     }
 
-    function renderIssueMeta(issue) {
-        const container = root.querySelector('#issue-meta');
+    function issueMetaDefinitions(issue) {
         const fields = issue.fields || {};
-
-        container.replaceChildren();
-        addIssueMeta(
-            container,
-            trans('issue.type'),
-            fields.issuetype?.name,
-            fields.issuetype?.iconUrl
-        );
-        addIssueMeta(
-            container,
-            trans('issue.priority'),
-            fields.priority?.name,
-            fields.priority?.iconUrl
-        );
-        addIssueMeta(
-            container,
-            trans('issue.parent'),
-            issueReference(fields.parent)
-        );
-        addIssueMeta(container, trans('issue.project'), fields.project?.name);
-        addIssueMeta(
-            container,
-            trans('issue.assignee'),
-            fields.assignee?.displayName || trans('common.unassigned'),
-            fields.assignee?.avatarUrls?.['24x24']
-        );
-        addIssueMeta(
-            container,
-            trans('issue.reporter'),
-            fields.reporter?.displayName,
-            fields.reporter?.avatarUrls?.['24x24']
-        );
-        addIssueMeta(
-            container,
-            trans('issue.creator'),
-            fields.creator?.displayName,
-            fields.creator?.avatarUrls?.['24x24']
-        );
-        addIssueMeta(
-            container,
-            trans('issue.sprint'),
-            currentIssueSprintNames(issue)
-        );
+        const definitions = [
+            {
+                key: 'type',
+                label: trans('issue.type'),
+                value: fields.issuetype?.name,
+                iconUrl: fields.issuetype?.iconUrl
+            },
+            {
+                key: 'priority',
+                label: trans('issue.priority'),
+                value: fields.priority?.name,
+                iconUrl: fields.priority?.iconUrl
+            },
+            {
+                key: 'parent',
+                label: trans('issue.parent'),
+                value: issueReference(fields.parent)
+            },
+            {
+                key: 'project',
+                label: trans('issue.project'),
+                value: fields.project?.name
+            },
+            {
+                key: 'assignee',
+                label: trans('issue.assignee'),
+                value: fields.assignee?.displayName || trans('common.unassigned'),
+                iconUrl: fields.assignee?.avatarUrls?.['24x24']
+            },
+            {
+                key: 'reporter',
+                label: trans('issue.reporter'),
+                value: fields.reporter?.displayName,
+                iconUrl: fields.reporter?.avatarUrls?.['24x24']
+            },
+            {
+                key: 'creator',
+                label: trans('issue.creator'),
+                value: fields.creator?.displayName,
+                iconUrl: fields.creator?.avatarUrls?.['24x24']
+            },
+            {
+                key: 'sprint',
+                label: trans('issue.sprint'),
+                value: currentIssueSprintNames(issue)
+            }
+        ];
 
         const points = storyPoints(issue, state.data?.issues?.names);
         if (points !== null) {
-            addIssueMeta(
-                container,
-                trans('issue.story_points'),
-                trans('issue.story_points_value', { count: points })
-            );
+            definitions.push({
+                key: 'story-points',
+                label: trans('issue.story_points'),
+                value: trans('issue.story_points_value', { count: points })
+            });
         }
 
-        addIssueMeta(
-            container,
-            trans('issue.resolution'),
-            fields.resolution?.name
-        );
-        addIssueMeta(
-            container,
-            trans('issue.components'),
-            fieldNames(fields.components)
-        );
-        addIssueMeta(
-            container,
-            trans('issue.fix_versions'),
-            fieldNames(fields.fixVersions)
-        );
-        addIssueMeta(
-            container,
-            trans('issue.affected_versions'),
-            fieldNames(fields.versions)
-        );
-        addIssueMeta(
-            container,
-            trans('issue.created'),
-            formatIssueDate(fields.created, true)
-        );
-        addIssueMeta(
-            container,
-            trans('issue.updated'),
-            formatIssueDate(fields.updated, true)
-        );
-        addIssueMeta(container, trans('issue.votes'), fields.votes?.votes);
-        addIssueMeta(
-            container,
-            trans('issue.watchers'),
-            fields.watches?.watchCount
-        );
-        addIssueMeta(
-            container,
-            trans('issue.subtasks'),
-            Array.isArray(fields.subtasks) ? fields.subtasks.length : null
-        );
-        addIssueMeta(
-            container,
-            trans('issue.attachments'),
-            Array.isArray(fields.attachment) ? fields.attachment.length : null
-        );
+        return definitions.concat([
+            {
+                key: 'resolution',
+                label: trans('issue.resolution'),
+                value: fields.resolution?.name
+            },
+            {
+                key: 'components',
+                label: trans('issue.components'),
+                value: fieldNames(fields.components)
+            },
+            {
+                key: 'fix-versions',
+                label: trans('issue.fix_versions'),
+                value: fieldNames(fields.fixVersions)
+            },
+            {
+                key: 'affected-versions',
+                label: trans('issue.affected_versions'),
+                value: fieldNames(fields.versions)
+            },
+            {
+                key: 'created',
+                label: trans('issue.created'),
+                value: formatIssueDate(fields.created, true)
+            },
+            {
+                key: 'updated',
+                label: trans('issue.updated'),
+                value: formatIssueDate(fields.updated, true)
+            },
+            {
+                key: 'votes',
+                label: trans('issue.votes'),
+                value: fields.votes?.votes
+            },
+            {
+                key: 'watchers',
+                label: trans('issue.watchers'),
+                value: fields.watches?.watchCount
+            },
+            {
+                key: 'subtasks',
+                label: trans('issue.subtasks'),
+                value: Array.isArray(fields.subtasks)
+                    ? fields.subtasks.length
+                    : null
+            },
+            {
+                key: 'attachments',
+                label: trans('issue.attachments'),
+                value: Array.isArray(fields.attachment)
+                    ? fields.attachment.length
+                    : null
+            }
+        ]);
+    }
+
+    function renderIssueMeta(issue) {
+        const container = root.querySelector('#issue-meta');
+        const accordion = root.querySelector('#issue-details-accordion');
+
+        renderFieldDefinitions(container, issueMetaDefinitions(issue));
+        accordion.hidden = container.childElementCount === 0;
+    }
+
+    function renderPinnedFields(issue) {
+        const section = root.querySelector('#issue-pinned-fields');
+        const container = root.querySelector('#pinned-fields-list');
+        const definitions = [
+            ...editableFieldDefinitions(issue),
+            ...issueMetaDefinitions(issue)
+        ];
+
+        renderFieldDefinitions(container, definitions, true);
+        section.hidden = container.childElementCount === 0;
+    }
+
+    function renderIssueFieldGroups(issue) {
+        renderEditableFields(issue);
+        renderIssueMeta(issue);
+        renderPinnedFields(issue);
     }
 
     function safeExternalUrl(value, base = undefined) {
@@ -557,25 +715,6 @@ export function createIssueView(context) {
                 attachment.filename || trans('issue.attachment');
             header.append(filename);
 
-            if (href) {
-                const open = document.createElement('a');
-                open.className = 'issue-image-open';
-                open.href = href;
-                open.target = '_blank';
-                open.rel = 'noopener noreferrer';
-                open.append(
-                    `${trans('issue.open')} `,
-                    createExternalLinkIcon()
-                );
-                open.setAttribute(
-                    'aria-label',
-                    trans('issue.open_new_tab', {
-                        name: filename.textContent
-                    })
-                );
-                header.append(open);
-            }
-
             card.append(header);
 
             if (isImage && imageUrl) {
@@ -684,8 +823,8 @@ export function createIssueView(context) {
         renderEditableFields,
         renderIssueAttachments,
         renderIssueDescription,
+        renderIssueFieldGroups,
         renderIssueLinks,
-        renderIssueMeta,
         renderRichText,
         renderTimeTracking
     };

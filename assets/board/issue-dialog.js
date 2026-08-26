@@ -4,6 +4,7 @@ import {
     jiraMediaUrl
 } from './dom.js';
 import { createIssueView } from './issue-view.js';
+import { createMultiSelect } from './multi-select.js';
 import {
     adfMentions,
     adfToText
@@ -21,7 +22,7 @@ export function createIssueDialog(context) {
     const lifecycleController = new AbortController();
     const listenerOptions = { signal: lifecycleController.signal };
     const dialog = root.querySelector('#issue-dialog');
-    const transition = root.querySelector('#transition');
+    const transitionPickerElement = root.querySelector('#transition-picker');
     const summaryElement = root.querySelector('#issue-summary');
     const summaryForm = root.querySelector('#summary-form');
     const summaryInput = root.querySelector('#summary-input');
@@ -37,6 +38,14 @@ export function createIssueDialog(context) {
     const emojiMenu = root.querySelector('#emoji-menu');
     const replyContext = root.querySelector('#comment-reply-context');
     const worklogForm = root.querySelector('#worklog-form');
+    const selectedTransitionIds = new Set();
+    const transitionLabels = {
+        all: trans('dialog.choose_status'),
+        title: trans('dialog.new_status'),
+        clear: '',
+        empty: trans('dialog.no_transition'),
+        selected: () => ''
+    };
     let mentionSearchTimer = null;
     let mentionRequestToken = 0;
     let activeMentionRange = null;
@@ -57,8 +66,8 @@ export function createIssueDialog(context) {
         renderEditableFields,
         renderIssueAttachments,
         renderIssueDescription,
+        renderIssueFieldGroups,
         renderIssueLinks,
-        renderIssueMeta,
         renderRichText,
         renderTimeTracking
     } = createIssueView({
@@ -66,6 +75,20 @@ export function createIssueDialog(context) {
         state,
         openIssue,
         trans,
+        signal: lifecycleController.signal
+    });
+    const transitionPicker = createMultiSelect({
+        container: transitionPickerElement,
+        labels: transitionLabels,
+        selected: selectedTransitionIds,
+        multiple: false,
+        onChange: () => {
+            const [transitionId] = selectedTransitionIds;
+
+            if (transitionId) {
+                applyTransition(transitionId);
+            }
+        },
         signal: lifecycleController.signal
     });
 
@@ -551,6 +574,12 @@ export function createIssueDialog(context) {
             .forEach(name => toggleEditor(name, false));
     }
 
+    function resetIssueAccordions() {
+        root.querySelectorAll('[data-issue-accordion]').forEach(accordion => {
+            accordion.open = false;
+        });
+    }
+
     function syncBoardIssue(issue) {
         const boardIssue = (state.data?.issues?.issues || [])
             .find(candidate => candidate.key === issue.key);
@@ -581,8 +610,7 @@ export function createIssueDialog(context) {
             typeIcon.hidden = true;
         }
 
-        renderIssueMeta(issue);
-        renderEditableFields(issue);
+        renderIssueFieldGroups(issue);
         renderTimeTracking(issue);
         renderIssueDescription(fields.description);
         renderIssueLinks(issue);
@@ -662,32 +690,21 @@ export function createIssueDialog(context) {
 
             renderIssueDetails(issue);
             resetIssueEditors(issue);
+            resetIssueAccordions();
             renderIssueComments(comments, issue.fields?.comment);
 
-            transition.innerHTML = '';
-
-            const currentStatus = document.createElement('option');
-            currentStatus.value = '';
-            currentStatus.textContent = issue.fields?.status?.name
+            transitionLabels.all = issue.fields?.status?.name
                 ? trans('dialog.current_status', {
                     status: issue.fields.status.name
                 })
                 : trans('dialog.choose_status');
-            currentStatus.selected = true;
-            transition.append(currentStatus);
-
-            (transitions.transitions || []).forEach(item => {
-                const option = document.createElement('option');
-
-                option.value = item.id;
-                option.textContent =
-                    item.name || item.to?.name || item.id;
-
-                transition.append(option);
-            });
-
-            root.querySelector('#apply-transition').disabled =
-                true;
+            selectedTransitionIds.clear();
+            transitionPicker.setOptions(
+                (transitions.transitions || []).map(item => ({
+                    id: String(item.id),
+                    name: item.name || item.to?.name || String(item.id)
+                }))
+            );
 
             if (!dialog.open) {
                 dialog.showModal();
@@ -704,15 +721,14 @@ export function createIssueDialog(context) {
         }
     }
 
-    async function applyTransition() {
-        if (!state.issue || !transition.value) {
+    async function applyTransition(transitionId) {
+        if (!state.issue || !transitionId) {
             return;
         }
 
-        const button =
-            root.querySelector('#apply-transition');
+        const trigger = transitionPickerElement.querySelector('.filter-trigger');
 
-        button.disabled = true;
+        trigger.disabled = true;
 
         try {
             const updatedIssue = await api(
@@ -720,7 +736,7 @@ export function createIssueDialog(context) {
                 {
                     method: 'POST',
                     body: JSON.stringify({
-                        transitionId: transition.value,
+                        transitionId,
                         boardId: context.boardId
                     })
                 }
@@ -734,7 +750,9 @@ export function createIssueDialog(context) {
             console.error(trans('dialog.transition_error_log'), error);
             showToast(error.message, 'error');
         } finally {
-            button.disabled = false;
+            selectedTransitionIds.clear();
+            transitionPicker.update();
+            trigger.disabled = false;
         }
     }
 
@@ -835,11 +853,6 @@ export function createIssueDialog(context) {
 
     root.querySelector('#close-dialog')
         .addEventListener('click', () => dialog.close(), listenerOptions);
-    root.querySelector('#apply-transition')
-        .addEventListener('click', applyTransition, listenerOptions);
-    transition.addEventListener('change', () => {
-        root.querySelector('#apply-transition').disabled = !transition.value;
-    }, listenerOptions);
     root.querySelector('#edit-summary').addEventListener(
         'click',
         () => toggleEditor('summary', true),

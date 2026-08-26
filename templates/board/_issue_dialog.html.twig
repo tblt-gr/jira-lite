@@ -37,6 +37,12 @@
             </form>
         </div>
         <div class="dialog-actions">
+            <span class="sr-only" id="transition-label">{{ 'dialog.new_status'|trans }}</span>
+            <div
+                id="transition-picker"
+                class="filter-multiselect issue-transition-picker is-single"
+                aria-labelledby="transition-label"
+            ></div>
             <a
                 id="open-issue"
                 class="open-issue-button"
@@ -109,11 +115,7 @@
             <section id="issue-comments" class="issue-content-section">
                 <div class="activity-heading">
                     <h3>{{ 'dialog.activity'|trans }}</h3>
-                    <div class="activity-tabs" aria-label="{{ 'dialog.activity_type'|trans }}">
-                        <button class="activity-tab is-active" type="button" aria-pressed="true">
-                            {{ 'dialog.comments'|trans }}
-                        </button>
-                    </div>
+                    <span class="activity-tab-label">{{ 'dialog.comments'|trans }}</span>
                 </div>
                 <form id="comment-form" class="comment-form">
                     <div id="comment-reply-context" class="comment-reply-context" hidden>
@@ -162,15 +164,7 @@
         </div>
 
         <aside class="issue-sidebar">
-            <div class="transition-row">
-                <label class="sr-only" for="transition">{{ 'dialog.new_status'|trans }}</label>
-                <select id="transition"></select>
-                <button id="apply-transition" type="button">
-                    {{ 'dialog.change_status'|trans }}
-                </button>
-            </div>
-
-            <section class="issue-sidebar-panel">
+            <section class="issue-time-tracking">
                 <div class="sidebar-panel-heading">
                     <h3>{{ 'dialog.time_tracking'|trans }}</h3>
                     <button id="toggle-worklog" class="section-edit-button" type="button">
@@ -204,36 +198,55 @@
                 </form>
             </section>
 
-            <section class="issue-sidebar-panel">
+            <section id="issue-pinned-fields" class="issue-pinned-fields" hidden>
                 <div class="sidebar-panel-heading">
-                    <h3>{{ 'dialog.editable_fields'|trans }}</h3>
-                    <button id="edit-fields" class="section-edit-button" type="button">
-                        {{ 'common.edit'|trans }}
-                    </button>
+                    <h3>{{ 'dialog.pinned_fields'|trans }}</h3>
                 </div>
-                <div id="editable-fields-preview" class="issue-meta"></div>
-                <form id="fields-form" class="sidebar-fields-form" hidden>
-                    <label for="labels-input">{{ 'dialog.labels'|trans }}</label>
-                    <input id="labels-input" name="labels" placeholder="{{ 'dialog.labels_placeholder'|trans }}">
-                    <label for="due-date-input">{{ 'dialog.due_date'|trans }}</label>
-                    <input id="due-date-input" name="dueDate" type="date">
-                    <label for="original-estimate-input">{{ 'dialog.original_estimate'|trans }}</label>
-                    <input id="original-estimate-input" name="originalEstimate" placeholder="{{ 'dialog.original_estimate_example'|trans }}">
-                    <label for="remaining-estimate-input">{{ 'dialog.remaining_time'|trans }}</label>
-                    <input id="remaining-estimate-input" name="remainingEstimate" placeholder="{{ 'dialog.remaining_time_example'|trans }}">
-                    <div class="inline-edit-actions">
-                        <button type="submit">{{ 'common.save'|trans }}</button>
-                        <button class="secondary-button" type="button" data-cancel-edit="fields">{{ 'common.cancel'|trans }}</button>
-                    </div>
-                </form>
+                <div id="pinned-fields-list" class="issue-meta"></div>
             </section>
 
-            <section class="issue-sidebar-panel">
-                <div class="sidebar-panel-heading">
-                    <h3>{{ 'dialog.details'|trans }}</h3>
+            <details class="issue-sidebar-accordion" data-issue-accordion>
+                <summary>
+                    <span>{{ 'dialog.editable_fields'|trans }}</span>
+                    <svg class="ui-icon accordion-chevron" viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="m9 18 6-6-6-6" />
+                    </svg>
+                </summary>
+                <div class="sidebar-accordion-content">
+                    <div class="sidebar-section-actions">
+                        <button id="edit-fields" class="section-edit-button" type="button">
+                            {{ 'common.edit'|trans }}
+                        </button>
+                    </div>
+                    <div id="editable-fields-preview" class="issue-meta"></div>
+                    <form id="fields-form" class="sidebar-fields-form" hidden>
+                        <label for="labels-input">{{ 'dialog.labels'|trans }}</label>
+                        <input id="labels-input" name="labels" placeholder="{{ 'dialog.labels_placeholder'|trans }}">
+                        <label for="due-date-input">{{ 'dialog.due_date'|trans }}</label>
+                        <input id="due-date-input" name="dueDate" type="date">
+                        <label for="original-estimate-input">{{ 'dialog.original_estimate'|trans }}</label>
+                        <input id="original-estimate-input" name="originalEstimate" placeholder="{{ 'dialog.original_estimate_example'|trans }}">
+                        <label for="remaining-estimate-input">{{ 'dialog.remaining_time'|trans }}</label>
+                        <input id="remaining-estimate-input" name="remainingEstimate" placeholder="{{ 'dialog.remaining_time_example'|trans }}">
+                        <div class="inline-edit-actions">
+                            <button type="submit">{{ 'common.save'|trans }}</button>
+                            <button class="secondary-button" type="button" data-cancel-edit="fields">{{ 'common.cancel'|trans }}</button>
+                        </div>
+                    </form>
                 </div>
-                <div id="issue-meta" class="issue-meta"></div>
-            </section>
+            </details>
+
+            <details id="issue-details-accordion" class="issue-sidebar-accordion" data-issue-accordion>
+                <summary>
+                    <span>{{ 'dialog.details'|trans }}</span>
+                    <svg class="ui-icon accordion-chevron" viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="m9 18 6-6-6-6" />
+                    </svg>
+                </summary>
+                <div class="sidebar-accordion-content">
+                    <div id="issue-meta" class="issue-meta"></div>
+                </div>
+            </details>
         </aside>
     </div>
 </dialog>

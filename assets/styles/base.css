@@ -113,6 +113,8 @@ textarea:focus-visible,
 .dialog-head a:focus-visible,
 .issue-link-card:focus-visible,
 .issue-reference:focus-visible,
+.field-pin-button:focus-visible,
+.issue-sidebar-accordion > summary:focus-visible,
 .issue-attachment-card a:focus-visible {
     outline: 2px solid var(--focus);
     outline-offset: 2px;
@@ -122,4 +124,3 @@ textarea:focus-visible,
     outline: 1px solid var(--text-subtle);
     outline-offset: 1px;
 }
-

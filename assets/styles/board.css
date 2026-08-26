@@ -369,6 +369,10 @@ main {
     gap: 7px;
 }
 
+.epic-filter-trigger {
+    width: auto;
+}
+
 #epic-filter-label,
 .filter-label {
     min-width: 0;

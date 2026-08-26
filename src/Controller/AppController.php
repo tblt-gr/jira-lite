@@ -6,6 +6,10 @@ namespace App\Controller;
 
 use App\Service\JiraApiService;
 use Collator;
+
+use function is_int;
+use function is_string;
+
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;

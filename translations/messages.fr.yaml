@@ -110,6 +110,9 @@ dialog.original_estimate_example: Ex. 2h
 dialog.remaining_time: Temps restant
 dialog.remaining_time_example: Ex. 45m
 dialog.details: Détails
+dialog.pinned_fields: Champs épinglés
+dialog.pin_field: Épingler {field}
+dialog.unpin_field: Désépingler {field}
 dialog.comments_unavailable: Commentaires indisponibles.
 dialog.no_comments: Aucun commentaire.
 dialog.edited: modifié
@@ -122,6 +125,7 @@ dialog.no_user: Aucune personne trouvée
 dialog.issue_updated: Ticket mis à jour
 dialog.current_status: 'État : {status}'
 dialog.choose_status: Changer l’état…
+dialog.no_transition: Aucune transition disponible
 dialog.open_error_log: Impossible d’ouvrir le ticket.
 dialog.transition_error_log: Impossible de changer l’état du ticket.
 dialog.status_updated: État du ticket mis à jour
