@@ -68,7 +68,7 @@
         "lint": [
             "@php bin/console lint:container",
             "@php bin/console lint:container --no-debug",
-            "@php bin/console lint:translations --locale=fr",
+            "@php bin/console lint:translations --locale=fr --locale=en",
             "@php bin/console lint:yaml config",
             "@php bin/console lint:twig templates",
             "@cs",

@@ -48,4 +48,21 @@ final class JiraHttpTest extends WebTestCase
 
         self::assertResponseStatusCodeSame(415);
     }
+
+    public function testItUsesEnglishForAnEnglishAcceptLanguageHeader(): void
+    {
+        $client = static::createClient();
+        $crawler = $client->request(
+            'GET',
+            '/',
+            server: ['HTTP_ACCEPT_LANGUAGE' => 'en']
+        );
+
+        self::assertResponseIsSuccessful();
+        self::assertStringContainsString(
+            'Choose a board',
+            $crawler->filterXPath('//h1')->text()
+        );
+        self::assertCount(1, $crawler->filterXPath('//html[@lang="en"]'));
+    }
 }

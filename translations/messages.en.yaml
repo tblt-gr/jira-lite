@@ -1,0 +1,232 @@
+common.save: Save
+common.cancel: Cancel
+common.edit: Edit
+common.delete: Delete
+common.close: Close
+common.none: None
+common.anonymous: Anonymous
+common.unassigned: Unassigned
+common.unnamed_board: Unnamed board
+common.empty_comment: Comment cannot be empty.
+app.title: Jira Lite
+app.jira: Jira Lite
+
+theme.change: Change theme
+theme.activate_light: Use light theme
+theme.activate_dark: Use dark theme
+
+home.page_title: Boards · Jira Lite
+home.context: Board selection
+home.choose_title: Choose a board
+home.choose_help: Open the board you want to view.
+home.board_count_one: '%count% board'
+home.board_count_many: '%count% boards'
+home.no_boards: No Jira boards are available.
+home.load_error: Jira boards cannot be loaded right now.
+
+board.search_placeholder: Search by key or summary
+board.search_aria: Search for an issue
+board.reload: Refresh
+board.back_home: Back to boards
+board.switch_board: Switch board
+board.favorite_add: Add to favourites
+board.favorite_remove: Remove from favourites
+board.all_active_epics: All active epics
+board.collapse_all: Collapse all
+board.expand_all: Expand all
+board.collapse_epic: Collapse this epic
+board.expand_epic: Expand this epic
+board.view_label: Display mode
+board.view_single: Single board
+board.view_by_epic: Grouped by epic
+board.loading: Loading…
+board.epics_title: Sprint epics
+board.clear_all: Clear all
+board.selected_epics: '{count} epics selected'
+board.no_epic_selected: No epic selected
+board.all_versions: All versions
+board.all_types: All issue types
+board.all_columns: All columns
+board.versions_title: Board versions
+board.types_title: Issue types
+board.columns_title: Board columns
+board.selected_values: '{count} selected'
+board.without_version: No version
+board.no_filter_value: No values available.
+board.no_active_epic: No epic has an active issue in this sprint.
+board.no_issue_title: No issues to display
+board.no_issue_help: Change the filters or search term.
+board.issue_count_one: '{count} issue'
+board.issue_count_many: '{count} issues'
+board.ticket_label_one: issue
+board.ticket_label_many: issues
+board.group_count_one: '{count} group'
+board.group_count_many: '{count} groups'
+board.without_key: No key
+board.without_epic: No epic
+board.open_epic_hint: Ctrl/Cmd + click to open in Jira
+board.single_board_count: single board
+board.load_error: The board cannot be loaded.
+
+create.action: Create
+create.eyebrow: New issue
+create.title: Create an issue
+create.issue_type: Issue type
+create.summary: Summary
+create.summary_placeholder: What needs to be done?
+create.description: Description (optional)
+create.description_placeholder: Add helpful context…
+create.sprint: Sprint
+create.sprint_help: The active sprint is selected by default.
+create.backlog: Backlog
+create.epic: Epic
+create.without_epic: No epic
+create.quick_action: Create
+create.in_epic: Create an issue in epic {epic}
+create.submit: Create issue
+create.submitting: Creating…
+create.loading_types: Loading issue types…
+create.no_issue_type: No issue type is available for this project.
+create.created: Issue {key} created
+
+card.type: Type
+card.story_points: Story points
+card.more_labels: '+{count}'
+
+drag.no_transition: No transition to “{column}”.
+drag.failed_one: '{count} issue was not moved'
+drag.failed_many: '{count} issues were not moved'
+
+dialog.edit_title: Edit summary
+dialog.open_in_jira: Open in Jira
+dialog.description: Description
+dialog.description_placeholder: Describe the issue…
+dialog.attachments: Attachments
+dialog.linked_issues: Linked issues
+dialog.activity: Activity
+dialog.activity_type: Activity type
+dialog.comments: Comments
+dialog.cancel_reply: Cancel reply
+dialog.comment_placeholder: Add a comment…
+dialog.mention_people: People to mention
+dialog.add_emoji: Add emoji
+dialog.choose_emoji: Choose an emoji
+dialog.comment_hint: Type @ to mention · Ctrl + Enter to send
+dialog.comment_action: Comment
+dialog.new_status: New status
+dialog.change_status: Change status
+dialog.time_tracking: Time tracking
+dialog.log_work: Log work
+dialog.no_logged_time: No logged time
+dialog.time_spent: Time spent
+dialog.time_example: E.g. 1h 30m
+dialog.time_formats: 'Accepted Jira formats: 2w, 3d, 4h, 30m.'
+dialog.optional_note: Note (optional)
+dialog.log_action: Log work
+dialog.editable_fields: Editable fields
+dialog.labels: Labels
+dialog.labels_placeholder: frontend, urgent
+dialog.due_date: Due date
+dialog.original_estimate: Original estimate
+dialog.original_estimate_example: E.g. 2h
+dialog.remaining_time: Remaining time
+dialog.remaining_time_example: E.g. 45m
+dialog.details: Details
+dialog.pinned_fields: Pinned fields
+dialog.pin_field: Pin {field}
+dialog.unpin_field: Unpin {field}
+dialog.comments_unavailable: Comments are unavailable.
+dialog.no_comments: No comments.
+dialog.edited: edited
+dialog.reply: Reply
+dialog.delete_comment_confirm: Delete this comment permanently?
+dialog.comment_deleted: Comment deleted
+dialog.reply_to: Reply to {name}
+dialog.insert_emoji: Insert {emoji}
+dialog.no_user: No person found
+dialog.issue_updated: Issue updated
+dialog.current_status: 'Status: {status}'
+dialog.choose_status: Change status…
+dialog.no_transition: No transition available
+dialog.open_error_log: The issue could not be opened.
+dialog.transition_error_log: The status could not be changed.
+dialog.status_updated: Issue status updated
+dialog.comment_added: Comment added
+dialog.comment_updated: Comment updated
+dialog.work_logged: Work logged
+
+issue.logged_time: '{value} logged'
+issue.remaining_time_value: '{value} remaining'
+issue.days_short: '{count}d'
+issue.hours_short: '{count}h'
+issue.minutes_short: '{count}m'
+issue.no_estimate: No estimate
+issue.estimate: Estimate
+issue.type: Type
+issue.priority: Priority
+issue.parent: Parent
+issue.project: Project
+issue.assignee: Assignee
+issue.reporter: Reporter
+issue.creator: Creator
+issue.sprint: Sprint
+issue.story_points: Story points
+issue.story_points_value: '{count} points'
+issue.resolution: Resolution
+issue.components: Components
+issue.fix_versions: Fix versions
+issue.affected_versions: Affected versions
+issue.created: Created
+issue.updated: Updated
+issue.votes: Votes
+issue.watchers: Watchers
+issue.subtasks: Subtasks
+issue.attachments: Attachments
+issue.no_description: No description.
+issue.without_title: Untitled
+issue.attachment: Attachment
+issue.open: Open
+issue.preview_unavailable: Preview unavailable
+issue.attached_file: Attached file
+issue.open_modal: Open {key} in the dialog
+issue.open_new_tab: Open {name} in a new tab
+issue.expand_image: Enlarge {name}
+
+refresh.error_log: Failed to refresh the board.
+refresh.failed: Automatic refresh failed.
+
+api.since_required: The since parameter is required.
+api.since_invalid: The since parameter is invalid.
+api.summary_length: The summary must be between 1 and 255 characters.
+api.labels_list: Labels must be a list.
+api.due_date_invalid: The due date is invalid.
+api.duration_invalid: The duration “%value%” is invalid.
+api.no_editable_field: No editable field was provided.
+api.empty_comment: The comment cannot be empty.
+api.worklog_format: Time must use a Jira format, for example 1h 30m.
+api.transition_required: The transitionId parameter is required.
+api.issue_type_required: Select a valid issue type.
+api.sprint_invalid: The selected sprint is invalid.
+api.epic_invalid: The selected epic is invalid.
+api.board_project_required: This Jira board is not associated with a project where issues can be created.
+api.json_required: The request body must be JSON.
+api.csrf_invalid: The security token is invalid or has expired.
+api.jira_not_found: The requested Jira resource was not found.
+api.jira_rate_limited: Jira is temporarily limiting requests. Try again shortly.
+api.jira_unavailable: Jira is temporarily unavailable. Try again shortly.
+api.http_error: HTTP error {status}
+
+error.not_found_title: Page not found
+error.not_found_message: This page does not exist or is no longer available.
+error.server_title: An error occurred
+error.server_message: Try again shortly. If the problem persists, check the Jira configuration.
+error.back_home: Back to boards
+
+media.invalid_attachment: Invalid attachment identifier.
+media.invalid_redirect: Invalid media redirect.
+media.unavailable: Jira media is unavailable.
+media.too_large: Jira media is too large.
+media.type_not_allowed: This Jira media type is not allowed.
+media.too_many_redirects: Too many media redirects.
+media.url_not_allowed: This media URL is not allowed.
+media.domain_not_allowed: This media domain is not allowed.

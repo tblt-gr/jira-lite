@@ -7,6 +7,7 @@ namespace App\Tests\Translation;
 use const JSON_THROW_ON_ERROR;
 
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
+use Symfony\Component\Yaml\Yaml;
 use Twig\Environment;
 
 final class FrontendCatalogTest extends KernelTestCase
@@ -35,5 +36,16 @@ final class FrontendCatalogTest extends KernelTestCase
             $catalog['dialog.issue_updated']
         );
         self::assertArrayHasKey('api.http_error', $catalog);
+    }
+
+    public function testFrenchAndEnglishCatalogsHaveTheSameKeys(): void
+    {
+        $projectDir = self::getContainer()->getParameter('kernel.project_dir');
+        $french = Yaml::parseFile($projectDir.'/translations/messages.fr.yaml');
+        $english = Yaml::parseFile($projectDir.'/translations/messages.en.yaml');
+
+        self::assertIsArray($french);
+        self::assertIsArray($english);
+        self::assertSame(array_keys($french), array_keys($english));
     }
 }
