@@ -77,6 +77,15 @@ npm run lint
 npm test
 ```
 
+To generate PHP coverage locally, enable Xdebug (or PCOV) and run:
+
+```bash
+XDEBUG_MODE=coverage composer coverage
+```
+
+The current coverage objective is 70% of `src/`. It is reported by the CI
+coverage driver and intentionally not enforced as a hard threshold yet.
+
 ## Project Structure
 
 - `src/Controller/` contains page and JSON API endpoints.

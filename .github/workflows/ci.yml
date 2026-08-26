@@ -64,6 +64,9 @@ jobs:
       - name: phpunit
         run: php bin/phpunit
 
+      - name: coverage
+        run: composer coverage
+
   js:
     name: JavaScript
     runs-on: ubuntu-latest

@@ -76,6 +76,7 @@
         ],
         "cs": "@php vendor/bin/php-cs-fixer fix --dry-run --diff",
         "cs-fix": "@php vendor/bin/php-cs-fixer fix",
+        "coverage": "XDEBUG_MODE=coverage php bin/phpunit --coverage-filter=src --coverage-text --coverage-clover=var/coverage/clover.xml",
         "test": [
             "@php bin/phpunit",
             "if [ -d node_modules ]; then npm test; fi"
