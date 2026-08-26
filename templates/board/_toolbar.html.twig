@@ -31,13 +31,6 @@
     <div id="type-filter"></div>
     <div id="column-filter"></div>
 
-    <button
-        id="toggle-all-epics"
-        class="secondary-button epic-toggle-all"
-        type="button"
-        hidden
-    >{{ 'board.collapse_all'|trans }}</button>
-
     <div class="view-switch" aria-label="{{ 'board.view_label'|trans }}">
         <button
             class="view-option"
@@ -52,6 +45,13 @@
             aria-pressed="true"
         >{{ 'board.view_by_epic'|trans }}</button>
     </div>
+
+    <button
+        id="toggle-all-epics"
+        class="secondary-button epic-toggle-all"
+        type="button"
+        hidden
+    >{{ 'board.collapse_all'|trans }}</button>
 
     <span id="counter" class="counter"></span>
 </section>

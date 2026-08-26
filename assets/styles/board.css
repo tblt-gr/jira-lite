@@ -297,41 +297,43 @@ main {
 }
 
 .view-switch {
-    gap: 3px;
-    padding: 3px;
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    background: var(--surface-soft);
+    gap: 4px;
+    padding: 0;
+    border: 0;
+    background: transparent;
 }
 
-.epic-toggle-all {
-    height: 38px;
-    padding: 6px 10px;
-    font-size: 12px;
+/* Contrôles de la barre d'outils : même repos et même survol partout. */
+.epic-toggle-all,
+.view-option,
+.epic-filter-trigger,
+.filter-trigger {
+    height: 32px;
+    border: 1px solid transparent;
+    border-radius: var(--radius);
+    background: transparent;
+    color: var(--text-muted);
+    padding: 0 10px;
+    font-size: 13px;
     white-space: nowrap;
+    transition: background 120ms ease, border-color 120ms ease,
+        color 120ms ease;
+}
+
+.epic-toggle-all:hover,
+.view-option:hover,
+.view-option.is-active,
+.epic-filter-trigger:hover,
+.filter-trigger:hover,
+.epic-multiselect.is-open .epic-filter-trigger,
+.filter-multiselect.is-open .filter-trigger {
+    background: var(--surface-soft);
+    border-color: var(--border);
+    color: var(--text);
 }
 
 .epic-toggle-all[hidden] {
     display: none;
-}
-
-.view-option {
-    border: 0;
-    border-radius: var(--radius);
-    background: transparent;
-    color: var(--text-muted);
-    padding: 6px 10px;
-    font-size: 12px;
-}
-
-.view-option:hover {
-    background: var(--surface-raised);
-    color: var(--text);
-}
-
-.view-option.is-active {
-    background: var(--primary-soft);
-    color: color-mix(in srgb, var(--primary) 55%, var(--text));
 }
 
 .counter {
@@ -362,23 +364,9 @@ main {
 .epic-filter-trigger,
 .filter-trigger {
     width: 100%;
-    height: 38px;
     display: flex;
     align-items: center;
     gap: 7px;
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    background: var(--surface-soft);
-    color: var(--text);
-    padding: 0 10px;
-}
-
-.epic-filter-trigger:hover,
-.filter-trigger:hover,
-.epic-multiselect.is-open .epic-filter-trigger,
-.filter-multiselect.is-open .filter-trigger {
-    background: var(--surface-raised);
-    border-color: var(--primary);
 }
 
 #epic-filter-label,
@@ -394,11 +382,12 @@ main {
 .epic-filter-count,
 .filter-count {
     min-width: 20px;
-    border-radius: var(--radius);
-    background: var(--primary-soft);
-    color: var(--primary-hover);
+    border-radius: var(--radius-sm);
+    background: var(--accent-soft);
+    color: var(--text);
     padding: 1px 5px;
     font-size: 10px;
+    font-weight: 500;
     text-align: center;
 }
 
