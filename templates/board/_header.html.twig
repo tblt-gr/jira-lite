@@ -71,30 +71,32 @@
         </div>
     </div>
 
-    <div class="search-field">
-        <svg class="ui-icon search-icon" viewBox="0 0 24 24" aria-hidden="true">
-            <circle cx="11" cy="11" r="7" />
-            <path d="m16.5 16.5 4 4" />
-        </svg>
-        <input
-            id="search"
-            type="search"
-            placeholder="{{ 'board.search_placeholder'|trans }}"
-            aria-label="{{ 'board.search_aria'|trans }}"
-        >
-    </div>
+    <div class="topbar-create-group">
+        <div class="search-field">
+            <svg class="ui-icon search-icon" viewBox="0 0 24 24" aria-hidden="true">
+                <circle cx="11" cy="11" r="7" />
+                <path d="m16.5 16.5 4 4" />
+            </svg>
+            <input
+                id="search"
+                type="search"
+                placeholder="{{ 'board.search_placeholder'|trans }}"
+                aria-label="{{ 'board.search_aria'|trans }}"
+            >
+        </div>
 
-    <button
-        id="create-issue"
-        class="create-issue-button"
-        type="button"
-        aria-haspopup="dialog"
-    >
-        <svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M12 5v14M5 12h14" />
-        </svg>
-        <span>{{ 'create.action'|trans }}</span>
-    </button>
+        <button
+            id="create-issue"
+            class="create-issue-button"
+            type="button"
+            aria-haspopup="dialog"
+        >
+            <svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M12 5v14M5 12h14" />
+            </svg>
+            <span>{{ 'create.action'|trans }}</span>
+        </button>
+    </div>
 
     <div class="topbar-actions">
         <button
