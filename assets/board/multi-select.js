@@ -24,9 +24,12 @@ export function createMultiSelect({
     labels,
     selected,
     onChange,
-    signal
+    signal,
+    multiple = true,
+    renderSuffix = null
 }) {
     container.classList.add('filter-multiselect');
+    container.classList.toggle('is-single', !multiple);
     container.replaceChildren();
 
     const trigger = document.createElement('button');
@@ -47,7 +50,7 @@ export function createMultiSelect({
     const menu = document.createElement('div');
     menu.className = 'filter-menu';
     menu.setAttribute('role', 'listbox');
-    menu.setAttribute('aria-multiselectable', 'true');
+    menu.setAttribute('aria-multiselectable', String(multiple));
     menu.hidden = true;
 
     container.append(trigger, menu);
@@ -89,6 +92,13 @@ export function createMultiSelect({
             clearButton.disabled = selected.size === 0;
         }
 
+        if (!multiple) {
+            label.textContent = chosen[0]?.name || labels.all;
+            count.textContent = '';
+
+            return;
+        }
+
         if (!chosen.length) {
             label.textContent = labels.all;
             count.textContent = '';
@@ -107,6 +117,22 @@ export function createMultiSelect({
     }
 
     function toggleValue(id) {
+        if (!multiple) {
+            if (selected.has(id)) {
+                update();
+                close(true);
+
+                return;
+            }
+
+            selected.clear();
+            selected.add(id);
+            change();
+            close(true);
+
+            return;
+        }
+
         if (selected.has(id)) {
             selected.delete(id);
         } else {
@@ -124,9 +150,13 @@ export function createMultiSelect({
         node.tabIndex = 0;
 
         const input = document.createElement('input');
-        input.type = 'checkbox';
+        input.type = multiple ? 'checkbox' : 'radio';
         input.value = option.id;
         input.tabIndex = -1;
+
+        if (!multiple) {
+            input.name = `${container.id || 'filter'}-option`;
+        }
 
         const mark = document.createElement('span');
         mark.className = 'filter-option-mark';
@@ -147,6 +177,12 @@ export function createMultiSelect({
         badge.textContent = option.count ?? '';
 
         node.append(input, mark, name, badge);
+
+        const suffix = renderSuffix?.(option);
+
+        if (suffix) {
+            node.append(suffix);
+        }
 
         input.addEventListener('change', () => {
             toggleValue(option.id);
@@ -172,17 +208,21 @@ export function createMultiSelect({
         const title = document.createElement('span');
         title.textContent = labels.title;
 
-        const clearButton = document.createElement('button');
-        clearButton.type = 'button';
-        clearButton.className = 'filter-clear';
-        clearButton.textContent = labels.clear;
-        clearButton.addEventListener('click', event => {
-            event.stopPropagation();
-            selected.clear();
-            change();
-        }, { signal });
+        head.append(title);
 
-        head.append(title, clearButton);
+        if (multiple) {
+            const clearButton = document.createElement('button');
+            clearButton.type = 'button';
+            clearButton.className = 'filter-clear';
+            clearButton.textContent = labels.clear;
+            clearButton.addEventListener('click', () => {
+                selected.clear();
+                change();
+            }, { signal });
+
+            head.append(clearButton);
+        }
+
         menu.append(head);
 
         options.forEach(option => menu.append(createOption(option)));
