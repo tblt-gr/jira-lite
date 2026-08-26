@@ -202,6 +202,19 @@ test('applies filters to the epic view too', () => {
     );
 });
 
+test('supports an active epic filter with no selected epic', () => {
+    const model = createBoardViewModel({
+        data: filterData,
+        selectedEpicIds: new Set(),
+        epicFilterActive: true,
+        view: 'epic',
+        searchQuery: ''
+    });
+
+    assert.deepEqual(model.groups, []);
+    assert.equal(model.visibleIssueCount, 0);
+});
+
 test('drops epic groups left empty by an active filter', () => {
     const data = {
         configuration: { columnConfig: { columns: [] } },

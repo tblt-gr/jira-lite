@@ -158,6 +158,7 @@ export function createBoardView(context) {
         const model = createBoardViewModel({
             data: state.data,
             selectedEpicIds: state.selectedEpicIds,
+            epicFilterActive: state.epicFilterActive,
             view: state.view,
             searchQuery: context.search.value,
             selectedVersionIds: state.selectedVersionIds,

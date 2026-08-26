@@ -43,6 +43,7 @@ board.loading: Chargement…
 board.epics_title: Epics du sprint
 board.clear_all: Tout effacer
 board.selected_epics: '{count} epics sélectionnés'
+board.no_epic_selected: Aucun epic sélectionné
 board.all_versions: Toutes les versions
 board.all_types: Tous les types
 board.all_columns: Toutes les colonnes

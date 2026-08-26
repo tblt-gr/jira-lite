@@ -30,6 +30,7 @@ import {
 } from './jira.js';
 
 export function mountBoard(root, boardId) {
+    const noEpicSelectionValue = '__none__';
     const lifecycleController = new AbortController();
     const listenerOptions = { signal: lifecycleController.signal };
     let boardRequestController = null;
@@ -39,6 +40,7 @@ export function mountBoard(root, boardId) {
         data: null,
         issue: null,
         selectedEpicIds: new Set(),
+        epicFilterActive: false,
         selectedVersionIds: new Set(),
         selectedTypeIds: new Set(),
         selectedColumnIds: new Set(),
@@ -339,16 +341,21 @@ export function mountBoard(root, boardId) {
         }
 
         updateViewButtons();
-        renderBoard(state.selectedEpicIds.size > 0);
+        renderBoard(state.epicFilterActive);
     }
 
     function writeEpicsToUrl(replace = false) {
         const url = new URL(window.location.href);
 
         url.searchParams.delete('epic');
-        state.selectedEpicIds.forEach(id => {
-            url.searchParams.append('epic', id);
-        });
+
+        if (state.epicFilterActive && !state.selectedEpicIds.size) {
+            url.searchParams.append('epic', noEpicSelectionValue);
+        } else if (state.epicFilterActive) {
+            state.selectedEpicIds.forEach(id => {
+                url.searchParams.append('epic', id);
+            });
+        }
 
         window.history[replace ? 'replaceState' : 'pushState'](
             { epics: Array.from(state.selectedEpicIds) },
@@ -362,12 +369,29 @@ export function mountBoard(root, boardId) {
             availableEpics().map(canonicalEpicId)
         );
         const requestedIds = epicIdsFromUrl();
+        const selectsNone = requestedIds.includes(noEpicSelectionValue);
 
         state.selectedEpicIds = new Set(
             requestedIds.filter(id => allowedIds.has(id))
         );
+        state.epicFilterActive = selectsNone
+            || state.selectedEpicIds.size > 0;
 
-        if (state.selectedEpicIds.size !== requestedIds.length) {
+        if (
+            allowedIds.size > 0
+            && state.selectedEpicIds.size === allowedIds.size
+        ) {
+            state.selectedEpicIds.clear();
+            state.epicFilterActive = false;
+        }
+
+        const validRequestedCount = state.selectedEpicIds.size
+            + (selectsNone ? 1 : 0);
+
+        if (
+            validRequestedCount !== requestedIds.length
+            || (!state.epicFilterActive && requestedIds.length > 0)
+        ) {
             writeEpicsToUrl(true);
         }
     }
@@ -379,10 +403,11 @@ export function mountBoard(root, boardId) {
         const selected = Array.from(state.selectedEpicIds)
             .map(id => catalog.get(id))
             .filter(Boolean);
+        const allSelected = !state.epicFilterActive;
 
         epicFilterMenu.querySelectorAll('[data-epic-id]')
             .forEach(option => {
-                const checked = state.selectedEpicIds.has(
+                const checked = allSelected || state.selectedEpicIds.has(
                     option.dataset.epicId
                 );
                 const input = option.querySelector('input');
@@ -395,17 +420,40 @@ export function mountBoard(root, boardId) {
                 }
             });
 
+        const allOption = epicFilterMenu.querySelector(
+            '.epic-filter-all-option'
+        );
+        const allInput = allOption?.querySelector('input');
+
+        if (allInput) {
+            allInput.checked = allSelected;
+            allInput.indeterminate = state.epicFilterActive
+                && state.selectedEpicIds.size > 0;
+            allOption.classList.toggle('is-selected', allSelected);
+            allOption.classList.toggle(
+                'is-indeterminate',
+                allInput.indeterminate
+            );
+            allOption.setAttribute(
+                'aria-selected',
+                String(allSelected)
+            );
+        }
+
         const clearButton = epicFilterMenu.querySelector(
             '.epic-filter-clear'
         );
 
         if (clearButton) {
-            clearButton.disabled = state.selectedEpicIds.size === 0;
+            clearButton.disabled = !state.epicFilterActive;
         }
 
-        if (!selected.length) {
+        if (!state.epicFilterActive) {
             epicFilterLabel.textContent = trans('board.all_active_epics');
             epicFilterCount.textContent = '';
+        } else if (!selected.length) {
+            epicFilterLabel.textContent = trans('board.no_epic_selected');
+            epicFilterCount.textContent = '0';
         } else if (selected.length === 1) {
             epicFilterLabel.textContent = epicLabel(
                 selected[0],
@@ -420,16 +468,41 @@ export function mountBoard(root, boardId) {
         }
     }
 
-    function toggleEpic(epicId) {
-        if (state.selectedEpicIds.has(epicId)) {
-            state.selectedEpicIds.delete(epicId);
-        } else {
+    function setEpicSelected(epicId, checked) {
+        const values = availableEpics();
+
+        if (!state.epicFilterActive) {
+            state.selectedEpicIds = new Set(
+                values.map(canonicalEpicId)
+            );
+            state.epicFilterActive = true;
+        }
+
+        if (checked) {
             state.selectedEpicIds.add(epicId);
+        } else {
+            state.selectedEpicIds.delete(epicId);
+        }
+
+        if (
+            values.length > 0
+            && state.selectedEpicIds.size === values.length
+        ) {
+            state.selectedEpicIds.clear();
+            state.epicFilterActive = false;
         }
 
         writeEpicsToUrl();
         updateEpicFilter();
-        renderBoard(state.selectedEpicIds.size > 0);
+        renderBoard(state.epicFilterActive);
+    }
+
+    function setAllEpicsSelected(checked) {
+        state.selectedEpicIds.clear();
+        state.epicFilterActive = !checked;
+        writeEpicsToUrl();
+        updateEpicFilter();
+        renderBoard(state.epicFilterActive);
     }
 
     function renderEpics() {
@@ -450,6 +523,7 @@ export function mountBoard(root, boardId) {
         clearButton.addEventListener('click', event => {
             event.stopPropagation();
             state.selectedEpicIds.clear();
+            state.epicFilterActive = false;
             writeEpicsToUrl();
             updateEpicFilter();
             renderBoard(false);
@@ -457,6 +531,34 @@ export function mountBoard(root, boardId) {
 
         menuHeader.append(menuTitle, clearButton);
         epicFilterMenu.append(menuHeader);
+
+        const allOption = document.createElement('label');
+        allOption.className = 'epic-filter-all-option';
+        allOption.setAttribute('role', 'option');
+        allOption.tabIndex = 0;
+
+        const allInput = document.createElement('input');
+        allInput.type = 'checkbox';
+        allInput.tabIndex = -1;
+
+        const allLabel = document.createElement('span');
+        allLabel.textContent = trans('board.all_active_epics');
+
+        const allCount = document.createElement('span');
+        allCount.className = 'epic-count';
+        allCount.textContent = values.length;
+
+        allOption.append(allInput, allLabel, allCount);
+        allInput.addEventListener('change', () => {
+            setAllEpicsSelected(allInput.checked);
+        }, listenerOptions);
+        allOption.addEventListener('keydown', event => {
+            if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault();
+                allInput.click();
+            }
+        }, listenerOptions);
+        epicFilterMenu.append(allOption);
 
         values.forEach(epic => {
             const id = String(epic.id ?? epic.key);
@@ -490,7 +592,7 @@ export function mountBoard(root, boardId) {
             option.append(input, dot, label, badge);
 
             input.addEventListener('change', () => {
-                toggleEpic(id);
+                setEpicSelected(id, input.checked);
             }, listenerOptions);
 
             option.addEventListener('keydown', event => {
@@ -685,7 +787,7 @@ export function mountBoard(root, boardId) {
             renderFilters();
             updateViewButtons();
             renderBoard(
-                state.selectedEpicIds.size > 0 || hasActiveFilter()
+                state.epicFilterActive || hasActiveFilter()
             );
             await issueRefresher.refresh();
         } catch (error) {
@@ -953,7 +1055,7 @@ export function mountBoard(root, boardId) {
             updateViewButtons();
             updateEpicFilter();
             renderBoard(
-                state.selectedEpicIds.size > 0 || hasActiveFilter()
+                state.epicFilterActive || hasActiveFilter()
             );
         }
     }

@@ -530,20 +530,46 @@ main {
     cursor: pointer;
 }
 
+.epic-filter-all-option {
+    --epic-color: #8b7cf6;
+    min-height: 38px;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 7px;
+    margin-bottom: 3px;
+    border-bottom: 1px solid var(--border-soft);
+    border-radius: var(--radius);
+    color: var(--text);
+    padding: 6px 8px 9px;
+    cursor: pointer;
+    font-weight: 600;
+}
+
 .epic-filter-option:hover,
 .filter-option:hover,
 .epic-filter-option.is-selected,
-.filter-option.is-selected {
+.filter-option.is-selected,
+.epic-filter-all-option:hover,
+.epic-filter-all-option.is-selected,
+.epic-filter-all-option.is-indeterminate {
     background: color-mix(in srgb, var(--epic-color) 10%, transparent);
     color: var(--text);
 }
 
 .epic-filter-option input,
-.filter-option input {
+.filter-option input,
+.epic-filter-all-option input {
     width: 14px;
     height: 14px;
     margin: 0;
     accent-color: var(--epic-color);
+}
+
+.epic-filter-all-option > span:nth-of-type(1) {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .epic-filter-option > span:nth-of-type(2),

@@ -216,6 +216,7 @@ export function statusColumnMap(columns) {
 export function createBoardViewModel({
     data,
     selectedEpicIds,
+    epicFilterActive,
     view,
     searchQuery,
     selectedVersionIds,
@@ -238,7 +239,9 @@ export function createBoardViewModel({
     const selectedEpics = Array.from(selectedEpicIds || [])
         .map(id => epicsById.get(id))
         .filter(Boolean);
-    const filteredIssues = selectedEpics.length
+    const filtersByEpic = epicFilterActive
+        ?? Boolean(selectedEpicIds?.size);
+    const filteredIssues = filtersByEpic
         ? matchingIssues.filter(issue => selectedEpics.some(epic =>
             issueBelongsToEpic(issue, canonicalEpicId(epic))
         ))
@@ -246,7 +249,7 @@ export function createBoardViewModel({
     let groups;
 
     if (view === 'epic') {
-        const displayedEpics = selectedEpics.length ? selectedEpics : epics;
+        const displayedEpics = filtersByEpic ? selectedEpics : epics;
         const hidesEmptyGroups = String(searchQuery || '').trim() !== ''
             || Boolean(selectedVersionIds?.size)
             || Boolean(selectedTypeIds?.size)
@@ -259,7 +262,7 @@ export function createBoardViewModel({
             )
         })).filter(group => !hidesEmptyGroups || group.issues.length > 0);
 
-        if (!selectedEpics.length) {
+        if (!filtersByEpic) {
             const withoutEpic = matchingIssues.filter(issue =>
                 issueEpicIds(issue).size === 0
             );
