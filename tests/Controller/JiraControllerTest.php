@@ -10,6 +10,7 @@ use App\Jira\JiraClient;
 use App\Jira\JiraMediaProxy;
 use App\Jira\JiraViewMapper;
 use App\Jira\Repository\BoardRepository;
+use App\Jira\Repository\UserRepository;
 
 use const JSON_THROW_ON_ERROR;
 
@@ -59,6 +60,12 @@ final class JiraControllerTest extends TestCase
                 $cache,
                 new JiraViewMapper('customfield_10016', 'customfield_10026')
             ),
+            new UserRepository(new JiraClient(
+                new MockHttpClient(),
+                'https://jira.example.test',
+                'user@example.com',
+                'token'
+            )),
             new Translator('fr'),
             new NullLogger()
         );
@@ -262,6 +269,12 @@ final class JiraControllerTest extends TestCase
                 $cache,
                 new JiraViewMapper('customfield_10016', 'customfield_10026')
             ),
+            new UserRepository(new JiraClient(
+                new MockHttpClient(),
+                'https://jira.example.test',
+                'user@example.com',
+                'token'
+            )),
             new Translator('fr'),
             new NullLogger()
         );

@@ -6,6 +6,7 @@ namespace App\Controller;
 
 use App\Board\BoardSnapshotProvider;
 use App\Jira\Repository\BoardRepository;
+use App\Jira\Repository\UserRepository;
 
 use function array_key_exists;
 use function array_slice;
@@ -39,6 +40,7 @@ final class JiraController
         private readonly BoardRepository $jira,
         private readonly CacheInterface $cache,
         private readonly BoardSnapshotProvider $snapshots,
+        private readonly UserRepository $users,
         private readonly TranslatorInterface $translator,
         private readonly LoggerInterface $logger,
     ) {
@@ -258,7 +260,7 @@ final class JiraController
                 function (ItemInterface $item): array {
                     $item->expiresAfter(3600);
 
-                    return $this->jira->getCurrentUser();
+                    return $this->users->getCurrentUser();
                 }
             );
             $response['currentUser'] = [
@@ -285,7 +287,7 @@ final class JiraController
         }
 
         return new JsonResponse([
-            'users' => $this->jira->searchUsers($query),
+            'users' => $this->users->searchUsers($query),
         ]);
     }
 
