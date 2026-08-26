@@ -1,5 +1,6 @@
 framework:
     secret: '%env(APP_SECRET)%'
+    trusted_hosts: ['%env(default:trusted_hosts_default:TRUSTED_HOSTS)%']
     http_client: ~
     router:
         utf8: true

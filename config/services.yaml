@@ -2,6 +2,7 @@ parameters:
     jira.base_url: '%env(JIRA_BASE_URL)%'
     jira.email: '%env(JIRA_EMAIL)%'
     jira.api_token: '%env(JIRA_API_TOKEN)%'
+    trusted_hosts_default: '^(localhost|127\.0\.0\.1|\[::1\])$'
 
 services:
     _defaults:
