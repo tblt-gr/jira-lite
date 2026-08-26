@@ -100,6 +100,19 @@ final class JiraClient
         return $lastPage;
     }
 
+    public function isAvailable(): bool
+    {
+        try {
+            $this->request('GET', '/rest/api/3/myself', [
+                'timeout' => 2,
+            ]);
+
+            return true;
+        } catch (JiraException) {
+            return false;
+        }
+    }
+
     /** @return array<string, mixed> */
     private function decode(ResponseInterface $response): array
     {
