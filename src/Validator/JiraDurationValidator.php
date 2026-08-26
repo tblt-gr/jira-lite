@@ -18,7 +18,7 @@ final class JiraDurationValidator extends ConstraintValidator
             throw new LogicException('Unexpected constraint type.');
         }
 
-        if (is_string($value) && preg_match('/^(?:\d+\s*[wdhm]\s*)+$/i', $value)) {
+        if (null === $value || (is_string($value) && preg_match('/^(?:\d+\s*[wdhm]\s*)+$/i', $value))) {
             return;
         }
 
