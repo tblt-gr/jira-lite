@@ -3,12 +3,12 @@ dialog {
     height: min(94vh, 960px);
     max-height: 960px;
     overflow: hidden;
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
+    border: 1px solid var(--border-soft);
+    border-radius: var(--radius-lg);
     padding: 0;
-    background: var(--surface-raised);
+    background: var(--surface);
     color: var(--text);
-    box-shadow: 0 30px 80px #020617a6;
+    box-shadow: 0 32px 90px #000000a3;
 }
 
 #issue-dialog[open] {
@@ -26,7 +26,7 @@ dialog::backdrop {
     align-items: flex-start;
     justify-content: space-between;
     gap: 20px;
-    padding: 18px 22px 16px;
+    padding: 14px 18px;
     border-bottom: 1px solid var(--border-soft);
 }
 
@@ -36,9 +36,11 @@ dialog::backdrop {
 }
 
 .dialog-head h2 {
-    margin: 5px 0 0;
-    font-size: 21px;
+    margin: 4px 0 0;
+    font-size: 19px;
+    font-weight: 600;
     line-height: 1.3;
+    letter-spacing: -.01em;
 }
 
 .dialog-actions {
@@ -49,20 +51,23 @@ dialog::backdrop {
 }
 
 .open-issue-button {
+    height: 28px;
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    border: 1px solid var(--border);
+    border: 1px solid var(--chip-border);
     border-radius: var(--radius);
-    background: var(--surface-soft);
+    background: var(--chip);
     color: var(--text);
-    padding: 7px 10px;
+    padding: 0 10px;
     font-size: 12px;
+    font-weight: 500;
     text-decoration: none;
+    transition: background 120ms ease, border-color 120ms ease;
 }
 
 .open-issue-button:hover {
-    border-color: color-mix(in srgb, var(--border) 60%, var(--text-muted));
+    border-color: var(--card-border-hover);
     background: var(--card-hover);
 }
 
@@ -71,30 +76,31 @@ dialog::backdrop {
 }
 
 #close-dialog {
-    width: 34px;
-    height: 34px;
+    width: 28px;
+    height: 28px;
     display: grid;
     place-items: center;
     padding: 0;
     border: 0;
+    border-radius: var(--radius);
     background: transparent;
     color: var(--text-muted);
 }
 
 #close-dialog .ui-icon {
-    width: 20px;
-    height: 20px;
+    width: 16px;
+    height: 16px;
 }
 
 #close-dialog:hover {
-    background: transparent;
+    background: var(--chip);
     color: var(--text);
 }
 
 .issue-key {
-    color: var(--text-muted);
-    font-size: 11px;
-    font-weight: 700;
+    color: var(--text-subtle);
+    font-size: 12px;
+    font-weight: 500;
 }
 
 .issue-dialog-layout {
@@ -113,16 +119,16 @@ dialog::backdrop {
 .issue-sidebar {
     overflow-y: auto;
     border-left: 1px solid var(--border-soft);
-    padding: 18px 16px 28px;
-    background: color-mix(in srgb, var(--surface-soft) 46%, transparent);
+    padding: 16px 16px 28px;
+    background: var(--bg);
 }
 
 .issue-sidebar > h3,
 .issue-content-section > h3 {
-    margin: 0 0 13px;
+    margin: 0 0 12px;
     color: var(--text);
-    font-size: 13px;
-    font-weight: 700;
+    font-size: 15px;
+    font-weight: 600;
 }
 
 .issue-sidebar .issue-meta {
@@ -138,9 +144,9 @@ dialog::backdrop {
     grid-template-columns: 92px minmax(0, 1fr);
     align-items: center;
     gap: 10px;
-    padding: 8px 0;
+    padding: 7px 0;
     color: var(--text);
-    font-size: 12px;
+    font-size: 12.5px;
 }
 
 .issue-meta-label {
@@ -212,10 +218,15 @@ dialog::backdrop {
     display: none;
 }
 
-.issue-links-list,
+.issue-links-list {
+    display: grid;
+    gap: 8px;
+    color: var(--text-muted);
+}
+
 .issue-comments-list {
     display: grid;
-    gap: 10px;
+    gap: 14px;
     color: var(--text-muted);
 }
 
@@ -226,17 +237,18 @@ dialog::backdrop {
     align-items: center;
     justify-content: space-between;
     gap: 14px;
-    border: 1px solid var(--border-soft);
-    border-radius: var(--radius);
-    background: var(--surface-soft);
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius-card);
+    background: var(--card);
     color: inherit;
-    padding: 9px 10px;
+    padding: 9px 11px;
     font: inherit;
     text-align: left;
+    transition: background 120ms ease, border-color 120ms ease;
 }
 
 .issue-link-card:hover {
-    border-color: color-mix(in srgb, var(--primary) 45%, var(--border));
+    border-color: var(--card-border-hover);
     background: var(--card-hover);
 }
 
@@ -269,10 +281,16 @@ dialog::backdrop {
 }
 
 .issue-link-status {
-    border: 1px solid var(--border);
-    border-radius: 999px;
-    padding: 2px 6px;
+    height: 20px;
+    display: inline-flex;
+    align-items: center;
+    border: 1px solid var(--chip-border);
+    border-radius: 5px;
+    background: var(--chip);
+    padding: 0 7px;
     color: var(--text-muted);
+    font-size: 11px;
+    font-weight: 500;
 }
 
 .issue-attachments-list {
@@ -285,9 +303,9 @@ dialog::backdrop {
     min-width: 0;
     overflow: hidden;
     margin: 0;
-    border: 1px solid var(--border-soft);
-    border-radius: var(--radius);
-    background: var(--surface-soft);
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius-card);
+    background: var(--card);
 }
 
 .issue-attachment-card figcaption {
@@ -450,22 +468,27 @@ a.issue-image-preview {
 }
 
 .issue-comment {
-    border: 1px solid var(--border-soft);
-    border-radius: var(--radius);
-    background: var(--surface-soft);
-    padding: 12px;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    padding: 0;
+}
+
+.issue-comment + .issue-comment {
+    border-top: 1px solid var(--border-soft);
+    padding-top: 14px;
 }
 
 .issue-comment > header {
     display: flex;
     align-items: center;
-    gap: 9px;
-    margin-bottom: 9px;
+    gap: 8px;
+    margin-bottom: 6px;
 }
 
 .issue-comment-avatar {
-    width: 30px;
-    height: 30px;
+    width: 22px;
+    height: 22px;
     flex: 0 0 auto;
     border-radius: 50%;
     object-fit: cover;
@@ -473,24 +496,35 @@ a.issue-image-preview {
 
 .issue-comment-author {
     min-width: 0;
-    display: grid;
+    display: flex;
+    align-items: baseline;
+    gap: 7px;
 }
 
 .issue-comment-author strong {
     overflow: hidden;
     color: var(--text);
-    font-size: 12px;
+    font-size: 13px;
+    font-weight: 600;
     text-overflow: ellipsis;
     white-space: nowrap;
 }
 
 .issue-comment-author time {
+    flex: 0 0 auto;
     color: var(--text-subtle);
-    font-size: 10px;
+    font-size: 11px;
+}
+
+.issue-comment-author time::before {
+    margin-right: 7px;
+    content: '·';
 }
 
 .issue-comment-body {
+    padding-left: 30px;
     color: var(--text-muted);
+    font-size: 13.5px;
     line-height: 1.6;
     white-space: pre-wrap;
 }
@@ -577,34 +611,43 @@ a.issue-image-preview {
 }
 
 .issue-section-heading h3,
-.activity-heading h3,
-.sidebar-panel-heading h3 {
+.activity-heading h3 {
     margin: 0;
     color: var(--text);
-    font-size: 13px;
-    font-weight: 700;
+    font-size: 15px;
+    font-weight: 600;
+}
+
+.sidebar-panel-heading h3 {
+    margin: 0;
+    color: var(--text-muted);
+    font-size: 12px;
+    font-weight: 600;
 }
 
 .section-edit-button {
+    height: 24px;
     border: 0;
+    border-radius: var(--radius-sm);
     background: transparent;
-    color: var(--primary-hover);
-    padding: 4px 6px;
+    color: var(--text-muted);
+    padding: 0 7px;
     font-size: 11px;
-    font-weight: 650;
+    font-weight: 500;
 }
 
 .section-edit-button:hover {
-    background: var(--primary-soft);
+    background: var(--chip);
+    color: var(--text);
 }
 
 .inline-edit-form,
 .stacked-edit-form,
 .sidebar-fields-form,
 .comment-form {
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    background: var(--surface-soft);
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius-card);
+    background: var(--card);
 }
 
 .inline-edit-form[hidden],
@@ -627,13 +670,15 @@ a.issue-image-preview {
 .comment-form textarea {
     width: 100%;
     min-width: 0;
-    border: 1px solid var(--border);
+    border: 1px solid var(--border-soft);
     border-radius: var(--radius);
     outline: none;
-    background: var(--surface-raised);
+    background: var(--surface-soft);
     color: var(--text);
-    padding: 9px 10px;
+    padding: 8px 10px;
     font: inherit;
+    font-size: 13px;
+    transition: border-color 120ms ease, box-shadow 120ms ease;
 }
 
 .inline-edit-form input:focus,
@@ -641,8 +686,8 @@ a.issue-image-preview {
 .stacked-edit-form textarea:focus,
 .sidebar-fields-form input:focus,
 .comment-form textarea:focus {
-    border-color: var(--focus);
-    box-shadow: 0 0 0 3px color-mix(in srgb, var(--focus) 13%, transparent);
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-soft);
 }
 
 .title-edit-form {
@@ -674,7 +719,7 @@ a.issue-image-preview {
 }
 
 .title-edit-form #summary-input:focus {
-    box-shadow: 0 0 0 3px color-mix(in srgb, var(--focus) 13%, transparent);
+    box-shadow: 0 0 0 3px var(--accent-soft);
 }
 
 .description-edit-form {
@@ -702,7 +747,7 @@ a.issue-image-preview {
 }
 
 .description-edit-form #description-input:focus {
-    box-shadow: 0 0 0 3px color-mix(in srgb, var(--focus) 13%, transparent);
+    box-shadow: 0 0 0 3px var(--accent-soft);
 }
 
 .description-edit-form .confirm-button {
@@ -765,14 +810,19 @@ a.issue-image-preview {
 
 .activity-tab.is-active,
 .activity-tab:hover {
-    background: var(--primary-soft);
-    color: var(--primary-hover);
+    background: var(--chip);
+    color: var(--text);
 }
 
 .comment-form {
     position: relative;
-    margin-bottom: 16px;
-    padding: 8px;
+    margin-bottom: 20px;
+    padding: 10px;
+    transition: border-color 120ms ease;
+}
+
+.comment-form:focus-within {
+    border-color: var(--card-border-hover);
 }
 
 .comment-reply-context {
@@ -782,8 +832,8 @@ a.issue-image-preview {
     gap: 6px;
     margin: 1px 4px 4px;
     border-radius: 999px;
-    background: var(--primary-soft);
-    color: var(--primary-hover);
+    background: var(--accent-soft);
+    color: var(--text);
     padding: 3px 5px 3px 9px;
     font-size: 10px;
 }
@@ -833,8 +883,17 @@ a.issue-image-preview {
 }
 
 .comment-form-footer button {
-    padding: 6px 10px;
-    font-size: 11px;
+    height: 28px;
+    border-color: transparent;
+    background: var(--accent);
+    color: var(--on-accent);
+    padding: 0 12px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.comment-form-footer button:hover {
+    background: var(--primary-hover);
 }
 
 .emoji-picker {
@@ -858,7 +917,7 @@ a.issue-image-preview {
 
 .emoji-picker-trigger:hover,
 .emoji-picker-trigger[aria-expanded="true"] {
-    background: var(--primary-soft);
+    background: var(--chip);
 }
 
 .emoji-menu {
@@ -893,7 +952,7 @@ a.issue-image-preview {
 
 .emoji-option:hover,
 .emoji-option:focus-visible {
-    background: var(--primary-soft);
+    background: var(--chip);
     transform: scale(1.08);
 }
 
@@ -930,8 +989,8 @@ a.issue-image-preview {
 
 .mention-option:hover,
 .mention-option.is-active {
-    background: var(--primary-soft);
-    color: var(--primary-hover);
+    background: var(--accent-soft);
+    color: var(--text);
 }
 
 .mention-avatar {
@@ -952,10 +1011,10 @@ a.issue-image-preview {
 
 .comment-mention {
     border-radius: 3px;
-    background: var(--primary-soft);
-    color: var(--primary-hover);
+    background: var(--accent-soft);
+    color: var(--text);
     padding: 1px 3px;
-    font-weight: 650;
+    font-weight: 550;
 }
 
 .issue-comment-actions {
@@ -963,19 +1022,27 @@ a.issue-image-preview {
     align-items: center;
     gap: 2px;
     margin-left: auto;
+    opacity: 0;
+    transition: opacity 120ms ease;
+}
+
+.issue-comment:hover .issue-comment-actions,
+.issue-comment:focus-within .issue-comment-actions {
+    opacity: 1;
 }
 
 .issue-comment-actions button {
     border: 0;
+    border-radius: var(--radius-sm);
     background: transparent;
     color: var(--text-subtle);
-    padding: 4px 6px;
-    font-size: 10px;
+    padding: 3px 7px;
+    font-size: 11px;
 }
 
 .issue-comment-actions button:hover {
-    background: var(--primary-soft);
-    color: var(--primary-hover);
+    background: var(--chip);
+    color: var(--text);
 }
 
 .issue-comment-actions .comment-delete-button:hover {
@@ -1002,15 +1069,15 @@ a.issue-image-preview {
 }
 
 .comment-edit-form textarea:focus {
-    border-color: var(--focus);
-    box-shadow: 0 0 0 3px color-mix(in srgb, var(--focus) 13%, transparent);
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-soft);
 }
 
 .issue-sidebar-panel {
     margin-top: 10px;
-    border: 1px solid var(--border-soft);
-    border-radius: var(--radius);
-    background: color-mix(in srgb, var(--surface-soft) 72%, transparent);
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius-card);
+    background: var(--card);
     padding: 14px;
 }
 
