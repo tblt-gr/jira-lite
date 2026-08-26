@@ -69,7 +69,7 @@
         {% elseif boards is empty %}
             <div class="home-message">{{ 'home.no_boards'|trans }}</div>
         {% else %}
-            <div class="home-board-grid">
+            <div class="home-board-grid" data-controller="home">
                 {% for board in boards %}
                     {% set icon = board.location.avatarURI
                         ?? board.location.avatarUrl
@@ -78,6 +78,10 @@
                         ?? board.location.projectName
                         ?? board.location.name
                         ?? null %}
+                    <div
+                        class="home-board-item"
+                        data-board-id="{{ board.id }}"
+                    >
                     <a
                         class="home-board-card"
                         href="{{ path('app_board', { boardId: board.id }) }}"
@@ -109,6 +113,26 @@
                             <path d="m7.5 5 5 5-5 5" />
                         </svg>
                     </a>
+                    <button
+                        class="favorite-button"
+                        type="button"
+                        data-board-id="{{ board.id }}"
+                        data-label-add="{{ 'board.favorite_add'|trans }}"
+                        data-label-remove="{{ 'board.favorite_remove'|trans }}"
+                        aria-pressed="false"
+                        title="{{ 'board.favorite_add'|trans }}"
+                        aria-label="{{ 'board.favorite_add'|trans }}"
+                    >
+                        <svg
+                            class="favorite-icon"
+                            viewBox="0 0 24 24"
+                            aria-hidden="true"
+                            focusable="false"
+                        >
+                            <path d="m12 3.8 2.5 5.1 5.6.8-4 4 .9 5.6-5-2.7-5 2.7.9-5.6-4-4 5.6-.8z" />
+                        </svg>
+                    </button>
+                    </div>
                 {% endfor %}
             </div>
         {% endif %}

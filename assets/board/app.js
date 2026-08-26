@@ -8,6 +8,7 @@ import { createIssueDialog } from './issue-dialog.js';
 import { createDragDrop } from './drag-drop.js';
 import { trans } from './i18n.js';
 import { createMultiSelect } from './multi-select.js';
+import { createFavoriteButton, favoritesFirst } from '../favorites.js';
 import {
     WITHOUT_VERSION_ID,
     availableColumns as selectAvailableColumns,
@@ -809,6 +810,15 @@ export function mountBoard(root, boardId) {
                     window.location.assign(target);
                 }
             },
+            renderSuffix: option => createFavoriteButton({
+                boardId: option.id,
+                labels: {
+                    add: trans('board.favorite_add'),
+                    remove: trans('board.favorite_remove')
+                },
+                onToggle: () => renderBoardOptions(),
+                signal: lifecycleController.signal
+            }),
             signal: lifecycleController.signal
         });
 
@@ -817,7 +827,8 @@ export function mountBoard(root, boardId) {
 
     function renderBoardOptions() {
         boardSwitcher?.setOptions(
-            boardOptions.map(({ id, name }) => ({ id, name }))
+            favoritesFirst(boardOptions, option => option.id)
+                .map(({ id, name }) => ({ id, name }))
         );
     }
 

@@ -536,18 +536,64 @@ main {
     width: 7px;
     height: 7px;
     border-radius: 50%;
-    box-shadow: 0 0 0 3px color-mix(in srgb, var(--epic-color) 16%, transparent);
 }
 
 .epic-count,
 .filter-option-count {
     min-width: 20px;
     padding: 1px 5px;
-    border-radius: var(--radius);
+    border-radius: var(--radius-sm);
     background: color-mix(in srgb, var(--text-muted) 12%, transparent);
     color: var(--text-muted);
     font-size: 10px;
     text-align: center;
+}
+
+.filter-option-count:empty {
+    display: none;
+}
+
+.board-switcher .filter-option {
+    --epic-color: var(--text);
+    grid-template-columns: auto auto minmax(0, 1fr) auto auto;
+}
+
+.favorite-button {
+    width: 26px;
+    height: 26px;
+    flex: 0 0 auto;
+    display: grid;
+    place-items: center;
+    padding: 0;
+    border-color: transparent;
+    border-radius: var(--radius-sm);
+    background: transparent;
+    color: var(--text-subtle);
+    transition: color 120ms ease, background 120ms ease;
+}
+
+.favorite-button:hover {
+    background: var(--chip);
+    color: var(--text);
+}
+
+.favorite-button.is-favorite,
+.favorite-button.is-favorite:hover {
+    color: var(--favorite);
+}
+
+.favorite-icon {
+    width: 15px;
+    height: 15px;
+    display: block;
+    fill: none;
+    stroke: currentColor;
+    stroke-linejoin: round;
+    stroke-width: 1.6;
+}
+
+.favorite-button.is-favorite .favorite-icon {
+    fill: currentColor;
 }
 
 .epic-filter-empty,

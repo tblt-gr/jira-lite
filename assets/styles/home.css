@@ -4,7 +4,7 @@
 
 .home-main {
     height: auto;
-    min-height: calc(100vh - 64px);
+    min-height: calc(100vh - 52px);
     display: block;
     padding: 42px 24px;
 }
@@ -58,26 +58,33 @@
     gap: 12px;
 }
 
-.home-board-card {
+.home-board-item {
     min-width: 0;
+    position: relative;
     display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 15px;
-    border: 1px solid var(--border-soft);
-    border-radius: var(--radius);
-    background: var(--surface);
-    color: inherit;
-    box-shadow: var(--shadow);
-    text-decoration: none;
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius-card);
+    background: var(--card);
+    box-shadow: var(--card-shadow);
     transition: border-color 140ms ease, background 140ms ease,
         transform 140ms ease;
 }
 
-.home-board-card:hover {
+.home-board-item:hover {
     transform: translateY(-2px);
-    border-color: color-mix(in srgb, var(--primary) 45%, var(--border));
+    border-color: var(--card-border-hover);
     background: var(--card-hover);
+}
+
+.home-board-card {
+    min-width: 0;
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 15px 42px 15px 15px;
+    color: inherit;
+    text-decoration: none;
 }
 
 .home-board-icon {
@@ -132,6 +139,13 @@
     stroke-linecap: round;
     stroke-linejoin: round;
     stroke-width: 1.8;
+}
+
+.home-board-item > .favorite-button {
+    position: absolute;
+    top: 50%;
+    right: 12px;
+    transform: translateY(-50%);
 }
 
 .home-message {
