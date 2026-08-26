@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="{{ app.request.locale }}" data-theme="dark">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ 'error.server_title'|trans }}</title>
+    {{ importmap('app', {nonce: app.request.attributes.get('_csp_nonce')}) }}
+</head>
+<body class="home-page">
+<main class="home-main">
+    <section class="home-shell">
+        <div class="home-heading">
+            <div>
+                <span class="home-eyebrow">500</span>
+                <h1>{{ 'error.server_title'|trans }}</h1>
+                <p>{{ 'error.server_message'|trans }}</p>
+            </div>
+        </div>
+        <a class="button button-primary" href="{{ path('app_home') }}">
+            {{ 'error.back_home'|trans }}
+        </a>
+    </section>
+</main>
+</body>
+</html>

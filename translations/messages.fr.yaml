@@ -215,6 +215,12 @@ api.jira_rate_limited: Jira limite temporairement les requêtes. Réessayez dans
 api.jira_unavailable: Jira est temporairement indisponible. Réessayez dans un instant.
 api.http_error: Erreur HTTP {status}
 
+error.not_found_title: Page introuvable
+error.not_found_message: Cette page n’existe pas ou n’est plus disponible.
+error.server_title: Une erreur est survenue
+error.server_message: Réessayez dans un instant. Si le problème persiste, vérifiez la configuration Jira.
+error.back_home: Retour aux boards
+
 media.invalid_attachment: Identifiant de pièce jointe invalide.
 media.invalid_redirect: Redirection média invalide.
 media.unavailable: Média Jira indisponible.
