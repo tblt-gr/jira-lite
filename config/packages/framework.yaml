@@ -6,3 +6,7 @@ framework:
         utf8: true
     csrf_protection:
         stateless_token_ids: ['jira_api']
+
+when@test:
+    framework:
+        test: true
