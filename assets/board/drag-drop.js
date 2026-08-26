@@ -24,8 +24,11 @@ export function createDragDrop(context) {
     }
 
     function clearForbiddenTargets() {
-        board.querySelectorAll('.column.is-drop-forbidden')
-            .forEach(column => column.classList.remove('is-drop-forbidden'));
+        board.querySelectorAll('.column.is-drop-forbidden, .column.is-drop-allowed')
+            .forEach(column => column.classList.remove(
+                'is-drop-forbidden',
+                'is-drop-allowed'
+            ));
     }
 
     function acceptsStatuses(targetStatusIds) {
@@ -59,10 +62,15 @@ export function createDragDrop(context) {
             const ids = Array.from(statusIds);
             // La colonne d'origine reste neutre : le drop y est déjà ignoré.
             const isSource = ids.some(id => sourceStatusIds.has(id));
+            const isAllowed = ids.some(id => allowed.has(id));
 
             columnElement.classList.toggle(
                 'is-drop-forbidden',
-                !isSource && !ids.some(id => allowed.has(id))
+                !isSource && !isAllowed
+            );
+            columnElement.classList.toggle(
+                'is-drop-allowed',
+                !isSource && isAllowed
             );
         });
     }
