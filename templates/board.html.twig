@@ -1,10 +1,24 @@
+{% set current_board = boards|default([])|filter(
+    board => board.id == boardId
+)|first %}
+{% set current_board_icon = current_board.location.avatarURI
+    ?? current_board.location.avatarUrl
+    ?? null %}
+{% set current_board_icon_url = current_board_icon
+    ? path('app_jira_media', { url: current_board_icon })
+    : asset('images/favicon.png') %}
 <!doctype html>
 <html lang="{{ app.request.locale }}" data-theme="dark">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{{ 'app.title'|trans }}</title>
-    <link id="page-icon" rel="icon" href="{{ asset('images/favicon.png') }}" type="image/png">
+    <title>{{ current_board.name|default('app.title'|trans) }}</title>
+    <link
+        id="page-icon"
+        rel="icon"
+        href="{{ current_board_icon_url }}"
+        {% if not current_board_icon %}type="image/png"{% endif %}
+    >
     {{ importmap('app') }}
 </head>
 <body

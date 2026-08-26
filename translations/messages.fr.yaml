@@ -9,7 +9,7 @@ common.unassigned: Non assigné
 common.unnamed_board: Board sans nom
 common.empty_comment: Commentaire vide.
 app.title: Jira Lite
-app.jira: Jira
+app.jira: Jira Lite
 
 theme.change: Changer de thème
 theme.activate_light: Activer le thème clair
@@ -27,6 +27,10 @@ home.load_error: Impossible de charger les boards Jira pour le moment.
 board.search_placeholder: Rechercher par clé ou résumé
 board.search_aria: Rechercher un ticket
 board.reload: Actualiser
+board.back_home: Retour aux boards
+board.switch_board: Changer de board
+board.favorite_add: Ajouter aux favoris
+board.favorite_remove: Retirer des favoris
 board.all_active_epics: Tous les epics actifs
 board.collapse_all: Tout réduire
 board.expand_all: Tout développer

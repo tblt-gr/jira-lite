@@ -73,6 +73,10 @@ export function mountBoard(root, boardId) {
     const toastRegion = root.querySelector('#toast-region');
     const pageIcon = document.querySelector('#page-icon');
     const boardIcon = root.querySelector('#board-icon');
+    const boardSwitcherNative = root.querySelector('#board-switcher-native');
+    const boardNameLabel = root.querySelector('#board-name');
+    let boardSwitcher = null;
+    let boardOptions = [];
     const collapsedEpicsStorageKey = `jira-lite:${boardId}:collapsed-epics`;
 
     function schedule(callback, delay) {
@@ -83,6 +87,38 @@ export function mountBoard(root, boardId) {
         toastTimers.add(timer);
 
         return timer;
+    }
+
+    function setBoardName(name) {
+        if (boardNameLabel) {
+            boardNameLabel.textContent = name;
+        }
+
+        if (!boardSwitcher) {
+            return;
+        }
+
+        boardOptions = boardOptions.map(option =>
+            option.id === String(boardId) ? { ...option, name } : option
+        );
+        renderBoardOptions();
+    }
+
+    /**
+     * L'icône est déjà rendue côté serveur : on ne réassigne la source
+     * que si elle change réellement, sinon l'image reclignote.
+     */
+    function isSameMedia(current, next) {
+        try {
+            const from = new URL(current, window.location.origin);
+            const to = new URL(next, window.location.origin);
+
+            return from.pathname === to.pathname
+                && from.searchParams.get('url')
+                    === to.searchParams.get('url');
+        } catch {
+            return false;
+        }
     }
 
     function updatePageIcon(boardData) {
@@ -96,9 +132,13 @@ export function mountBoard(root, boardId) {
 
         const mediaUrl = jiraMediaUrl(iconUrl);
 
-        if (pageIcon) {
+        if (pageIcon && !isSameMedia(pageIcon.getAttribute('href'), mediaUrl)) {
             pageIcon.removeAttribute('type');
             pageIcon.href = mediaUrl;
+        }
+
+        if (boardIcon && isSameMedia(boardIcon.getAttribute('src'), mediaUrl)) {
+            return;
         }
 
         if (boardIcon) {
@@ -629,8 +669,7 @@ export function mountBoard(root, boardId) {
                 await api(`/api/jira/board/${boardId}`, { signal });
             issueRefresher.setCursor(state.data.issues?.snapshotAt);
 
-            root.querySelector('#board-name').textContent =
-                state.data.board?.name || trans('app.title');
+            setBoardName(state.data.board?.name || trans('app.title'));
             updatePageIcon(state.data.board);
             root.querySelector('#sprint-name').textContent =
                 currentSprintName(state.data.issues?.issues || []);
@@ -731,6 +770,57 @@ export function mountBoard(root, boardId) {
         });
     }
 
+    function mountBoardSwitcher() {
+        const container = root.querySelector('#board-switcher');
+
+        if (!container || !boardSwitcherNative) {
+            return;
+        }
+
+        boardOptions = Array.from(boardSwitcherNative.options).map(option => ({
+            id: option.value,
+            name: option.textContent.trim(),
+            url: option.dataset.url
+        }));
+
+        if (!boardOptions.length) {
+            return;
+        }
+
+        const selectedBoardIds = new Set([String(boardId)]);
+
+        boardSwitcher = createMultiSelect({
+            container,
+            labels: {
+                all: trans('common.unnamed_board'),
+                title: trans('board.switch_board'),
+                clear: trans('board.clear_all'),
+                empty: trans('board.no_filter_value'),
+                selected: () => ''
+            },
+            selected: selectedBoardIds,
+            multiple: false,
+            onChange: () => {
+                const [selectedId] = Array.from(selectedBoardIds);
+                const target = boardOptions
+                    .find(option => option.id === selectedId)?.url;
+
+                if (target && selectedId !== String(boardId)) {
+                    window.location.assign(target);
+                }
+            },
+            signal: lifecycleController.signal
+        });
+
+        renderBoardOptions();
+    }
+
+    function renderBoardOptions() {
+        boardSwitcher?.setOptions(
+            boardOptions.map(({ id, name }) => ({ id, name }))
+        );
+    }
+
     const versionSelect = createFilterSelect(
         versionFilter,
         { all: 'board.all_versions', title: 'board.versions_title' },
@@ -819,6 +909,8 @@ export function mountBoard(root, boardId) {
 
     root.querySelector('#reload')
         .addEventListener('click', loadBoard, listenerOptions);
+
+    mountBoardSwitcher();
 
     loadBoard();
 

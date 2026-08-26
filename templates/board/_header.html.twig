@@ -1,17 +1,75 @@
 <header class="topbar">
-    <a class="brand brand-link" href="{{ path('app_home') }}">
+    <div class="brand">
+        <a
+            class="icon-button home-button"
+            href="{{ path('app_home') }}"
+            title="{{ 'board.back_home'|trans }}"
+            aria-label="{{ 'board.back_home'|trans }}"
+        >
+            <svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M4 10.5 12 4l8 6.5" />
+                <path d="M6 9.5V19a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1V9.5" />
+            </svg>
+        </a>
         <img
             id="board-icon"
             class="brand-mark"
-            src="{{ asset('images/favicon.png') }}"
+            src="{{ current_board_icon_url|default(asset('images/favicon.png')) }}"
             alt=""
             aria-hidden="true"
         >
         <div class="board-identity">
-            <strong id="board-name">{{ 'app.title'|trans }}</strong>
+            {% if boards|default([])|length %}
+                <div class="board-switcher-field">
+                    <label class="sr-only" for="board-switcher-native">
+                        {{ 'board.switch_board'|trans }}
+                    </label>
+                    {# Gabarit rendu côté serveur : le script le remplace
+                       par la liste déroulante, sans clignotement. #}
+                    <div
+                        id="board-switcher"
+                        class="filter-multiselect board-switcher is-single"
+                    >
+                        <button
+                            class="filter-trigger"
+                            type="button"
+                            aria-haspopup="listbox"
+                            aria-expanded="false"
+                        >
+                            <span class="filter-label">{{
+                                current_board.name
+                                    |default('common.unnamed_board'|trans)
+                            }}</span>
+                            <svg
+                                class="filter-chevron"
+                                viewBox="0 0 20 20"
+                                aria-hidden="true"
+                                focusable="false"
+                            >
+                                <path d="m5 7.5 5 5 5-5" />
+                            </svg>
+                        </button>
+                    </div>
+                    <select
+                        id="board-switcher-native"
+                        class="board-switcher-native"
+                        hidden
+                    >
+                        {% for board in boards %}
+                            <option
+                                value="{{ board.id }}"
+                                data-url="{{ path('app_board', { boardId: board.id }) }}"
+                                {{ board.id == boardId ? 'selected' : '' }}
+                            >{{ board.name|default('common.unnamed_board'|trans) }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            {% else %}
+                <strong id="board-name">{{ 'app.title'|trans }}</strong>
+            {% endif %}
             <span id="sprint-name" class="board-context"></span>
         </div>
-    </a>
+    </div>
 
     <div class="search-field">
         <svg class="ui-icon search-icon" viewBox="0 0 24 24" aria-hidden="true">
@@ -31,12 +89,13 @@
             id="reload"
             class="secondary-button reload-button"
             type="button"
+            title="{{ 'board.reload'|trans }}"
+            aria-label="{{ 'board.reload'|trans }}"
         >
             <svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true">
                 <path d="M20 11a8 8 0 1 0-2.34 5.66" />
                 <path d="M20 4v7h-7" />
             </svg>
-            {{ 'board.reload'|trans }}
         </button>
         <button
             id="theme-toggle"
