@@ -33,6 +33,9 @@ APP_SECRET=use-a-long-random-value
 JIRA_BASE_URL=https://your-instance.atlassian.net
 JIRA_EMAIL=you@example.com
 JIRA_API_TOKEN=your-api-token
+# Override these only when your Jira instance uses different custom field IDs.
+JIRA_STORY_POINTS_FIELD=customfield_10016
+JIRA_FALLBACK_STORY_POINTS_FIELD=customfield_10026
 ```
 
 Generate a suitable application secret with:

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Board;
 
+use App\Jira\Dto\BoardIssue;
+use App\Jira\Dto\BoardSnapshot;
 use App\Jira\JiraViewMapper;
 use App\Service\JiraApiService;
 
@@ -26,10 +28,9 @@ final class BoardSnapshotProvider
     ) {
     }
 
-    /** @return array<string, mixed> */
-    public function getSnapshot(int $boardId): array
+    public function getSnapshot(int $boardId): BoardSnapshot
     {
-        return [
+        return BoardSnapshot::fromJira([
             'board' => $this->cache->get(
                 sprintf('jira.board.%d', $boardId),
                 function (ItemInterface $item) use ($boardId): array {
@@ -67,11 +68,11 @@ final class BoardSnapshotProvider
                     return $issues;
                 }
             ),
-        ];
+        ]);
     }
 
     /**
-     * @return array{cursor: string, issues: list<array<string, mixed>>, removed: list<string>}
+     * @return array{cursor: string, issues: list<BoardIssue>, removed: list<string>}
      */
     public function getChanges(int $boardId, DateTimeImmutable $since): array
     {
@@ -87,13 +88,15 @@ final class BoardSnapshotProvider
                 continue;
             }
 
-            if ($this->isInActiveSprint($issue)) {
-                $active[] = $this->mapper->boardIssue(
-                    $issue,
-                    is_array($response['names'] ?? null)
-                        ? $response['names']
-                        : []
-                );
+            $mappedIssue = $this->mapper->boardIssue(
+                $issue,
+                is_array($response['names'] ?? null)
+                    ? $response['names']
+                    : []
+            );
+
+            if ($mappedIssue->hasActiveSprint('sprint')) {
+                $active[] = $mappedIssue;
             } else {
                 $removed[] = (string) $issue['key'];
             }
@@ -114,38 +117,5 @@ final class BoardSnapshotProvider
     private function issuesCacheKey(int $boardId): string
     {
         return sprintf('jira.board.%d.issues', $boardId);
-    }
-
-    /**
-     * @param array<string, mixed> $issue
-     */
-    private function isInActiveSprint(array $issue): bool
-    {
-        $fields = is_array($issue['fields'] ?? null)
-            ? $issue['fields']
-            : [];
-
-        foreach ($fields as $field => $value) {
-            if (
-                !str_contains(strtolower((string) $field), 'sprint')
-                || !is_array($value)
-            ) {
-                continue;
-            }
-
-            $sprints = isset($value['state']) ? [$value] : $value;
-
-            foreach ($sprints as $sprint) {
-                if (
-                    is_array($sprint)
-                    && 'active'
-                        === strtolower((string) ($sprint['state'] ?? ''))
-                ) {
-                    return true;
-                }
-            }
-        }
-
-        return false;
     }
 }

@@ -11,7 +11,7 @@ final class JiraViewMapperTest extends TestCase
 {
     public function testItKeepsOnlyBoardFieldsAndNamedCustomFields(): void
     {
-        $mapper = new JiraViewMapper();
+        $mapper = $this->mapper();
         $result = $mapper->boardIssues([
             'names' => [
                 'customfield_1' => 'Epic Link',
@@ -30,32 +30,44 @@ final class JiraViewMapperTest extends TestCase
             ]],
         ]);
 
-        self::assertSame('APP-1', $result['issues'][0]['key']);
+        $issue = $result['issues'][0]->jsonSerialize();
+
+        self::assertSame('APP-1', $issue['key']);
         self::assertSame(
             ['summary', 'status', 'customfield_1'],
-            array_keys($result['issues'][0]['fields'])
+            array_keys($issue['fields'])
         );
     }
 
     public function testItKeepsFixVersionsForTheVersionFilter(): void
     {
-        $result = (new JiraViewMapper())->boardIssue([
+        $result = $this->mapper()->boardIssue([
             'key' => 'APP-3',
             'fields' => [
                 'fixVersions' => [['id' => '10', 'name' => '1.4.0']],
             ],
         ]);
 
+        $issue = $result->jsonSerialize();
+
         self::assertSame(
             [['id' => '10', 'name' => '1.4.0']],
-            $result['fields']['fixVersions']
+            $issue['fields']['fixVersions']
         );
     }
 
     public function testItAcceptsMissingFields(): void
     {
-        $result = (new JiraViewMapper())->boardIssue(['key' => 'APP-2']);
+        $result = $this->mapper()->boardIssue(['key' => 'APP-2']);
 
-        self::assertSame(['key' => 'APP-2', 'fields' => []], $result);
+        self::assertSame(
+            ['key' => 'APP-2', 'fields' => []],
+            $result->jsonSerialize()
+        );
+    }
+
+    private function mapper(): JiraViewMapper
+    {
+        return new JiraViewMapper('customfield_10016', 'customfield_10026');
     }
 }

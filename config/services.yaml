@@ -2,6 +2,10 @@ parameters:
     jira.base_url: '%env(JIRA_BASE_URL)%'
     jira.email: '%env(JIRA_EMAIL)%'
     jira.api_token: '%env(JIRA_API_TOKEN)%'
+    jira.fields.story_points: '%env(default:jira_story_points_field_default:JIRA_STORY_POINTS_FIELD)%'
+    jira.fields.fallback_story_points: '%env(default:jira_fallback_story_points_field_default:JIRA_FALLBACK_STORY_POINTS_FIELD)%'
+    jira_story_points_field_default: 'customfield_10016'
+    jira_fallback_story_points_field_default: 'customfield_10026'
     trusted_hosts_default: '^(localhost|127\.0\.0\.1|\[::1\])$'
 
 services:
@@ -23,6 +27,11 @@ services:
             $baseUrl: '%jira.base_url%'
             $email: '%jira.email%'
             $apiToken: '%jira.api_token%'
+
+    App\Jira\JiraViewMapper:
+        arguments:
+            $storyPointsField: '%jira.fields.story_points%'
+            $fallbackStoryPointsField: '%jira.fields.fallback_story_points%'
 
     Symfony\Component\Security\Http\EventListener\IsCsrfTokenValidAttributeListener: ~
 

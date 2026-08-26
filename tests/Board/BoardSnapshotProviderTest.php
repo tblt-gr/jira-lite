@@ -56,19 +56,30 @@ final class BoardSnapshotProviderTest extends TestCase
         $provider = new BoardSnapshotProvider(
             $jira,
             new ArrayAdapter(),
-            new JiraViewMapper()
+            new JiraViewMapper('customfield_10016', 'customfield_10026')
         );
 
         $first = $provider->getSnapshot(7);
         $second = $provider->getSnapshot(7);
 
-        self::assertSame('Delivery', $first['board']['name']);
-        self::assertArrayHasKey('snapshotAt', $first['issues']);
+        $firstJson = json_decode(
+            json_encode($first, JSON_THROW_ON_ERROR),
+            true,
+            flags: JSON_THROW_ON_ERROR
+        );
+        $secondJson = json_decode(
+            json_encode($second, JSON_THROW_ON_ERROR),
+            true,
+            flags: JSON_THROW_ON_ERROR
+        );
+
+        self::assertSame('Delivery', $firstJson['board']['name']);
+        self::assertArrayHasKey('snapshotAt', $firstJson['issues']);
         self::assertArrayNotHasKey(
             'description',
-            $first['issues']['issues'][0]['fields']
+            $firstJson['issues']['issues'][0]['fields']
         );
-        self::assertSame($first, $second);
+        self::assertSame($firstJson, $secondJson);
     }
 
     /**

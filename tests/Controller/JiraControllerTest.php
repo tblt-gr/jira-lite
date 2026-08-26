@@ -54,7 +54,11 @@ final class JiraControllerTest extends TestCase
         $controller = new JiraController(
             $jira,
             $cache,
-            new BoardSnapshotProvider($jira, $cache, new JiraViewMapper()),
+            new BoardSnapshotProvider(
+                $jira,
+                $cache,
+                new JiraViewMapper('customfield_10016', 'customfield_10026')
+            ),
             new Translator('fr'),
             new NullLogger()
         );
@@ -253,7 +257,11 @@ final class JiraControllerTest extends TestCase
         return new JiraController(
             $jira,
             $cache,
-            new BoardSnapshotProvider($jira, $cache, new JiraViewMapper()),
+            new BoardSnapshotProvider(
+                $jira,
+                $cache,
+                new JiraViewMapper('customfield_10016', 'customfield_10026')
+            ),
             new Translator('fr'),
             new NullLogger()
         );

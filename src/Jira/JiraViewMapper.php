@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Jira;
 
+use App\Jira\Dto\BoardIssue;
+
 use function is_array;
 
 final class JiraViewMapper
@@ -19,9 +21,13 @@ final class JiraViewMapper
         'assignee',
         'sprint',
         'storyPoints',
-        'customfield_10016',
-        'customfield_10026',
     ];
+
+    public function __construct(
+        private readonly string $storyPointsField,
+        private readonly string $fallbackStoryPointsField,
+    ) {
+    }
 
     /**
      * @param array<string, mixed> $response
@@ -37,7 +43,7 @@ final class JiraViewMapper
             ? $response['issues']
             : [];
         $response['issues'] = array_values(array_filter(array_map(
-            fn (mixed $issue): ?array => is_array($issue)
+            fn (mixed $issue): ?BoardIssue => is_array($issue)
                 ? $this->boardIssue($issue, $names)
                 : null,
             $issues
@@ -49,19 +55,18 @@ final class JiraViewMapper
     /**
      * @param array<string, mixed> $issue
      * @param array<string, mixed> $names
-     *
-     * @return array<string, mixed>
      */
-    public function boardIssue(array $issue, array $names = []): array
+    public function boardIssue(array $issue, array $names = []): BoardIssue
     {
-        $sourceFields = is_array($issue['fields'] ?? null)
-            ? $issue['fields']
-            : [];
         $fieldNames = [
             ...$names,
             ...(is_array($issue['names'] ?? null) ? $issue['names'] : []),
         ];
-        $allowedFields = array_fill_keys(self::BOARD_FIELDS, true);
+        $allowedFields = array_fill_keys([
+            ...self::BOARD_FIELDS,
+            $this->storyPointsField,
+            $this->fallbackStoryPointsField,
+        ], true);
 
         foreach ($fieldNames as $fieldId => $fieldName) {
             if (preg_match(
@@ -72,11 +77,6 @@ final class JiraViewMapper
             }
         }
 
-        return array_filter([
-            'id' => $issue['id'] ?? null,
-            'key' => $issue['key'] ?? null,
-            'self' => $issue['self'] ?? null,
-            'fields' => array_intersect_key($sourceFields, $allowedFields),
-        ], static fn (mixed $value): bool => null !== $value);
+        return BoardIssue::fromJira($issue, array_keys($allowedFields));
     }
 }
