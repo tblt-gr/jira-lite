@@ -10,6 +10,7 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpKernel\Event\ExceptionEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
+use Symfony\Component\Security\Core\Exception\InvalidCsrfTokenException;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 final readonly class ApiExceptionSubscriber implements EventSubscriberInterface
@@ -27,6 +28,14 @@ final readonly class ApiExceptionSubscriber implements EventSubscriberInterface
         }
 
         $exception = $event->getThrowable();
+
+        if ($exception instanceof InvalidCsrfTokenException) {
+            $event->setResponse(new JsonResponse([
+                'error' => $this->translator->trans('api.csrf_invalid'),
+            ], 403));
+
+            return;
+        }
 
         if (!$exception instanceof JiraException) {
             return;
