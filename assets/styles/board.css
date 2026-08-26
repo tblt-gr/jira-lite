@@ -18,7 +18,6 @@
 .view-switch,
 .card-top,
 .card-identity,
-.card-foot,
 .assignee,
 .issue-meta,
 .transition-row {
@@ -526,7 +525,9 @@ main {
     grid-template-rows: auto 430px;
     gap: 9px;
     padding: 12px;
-    border-radius: var(--radius);
+    border: 1px solid var(--border-soft);
+    border-radius: var(--radius-lg);
+    background: var(--surface);
 }
 
 .board-group:not(:last-child) {
@@ -654,7 +655,6 @@ main {
     display: grid;
     grid-auto-flow: column;
     grid-auto-columns: minmax(265px, 1fr);
-    gap: 9px;
     overflow: visible;
     align-items: stretch;
     padding: 2px 2px 7px;
@@ -673,10 +673,10 @@ main {
     min-height: 88px;
     height: auto;
     overflow-y: visible;
-    padding: 8px;
+    padding: 6px;
     border: 1px solid transparent;
     border-radius: var(--radius);
-    background: var(--column);
+    background: transparent;
     background-clip: padding-box;
     scrollbar-gutter: stable;
     scroll-snap-align: start;
@@ -714,39 +714,50 @@ main {
     z-index: 2;
     display: flex;
     align-items: center;
-    justify-content: space-between;
     gap: 8px;
-    background: color-mix(in srgb, var(--column) 94%, transparent);
-    border-bottom: 1px solid var(--border-soft);
+    background: var(--surface);
     border-radius: var(--radius) var(--radius) 0 0;
     color: var(--text-muted);
-    font-size: 10px;
-    font-weight: 700;
-    letter-spacing: .045em;
-    text-transform: uppercase;
-    backdrop-filter: blur(8px);
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.column-title {
+    overflow: hidden;
+    color: var(--text);
+    font-size: 13px;
+    font-weight: 600;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .column-count {
-    min-width: 21px;
-    border-radius: 999px;
-    background: var(--surface-raised);
-    color: var(--text-muted);
-    padding: 2px 6px;
-    text-align: center;
+    min-width: 16px;
+    padding: 0;
+    background: none;
+    color: var(--text-subtle);
+    font-size: 12px;
+    font-weight: 500;
+    text-align: left;
 }
 
 .card {
-    margin-bottom: 7px;
-    padding: 10px;
-    border: 1px solid var(--border-soft);
-    border-radius: var(--radius);
+    margin-bottom: 8px;
+    --card-title-lines: 2;
+    --card-title-height: calc(var(--card-title-lines) * 1.46 * 13px);
+    position: relative;
+    min-height: 118px;
+    display: flex;
+    flex-direction: column;
+    padding: 11px 12px;
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius-card);
     background: var(--card);
-    box-shadow: 0 4px 12px #0206171f;
+    box-shadow: var(--card-shadow);
     cursor: pointer;
     user-select: none;
-    transition: background 140ms ease, border-color 140ms ease,
-        box-shadow 140ms ease, transform 140ms ease;
+    transition: background 120ms ease, border-color 120ms ease,
+        box-shadow 120ms ease;
 }
 
 .card[draggable="true"] {
@@ -759,31 +770,30 @@ main {
 
 .card.is-dragging {
     opacity: .42;
-    border-color: var(--primary);
+    border-color: var(--card-border-hover);
     transform: rotate(1deg) scale(.99);
 }
 
 .card.is-selected {
-    border-color: var(--primary);
-    box-shadow: inset 0 0 0 1px var(--primary),
-        0 0 0 3px var(--primary-soft);
+    border-color: var(--text-subtle);
+    box-shadow: inset 0 0 0 1px var(--text-subtle),
+        0 0 0 3px color-mix(in srgb, var(--text) 9%, transparent);
 }
 
 .card.is-transitioning {
-    border-color: color-mix(in srgb, var(--primary) 55%, var(--border));
-    box-shadow: inset 0 0 0 1px var(--primary-soft),
-        0 4px 12px #0206171f;
+    border-color: var(--card-border-hover);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--text) 12%, transparent);
     pointer-events: none;
 }
 
 .card:hover {
-    transform: translateY(-1px);
+    z-index: 3;
     background: var(--card-hover);
-    border-color: color-mix(in srgb, var(--primary) 35%, var(--border));
-    box-shadow: 0 9px 22px #02061738;
+    border-color: var(--card-border-hover);
 }
 
 .card-top {
+    min-height: 20px;
     justify-content: space-between;
     gap: 8px;
 }
@@ -796,8 +806,8 @@ main {
 .issue-type-icon,
 .priority-icon,
 .meta-icon {
-    width: 15px;
-    height: 15px;
+    width: 14px;
+    height: 14px;
     object-fit: contain;
 }
 
@@ -808,87 +818,119 @@ main {
 .card-priority {
     display: inline-flex;
     align-items: center;
-    gap: 4px;
+    height: 19px;
     flex: 0 0 auto;
-    color: var(--text-subtle);
-    font-size: 10px;
 }
 
 .card-key {
-    color: var(--text-muted);
-    font-size: 11px;
-    font-weight: 650;
-    letter-spacing: .02em;
-}
-
-.card-title {
-    margin-top: 7px;
-    color: var(--text);
-    font-size: 14px;
-    font-weight: 520;
-    line-height: 1.42;
-}
-
-.card-details {
-    margin-top: 9px;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 4px;
-}
-
-.card-epic,
-.card-label {
-    max-width: 100%;
     overflow: hidden;
-    border-radius: 3px;
-    padding: 2px 6px;
-    font-size: 10px;
+    color: var(--text-subtle);
+    font-size: 12px;
+    font-weight: 500;
     text-overflow: ellipsis;
     white-space: nowrap;
 }
 
-.card-epic {
-    color: color-mix(in srgb, var(--epic-color) 65%, var(--text));
-    background: color-mix(in srgb, var(--epic-color) 13%, transparent);
-    border-left: 2px solid var(--epic-color);
+.card-headline {
+    display: flex;
+    align-items: flex-start;
+    gap: 7px;
+    margin-top: 8px;
+}
+
+.card-title-slot {
+    position: relative;
+    flex: 1 1 auto;
+    min-width: 0;
+    height: var(--card-title-height);
+}
+
+.card-title {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: var(--card-title-lines);
+    line-clamp: var(--card-title-lines);
+    overflow: hidden;
+    color: var(--text);
+    font-size: 13px;
+    font-weight: 470;
+    line-height: 1.46;
+}
+
+.card-details {
+    margin-top: auto;
+    padding-top: 10px;
+    display: flex;
+    align-items: center;
+    flex-wrap: nowrap;
+    overflow: hidden;
+    gap: 5px;
+}
+
+.card-epic,
+.card-label,
+.story-points {
+    height: 20px;
+    max-width: 100%;
+    flex: 0 1 auto;
+    min-width: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    overflow: hidden;
+    padding: 0 7px;
+    border: 1px solid var(--chip-border);
+    border-radius: 5px;
+    background: var(--chip);
+    color: var(--text-muted);
+    font-size: 11px;
+    font-weight: 500;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .card-label {
-    background: var(--surface-soft);
-    color: var(--text-muted);
+    display: inline-block;
+    line-height: 18px;
 }
 
-.card-foot {
-    min-height: 25px;
-    justify-content: space-between;
-    gap: 8px;
-    margin-top: 10px;
+.card-epic-name {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.card-epic::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    flex: 0 0 auto;
+    border-radius: 50%;
+    background: var(--epic-color);
 }
 
 .story-points {
     min-width: 24px;
-    height: 22px;
-    display: grid;
-    place-items: center;
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    background: var(--surface-soft);
-    color: var(--text-muted);
-    font-size: 11px;
-    font-weight: 700;
+    justify-content: center;
+    padding: 0 6px;
+    font-weight: 600;
 }
 
 .assignee {
     min-width: 0;
-    gap: 6px;
+    gap: 4px;
     margin-left: auto;
 }
 
 .avatar {
-    width: 22px;
-    height: 22px;
+    width: 20px;
+    height: 20px;
     flex: 0 0 auto;
-    border: 1px solid var(--border);
+    border: 1px solid var(--card);
     border-radius: 50%;
     object-fit: cover;
 }
@@ -896,19 +938,11 @@ main {
 .avatar-fallback {
     display: grid;
     place-items: center;
-    background: var(--surface-soft);
+    border-color: var(--chip-border);
+    background: var(--chip);
     color: var(--text-muted);
     font-size: 8px;
-    font-weight: 700;
-}
-
-.assignee-name {
-    max-width: 112px;
-    overflow: hidden;
-    color: var(--text-muted);
-    font-size: 10px;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    font-weight: 600;
 }
 
 .loading,

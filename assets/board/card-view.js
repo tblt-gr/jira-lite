@@ -46,47 +46,63 @@ export function createCardView(
 
     identity.append(key);
 
+    top.append(identity);
+
+    const headline = document.createElement('div');
+    headline.className = 'card-headline';
+
     const priority = issue.fields?.priority;
-    const priorityView = document.createElement('span');
-    priorityView.className = 'card-priority';
 
     if (priority) {
+        const priorityView = document.createElement('span');
+        priorityView.className = 'card-priority';
+        priorityView.title = priority.name;
         const priorityIcon = createImage(
             priority.iconUrl,
-            '',
+            priority.name,
             'priority-icon'
         );
 
         if (priorityIcon) {
             priorityIcon.addEventListener(
                 'error',
-                () => priorityIcon.remove(),
+                () => priorityView.remove(),
                 { once: true, signal }
             );
             priorityView.append(priorityIcon);
+            headline.append(priorityView);
         }
-
-        priorityView.append(priority.name);
     }
 
-    top.append(identity);
-
-    if (priority) {
-        top.append(priorityView);
-    }
-
+    const titleSlot = document.createElement('div');
+    titleSlot.className = 'card-title-slot';
     const title = document.createElement('div');
     title.className = 'card-title';
     title.textContent = issue.fields?.summary || '';
+    title.title = title.textContent;
+    titleSlot.append(title);
+    headline.append(titleSlot);
 
     const details = document.createElement('div');
     details.className = 'card-details';
+
+    if (points !== null) {
+        const estimate = document.createElement('span');
+        estimate.className = 'story-points';
+        estimate.textContent = points;
+        estimate.title = trans('card.story_points');
+        details.append(estimate);
+    }
 
     if (epic) {
         const epicTag = document.createElement('span');
         epicTag.className = 'card-epic';
         epicTag.style.setProperty('--epic-color', epicColor(epic));
-        epicTag.textContent = epicLabel(epic, trans('board.without_epic'));
+        const epicName = document.createElement('span');
+        epicName.className = 'card-epic-name';
+        epicName.textContent = epicLabel(epic, trans('board.without_epic'));
+        epicTag.title = epicName.textContent;
+        epicTag.append(epicName);
         details.append(epicTag);
     }
 
@@ -94,6 +110,7 @@ export function createCardView(
         const label = document.createElement('span');
         label.className = 'card-label';
         label.textContent = value;
+        label.title = value;
         details.append(label);
     });
 
@@ -104,17 +121,6 @@ export function createCardView(
             count: issue.fields.labels.length - 2
         });
         details.append(more);
-    }
-
-    const foot = document.createElement('div');
-    foot.className = 'card-foot';
-
-    if (points !== null) {
-        const estimate = document.createElement('span');
-        estimate.className = 'story-points';
-        estimate.textContent = points;
-        estimate.title = trans('card.story_points');
-        foot.append(estimate);
     }
 
     const assignee = issue.fields?.assignee;
@@ -142,20 +148,13 @@ export function createCardView(
         assigneeView.append(fallback);
     }
 
-    const assigneeName = document.createElement('span');
-    assigneeName.className = 'assignee-name';
-    assigneeName.textContent =
-        assignee?.displayName || trans('common.unassigned');
-    assigneeView.append(assigneeName);
-    foot.append(assigneeView);
+    top.append(assigneeView);
 
-    card.append(top, title);
+    card.append(top, headline);
 
     if (details.children.length) {
         card.append(details);
     }
-
-    card.append(foot);
 
     return card;
 }
