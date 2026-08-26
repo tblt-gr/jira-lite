@@ -67,6 +67,27 @@ board.open_epic_hint: Ctrl/Cmd + clic pour ouvrir dans Jira
 board.single_board_count: board unique
 board.load_error: Impossible de charger le board.
 
+create.action: Créer
+create.eyebrow: Nouveau ticket
+create.title: Créer un ticket
+create.issue_type: Type de ticket
+create.summary: Titre
+create.summary_placeholder: Que faut-il faire ?
+create.description: Description (facultative)
+create.description_placeholder: Ajoutez le contexte utile…
+create.sprint: Sprint
+create.sprint_help: Le sprint actif est sélectionné par défaut.
+create.backlog: Backlog
+create.epic: Epic
+create.without_epic: Sans epic
+create.quick_action: Créer
+create.in_epic: Créer un ticket dans l’epic {epic}
+create.submit: Créer le ticket
+create.submitting: Création…
+create.loading_types: Chargement des types…
+create.no_issue_type: Aucun type de ticket disponible pour ce projet.
+create.created: Ticket {key} créé
+
 card.type: Type
 card.story_points: Story points
 card.more_labels: '+{count}'
@@ -183,6 +204,10 @@ api.no_editable_field: Aucun champ modifiable fourni.
 api.empty_comment: Le commentaire ne peut pas être vide.
 api.worklog_format: Le temps doit utiliser un format Jira, par exemple 1h 30m.
 api.transition_required: Le paramètre transitionId est requis.
+api.issue_type_required: Sélectionnez un type de ticket valide.
+api.sprint_invalid: Le sprint sélectionné est invalide.
+api.epic_invalid: L’epic sélectionné est invalide.
+api.board_project_required: Ce board Jira n’est associé à aucun projet permettant de créer un ticket.
 api.http_error: Erreur HTTP {status}
 
 media.invalid_attachment: Identifiant de pièce jointe invalide.

@@ -268,7 +268,7 @@ export function createBoardView(context) {
 
             let firstPopulatedColumn = null;
 
-            model.columns.forEach(column => {
+            model.columns.forEach((column, columnIndex) => {
                 const wrapper = document.createElement('section');
                 wrapper.className = 'column';
                 wrapper.dataset.columnName = column.name;
@@ -287,6 +287,31 @@ export function createBoardView(context) {
                 count.className = 'column-count';
                 count.textContent = columnIssues.length;
                 head.append(title, count);
+
+                if (isCollapsible && group.epic && columnIndex === 0) {
+                    const create = document.createElement('button');
+                    const createLabel = context.trans('create.in_epic', {
+                        epic: epicLabel(group.epic, '')
+                    });
+                    const createText = document.createElement('span');
+
+                    create.type = 'button';
+                    create.className = 'column-create-issue';
+                    create.title = createLabel;
+                    create.setAttribute('aria-label', createLabel);
+                    create.innerHTML = '<svg class="ui-icon" '
+                        + 'viewBox="0 0 24 24" aria-hidden="true">'
+                        + '<path d="M12 5v14M5 12h14" /></svg>';
+                    createText.textContent = context.trans(
+                        'create.quick_action'
+                    );
+                    create.append(createText);
+                    create.addEventListener('click', event => {
+                        event.stopPropagation();
+                        context.openCreateIssue(group.epic);
+                    }, { signal: context.signal });
+                    head.append(create);
+                }
                 wrapper.append(head);
 
                 if (columnIssues.length && !firstPopulatedColumn) {

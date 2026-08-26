@@ -17,6 +17,7 @@ use InvalidArgumentException;
 use function is_array;
 use function is_int;
 use function is_string;
+use function sprintf;
 
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -67,6 +68,93 @@ final class JiraController
             $boardId,
             $since
         ), headers: [
+            'Cache-Control' => 'no-store',
+        ]);
+    }
+
+    #[Route('/board/{boardId}/create-metadata', methods: ['GET'])]
+    public function createMetadata(int $boardId): JsonResponse
+    {
+        try {
+            $metadata = $this->cache->get(
+                sprintf('jira.board.%d.create_metadata', $boardId),
+                function (ItemInterface $item) use ($boardId): array {
+                    $item->expiresAfter(300);
+
+                    return $this->jira->getBoardCreateMetadata($boardId);
+                }
+            );
+        } catch (InvalidArgumentException) {
+            return new JsonResponse([
+                'error' => $this->translator->trans(
+                    'api.board_project_required'
+                ),
+            ], 400);
+        }
+
+        return new JsonResponse($metadata);
+    }
+
+    #[Route('/board/{boardId}/issues', methods: ['POST'])]
+    public function createIssue(int $boardId, Request $request): JsonResponse
+    {
+        $data = $request->toArray();
+        $summary = trim((string) ($data['summary'] ?? ''));
+        $description = trim((string) ($data['description'] ?? ''));
+        $issueTypeId = trim((string) ($data['issueTypeId'] ?? ''));
+        $sprintId = trim((string) ($data['sprintId'] ?? ''));
+        $epicKey = trim((string) ($data['epicKey'] ?? ''));
+
+        if ('' === $summary || mb_strlen($summary) > 255) {
+            return new JsonResponse([
+                'error' => $this->translator->trans('api.summary_length'),
+            ], 400);
+        }
+
+        if ('' === $issueTypeId || !ctype_digit($issueTypeId)) {
+            return new JsonResponse([
+                'error' => $this->translator->trans(
+                    'api.issue_type_required'
+                ),
+            ], 400);
+        }
+
+        if ('' !== $sprintId && !ctype_digit($sprintId)) {
+            return new JsonResponse([
+                'error' => $this->translator->trans(
+                    'api.sprint_invalid'
+                ),
+            ], 400);
+        }
+
+        if (
+            '' !== $epicKey
+            && !preg_match('/^[A-Z][A-Z0-9_]*-\d+$/i', $epicKey)
+        ) {
+            return new JsonResponse([
+                'error' => $this->translator->trans('api.epic_invalid'),
+            ], 400);
+        }
+
+        try {
+            $issue = $this->jira->createBoardIssue(
+                $boardId,
+                $issueTypeId,
+                $summary,
+                '' === $description ? null : $description,
+                '' === $sprintId ? null : $sprintId,
+                '' === $epicKey ? null : $epicKey
+            );
+        } catch (InvalidArgumentException) {
+            return new JsonResponse([
+                'error' => $this->translator->trans(
+                    'api.board_project_required'
+                ),
+            ], 400);
+        }
+        $this->snapshots->invalidateIssues($boardId);
+
+        return new JsonResponse($issue, 201, [
             'Cache-Control' => 'no-store',
         ]);
     }

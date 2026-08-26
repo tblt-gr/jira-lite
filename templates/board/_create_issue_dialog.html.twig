@@ -1,0 +1,75 @@
+<dialog
+    id="create-issue-dialog"
+    aria-labelledby="create-issue-title"
+>
+    <form id="create-issue-form" class="create-issue-form">
+        <div class="create-dialog-head">
+            <div>
+                <span class="create-dialog-eyebrow">{{ 'create.eyebrow'|trans }}</span>
+                <h2 id="create-issue-title">{{ 'create.title'|trans }}</h2>
+            </div>
+            <button
+                id="close-create-dialog"
+                class="quiet-icon-button"
+                type="button"
+                title="{{ 'common.close'|trans }}"
+                aria-label="{{ 'common.close'|trans }}"
+            >
+                <svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M6 6l12 12M18 6 6 18" />
+                </svg>
+            </button>
+        </div>
+
+        <div class="create-dialog-body">
+            <div id="create-form-error" class="create-form-error" role="alert" hidden></div>
+
+            <label for="create-issue-type">{{ 'create.issue_type'|trans }}</label>
+            <select id="create-issue-type" name="issueTypeId" required disabled>
+                <option value="">{{ 'create.loading_types'|trans }}</option>
+            </select>
+
+            <div id="create-sprint-field">
+                <label for="create-sprint">{{ 'create.sprint'|trans }}</label>
+                <select id="create-sprint" name="sprintId">
+                    <option value="">{{ 'create.backlog'|trans }}</option>
+                </select>
+                <small>{{ 'create.sprint_help'|trans }}</small>
+            </div>
+
+            <div id="create-epic-field">
+                <label for="create-epic">{{ 'create.epic'|trans }}</label>
+                <select id="create-epic" name="epicKey">
+                    <option value="">{{ 'create.without_epic'|trans }}</option>
+                </select>
+            </div>
+
+            <label for="create-summary">{{ 'create.summary'|trans }}</label>
+            <input
+                id="create-summary"
+                name="summary"
+                maxlength="255"
+                required
+                autocomplete="off"
+                placeholder="{{ 'create.summary_placeholder'|trans }}"
+            >
+
+            <label for="create-description">{{ 'create.description'|trans }}</label>
+            <textarea
+                id="create-description"
+                name="description"
+                rows="5"
+                placeholder="{{ 'create.description_placeholder'|trans }}"
+            ></textarea>
+        </div>
+
+        <div class="create-dialog-actions">
+            <button
+                id="submit-create-issue"
+                class="primary-button"
+                type="submit"
+                disabled
+            >{{ 'create.submit'|trans }}</button>
+        </div>
+    </form>
+</dialog>

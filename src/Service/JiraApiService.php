@@ -11,6 +11,7 @@ use function count;
 
 use DateTimeImmutable;
 use DateTimeZone;
+use InvalidArgumentException;
 
 use function is_array;
 use function sprintf;
@@ -131,6 +132,162 @@ final class JiraApiService
                 ],
             ]
         );
+    }
+
+    /**
+     * @return array{
+     *     project: array{id: ?string, key: ?string, name: string},
+     *     issueTypes: list<array{id: string, name: string}>,
+     *     sprints: list<array{id: string, name: string}>
+     * }
+     */
+    public function getBoardCreateMetadata(int $boardId): array
+    {
+        $board = $this->getBoard($boardId);
+        $project = $this->boardProject($board);
+        $reference = $project['key'] ?? $project['id'];
+        $issueTypePage = $this->client->request(
+            'GET',
+            sprintf(
+                '/rest/api/3/issue/createmeta/%s/issuetypes',
+                rawurlencode((string) $reference)
+            ),
+            [
+                'query' => [
+                    'startAt' => 0,
+                    'maxResults' => self::PAGE_SIZE,
+                ],
+            ]
+        );
+        $sprintPage = [];
+
+        if ('scrum' === strtolower((string) ($board['type'] ?? ''))) {
+            $sprintPage = $this->client->request(
+                'GET',
+                sprintf('/rest/agile/1.0/board/%d/sprint', $boardId),
+                [
+                    'query' => [
+                        'state' => 'active',
+                        'startAt' => 0,
+                        'maxResults' => self::PAGE_SIZE,
+                    ],
+                ]
+            );
+        }
+        $issueTypes = [];
+
+        $issueTypeValues = is_array($issueTypePage['issueTypes'] ?? null)
+            ? $issueTypePage['issueTypes']
+            : [];
+
+        foreach ($issueTypeValues as $issueType) {
+            if (
+                !is_array($issueType)
+                || (bool) ($issueType['subtask'] ?? false)
+                || !isset($issueType['id'], $issueType['name'])
+            ) {
+                continue;
+            }
+
+            $issueTypes[] = [
+                'id' => (string) $issueType['id'],
+                'name' => (string) $issueType['name'],
+            ];
+        }
+
+        $sprints = [];
+
+        $sprintValues = is_array($sprintPage['values'] ?? null)
+            ? $sprintPage['values']
+            : [];
+
+        foreach ($sprintValues as $sprint) {
+            if (
+                !is_array($sprint)
+                || !isset($sprint['id'], $sprint['name'])
+            ) {
+                continue;
+            }
+
+            $sprints[] = [
+                'id' => (string) $sprint['id'],
+                'name' => (string) $sprint['name'],
+            ];
+        }
+
+        return [
+            'project' => [
+                'id' => $project['id'],
+                'key' => $project['key'],
+                'name' => $project['name'],
+            ],
+            'issueTypes' => $issueTypes,
+            'sprints' => $sprints,
+        ];
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function createBoardIssue(
+        int $boardId,
+        string $issueTypeId,
+        string $summary,
+        ?string $description = null,
+        ?string $sprintId = null,
+        ?string $epicKey = null,
+    ): array {
+        $project = $this->boardProject($this->getBoard($boardId));
+        /** @var array<string, mixed> $fields */
+        $fields = [
+            'project' => null !== $project['id']
+                ? ['id' => $project['id']]
+                : ['key' => $project['key']],
+            'issuetype' => ['id' => $issueTypeId],
+            'summary' => $summary,
+        ];
+
+        if (null !== $description && '' !== $description) {
+            $fields['description'] = $this->plainTextDocument($description);
+        }
+
+        $created = $this->client->request(
+            'POST',
+            '/rest/api/3/issue',
+            ['json' => ['fields' => $fields]]
+        );
+        $issueKey = trim((string) ($created['key'] ?? ''));
+
+        if ('' === $issueKey) {
+            throw new InvalidArgumentException('Jira did not return the created issue key.');
+        }
+
+        if (null !== $epicKey) {
+            $this->client->request(
+                'PUT',
+                sprintf('/rest/api/3/issue/%s', rawurlencode($issueKey)),
+                [
+                    'json' => [
+                        'fields' => [
+                            'parent' => ['key' => $epicKey],
+                        ],
+                    ],
+                ]
+            );
+        }
+
+        if (null !== $sprintId) {
+            $this->client->request(
+                'POST',
+                sprintf(
+                    '/rest/agile/1.0/sprint/%s/issue',
+                    rawurlencode($sprintId)
+                ),
+                ['json' => ['issues' => [$issueKey]]]
+            );
+        }
+
+        return $this->getIssue($issueKey);
     }
 
     /**
@@ -494,5 +651,33 @@ final class JiraApiService
         }
 
         return $content;
+    }
+
+    /**
+     * @param array<string, mixed> $board
+     *
+     * @return array{id: ?string, key: ?string, name: string}
+     */
+    private function boardProject(array $board): array
+    {
+        $location = is_array($board['location'] ?? null)
+            ? $board['location']
+            : [];
+        $projectId = trim((string) ($location['projectId'] ?? ''));
+        $projectKey = trim((string) ($location['projectKey'] ?? ''));
+
+        if ('' === $projectId && '' === $projectKey) {
+            throw new InvalidArgumentException('The Jira board is not associated with a project.');
+        }
+
+        return [
+            'id' => '' === $projectId ? null : $projectId,
+            'key' => '' === $projectKey ? null : $projectKey,
+            'name' => trim((string) (
+                $location['projectName']
+                ?? $location['displayName']
+                ?? $projectKey
+            )),
+        ];
     }
 }

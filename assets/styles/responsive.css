@@ -81,6 +81,16 @@
         min-width: 0;
     }
 
+    .create-issue-button {
+        width: 32px;
+        justify-content: center;
+        padding: 0;
+    }
+
+    .create-issue-button span {
+        display: none;
+    }
+
     .reload-button {
         width: 30px;
         height: 30px;
@@ -145,6 +155,13 @@
 
     .dialog-head {
         gap: 10px;
+    }
+
+    .create-dialog-head,
+    .create-dialog-body,
+    .create-dialog-actions {
+        padding-right: 18px;
+        padding-left: 18px;
     }
 
     .open-issue-button {

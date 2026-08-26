@@ -5,6 +5,7 @@ import { createCardView } from './card-view.js';
 import { connectCard } from './card-controller.js';
 import { createBoardView, currentSprintName } from './board-view.js';
 import { createIssueDialog } from './issue-dialog.js';
+import { createIssueCreator } from './create-issue-dialog.js';
 import { createDragDrop } from './drag-drop.js';
 import { trans } from './i18n.js';
 import { createMultiSelect } from './multi-select.js';
@@ -16,6 +17,7 @@ import {
     availableIssueTypes as selectAvailableIssueTypes,
     availableVersions as selectAvailableVersions,
     epicForIssue as selectEpicForIssue,
+    replaceIssues,
     statusColumnMap,
     storyPoints as selectStoryPoints
 } from './board-model.js';
@@ -67,6 +69,7 @@ export function mountBoard(root, boardId) {
     const typeFilter = root.querySelector('#type-filter');
     const columnFilter = root.querySelector('#column-filter');
     const counter = root.querySelector('#counter');
+    const reloadButton = root.querySelector('#reload');
     let boardView = null;
     let dragDrop = null;
     const viewOptions = root.querySelectorAll('[data-view]');
@@ -736,6 +739,7 @@ export function mountBoard(root, boardId) {
         enableDropZone: dragDrop.enableDropZone,
         createCard,
         epicForIssue,
+        openCreateIssue: epic => issueCreator.open({ epic }),
         trans,
         signal: lifecycleController.signal
     });
@@ -750,6 +754,43 @@ export function mountBoard(root, boardId) {
         writeEpicsToUrl,
         renderBoard,
         onError: message => showToast(message, 'error')
+    });
+
+    const issueCreator = createIssueCreator({
+        root,
+        boardId,
+        trans,
+        showToast,
+        getEpics: () => state.data?.epics?.values || [],
+        signal: lifecycleController.signal,
+        async onCreated(issue, creation) {
+            if (!state.data?.issues || !issue?.key) {
+                return;
+            }
+
+            const selectedEpic = (state.data.epics?.values || []).find(epic =>
+                String(epic?.key || '') === creation.epicKey
+            );
+            const createdIssue = selectedEpic
+                ? {
+                    ...issue,
+                    fields: {
+                        ...(issue.fields || {}),
+                        epic: selectedEpic
+                    }
+                }
+                : issue;
+
+            state.data.issues.issues = replaceIssues(
+                state.data.issues.issues,
+                [createdIssue]
+            );
+            renderEpics();
+            renderFilters();
+            renderBoard(false);
+
+            await openIssue(issue.key);
+        }
     });
 
     function createFilterSelect(container, keys, selected) {
@@ -919,8 +960,30 @@ export function mountBoard(root, boardId) {
 
     window.addEventListener('popstate', handlePopstate, listenerOptions);
 
-    root.querySelector('#reload')
-        .addEventListener('click', loadBoard, listenerOptions);
+    async function refreshBoardInPlace() {
+        if (!state.data) {
+            await loadBoard();
+            return;
+        }
+
+        reloadButton.disabled = true;
+        reloadButton.classList.add('is-refreshing');
+        reloadButton.setAttribute('aria-busy', 'true');
+
+        try {
+            await issueRefresher.refresh();
+        } finally {
+            reloadButton.disabled = false;
+            reloadButton.classList.remove('is-refreshing');
+            reloadButton.removeAttribute('aria-busy');
+        }
+    }
+
+    reloadButton.addEventListener(
+        'click',
+        refreshBoardInPlace,
+        listenerOptions
+    );
 
     mountBoardSwitcher();
 
@@ -934,6 +997,7 @@ export function mountBoard(root, boardId) {
             issueRefresher.destroy();
             dragDrop.destroy();
             boardView.destroy();
+            issueCreator.destroy();
             issueDialog.destroy();
             toastTimers.forEach(timer => window.clearTimeout(timer));
             toastTimers.clear();
