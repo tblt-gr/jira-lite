@@ -7,6 +7,8 @@ namespace App\Jira;
 use function count;
 use function is_array;
 
+use Symfony\Contracts\HttpClient\Exception\ExceptionInterface;
+use Symfony\Contracts\HttpClient\Exception\HttpExceptionInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 use Symfony\Contracts\HttpClient\ResponseInterface;
 
@@ -32,22 +34,30 @@ final class JiraClient
         string $uri,
         array $options = [],
     ): array {
-        $response = $this->httpClient->request(
-            $method,
-            rtrim($this->baseUrl, '/').$uri,
-            array_merge_recursive(
-                [
-                    'auth_basic' => [$this->email, $this->apiToken],
-                    'headers' => [
-                        'Accept' => 'application/json',
-                        'Content-Type' => 'application/json',
+        try {
+            $response = $this->httpClient->request(
+                $method,
+                rtrim($this->baseUrl, '/').$uri,
+                array_merge_recursive(
+                    [
+                        'auth_basic' => [$this->email, $this->apiToken],
+                        'headers' => [
+                            'Accept' => 'application/json',
+                            'Content-Type' => 'application/json',
+                        ],
                     ],
-                ],
-                $options
-            )
-        );
+                    $options
+                )
+            );
 
-        return $this->decode($response);
+            return $this->decode($response);
+        } catch (ExceptionInterface $exception) {
+            $status = $exception instanceof HttpExceptionInterface
+                ? $exception->getResponse()->getStatusCode()
+                : null;
+
+            throw new JiraException($status, $exception);
+        }
     }
 
     /** @return array<string, mixed> */

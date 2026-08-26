@@ -210,6 +210,9 @@ api.sprint_invalid: Le sprint sélectionné est invalide.
 api.epic_invalid: L’epic sélectionné est invalide.
 api.board_project_required: Ce board Jira n’est associé à aucun projet permettant de créer un ticket.
 api.json_required: Le corps de la requête doit être au format JSON.
+api.jira_not_found: La ressource Jira demandée est introuvable.
+api.jira_rate_limited: Jira limite temporairement les requêtes. Réessayez dans un instant.
+api.jira_unavailable: Jira est temporairement indisponible. Réessayez dans un instant.
 api.http_error: Erreur HTTP {status}
 
 media.invalid_attachment: Identifiant de pièce jointe invalide.
