@@ -80,7 +80,7 @@ jobs:
       - run: npm test
 
   docker:
-    name: Docker build
+    name: Docker production image
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -92,9 +92,31 @@ jobs:
           context: .
           target: frankenphp_prod
           push: false
+          load: true
           tags: jira-lite:ci
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+      - name: Smoke test production image
+        run: |
+          docker run --detach --name jira-lite-ci --publish 8080:8080 \
+            -e APP_SECRET=ci-dummy-secret \
+            -e JIRA_BASE_URL=https://ci-dummy.atlassian.net \
+            -e JIRA_EMAIL=ci-dummy@example.test \
+            -e JIRA_API_TOKEN=ci-dummy-token \
+            jira-lite:ci
+          for attempt in {1..15}; do
+            if curl --fail --silent http://127.0.0.1:8080/health; then
+              exit 0
+            fi
+            sleep 2
+          done
+          docker logs jira-lite-ci
+          exit 1
+
+      - name: Remove smoke-test container
+        if: always()
+        run: docker rm --force jira-lite-ci || true
 
   gate:
     name: CI gate
