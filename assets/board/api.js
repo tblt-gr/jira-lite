@@ -1,11 +1,23 @@
 import { trans } from './i18n.js';
 
 export async function api(url, options = {}) {
+    const method = (options.method ?? 'GET').toUpperCase();
+    const headers = new Headers(options.headers ?? {});
+
+    if (!headers.has('Content-Type') && method !== 'GET') {
+        headers.set('Content-Type', 'application/json');
+    }
+
+    if (method !== 'GET' && method !== 'HEAD') {
+        const csrfToken = document.querySelector('meta[name="csrf-token"]')
+            ?.content ?? '';
+
+        headers.set('X-CSRF-Token', csrfToken);
+    }
+
     const response = await fetch(url, {
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        ...options
+        ...options,
+        headers
     });
 
     if (!response.ok) {

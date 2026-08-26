@@ -209,6 +209,7 @@ api.issue_type_required: Sélectionnez un type de ticket valide.
 api.sprint_invalid: Le sprint sélectionné est invalide.
 api.epic_invalid: L’epic sélectionné est invalide.
 api.board_project_required: Ce board Jira n’est associé à aucun projet permettant de créer un ticket.
+api.json_required: Le corps de la requête doit être au format JSON.
 api.http_error: Erreur HTTP {status}
 
 media.invalid_attachment: Identifiant de pièce jointe invalide.

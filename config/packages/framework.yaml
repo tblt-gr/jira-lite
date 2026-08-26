@@ -3,4 +3,5 @@ framework:
     http_client: ~
     router:
         utf8: true
-    csrf_protection: false
+    csrf_protection:
+        stateless_token_ids: ['jira_api']

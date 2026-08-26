@@ -23,6 +23,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsCsrfTokenValid;
 use Symfony\Contracts\Cache\CacheInterface;
 use Symfony\Contracts\Cache\ItemInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
@@ -96,8 +97,17 @@ final class JiraController
     }
 
     #[Route('/board/{boardId}/issues', methods: ['POST'])]
+    #[IsCsrfTokenValid(
+        'jira_api',
+        tokenKey: 'X-CSRF-Token',
+        tokenSource: IsCsrfTokenValid::SOURCE_HEADER
+    )]
     public function createIssue(int $boardId, Request $request): JsonResponse
     {
+        if ($response = $this->unsupportedContentType($request)) {
+            return $response;
+        }
+
         $data = $request->toArray();
         $summary = trim((string) ($data['summary'] ?? ''));
         $description = trim((string) ($data['description'] ?? ''));
@@ -273,10 +283,19 @@ final class JiraController
     }
 
     #[Route('/issue/{issueKey}', methods: ['PATCH'])]
+    #[IsCsrfTokenValid(
+        'jira_api',
+        tokenKey: 'X-CSRF-Token',
+        tokenSource: IsCsrfTokenValid::SOURCE_HEADER
+    )]
     public function updateIssue(
         string $issueKey,
         Request $request,
     ): JsonResponse {
+        if ($response = $this->unsupportedContentType($request)) {
+            return $response;
+        }
+
         $data = $request->toArray();
         $fields = [];
 
@@ -374,10 +393,19 @@ final class JiraController
     }
 
     #[Route('/issue/{issueKey}/comments', methods: ['POST'])]
+    #[IsCsrfTokenValid(
+        'jira_api',
+        tokenKey: 'X-CSRF-Token',
+        tokenSource: IsCsrfTokenValid::SOURCE_HEADER
+    )]
     public function addComment(
         string $issueKey,
         Request $request,
     ): JsonResponse {
+        if ($response = $this->unsupportedContentType($request)) {
+            return $response;
+        }
+
         $data = $request->toArray();
         $comment = trim((string) ($data['comment'] ?? ''));
 
@@ -402,11 +430,20 @@ final class JiraController
         requirements: ['commentId' => '\\d+'],
         methods: ['PUT']
     )]
+    #[IsCsrfTokenValid(
+        'jira_api',
+        tokenKey: 'X-CSRF-Token',
+        tokenSource: IsCsrfTokenValid::SOURCE_HEADER
+    )]
     public function updateComment(
         string $issueKey,
         string $commentId,
         Request $request,
     ): JsonResponse {
+        if ($response = $this->unsupportedContentType($request)) {
+            return $response;
+        }
+
         $data = $request->toArray();
         $comment = trim((string) ($data['comment'] ?? ''));
 
@@ -431,20 +468,39 @@ final class JiraController
         requirements: ['commentId' => '\\d+'],
         methods: ['DELETE']
     )]
+    #[IsCsrfTokenValid(
+        'jira_api',
+        tokenKey: 'X-CSRF-Token',
+        tokenSource: IsCsrfTokenValid::SOURCE_HEADER
+    )]
     public function deleteComment(
         string $issueKey,
         string $commentId,
+        Request $request,
     ): JsonResponse {
+        if ($response = $this->unsupportedContentType($request)) {
+            return $response;
+        }
+
         $this->jira->deleteIssueComment($issueKey, $commentId);
 
         return new JsonResponse(status: 204);
     }
 
     #[Route('/issue/{issueKey}/worklogs', methods: ['POST'])]
+    #[IsCsrfTokenValid(
+        'jira_api',
+        tokenKey: 'X-CSRF-Token',
+        tokenSource: IsCsrfTokenValid::SOURCE_HEADER
+    )]
     public function addWorklog(
         string $issueKey,
         Request $request,
     ): JsonResponse {
+        if ($response = $this->unsupportedContentType($request)) {
+            return $response;
+        }
+
         $data = $request->toArray();
         $timeSpent = trim((string) ($data['timeSpent'] ?? ''));
         $comment = trim((string) ($data['comment'] ?? ''));
@@ -466,10 +522,19 @@ final class JiraController
     }
 
     #[Route('/issue/{issueKey}/transition', methods: ['POST'])]
+    #[IsCsrfTokenValid(
+        'jira_api',
+        tokenKey: 'X-CSRF-Token',
+        tokenSource: IsCsrfTokenValid::SOURCE_HEADER
+    )]
     public function transition(
         string $issueKey,
         Request $request,
     ): JsonResponse {
+        if ($response = $this->unsupportedContentType($request)) {
+            return $response;
+        }
+
         $data = $request->toArray();
         $transitionId = $data['transitionId'] ?? null;
 
@@ -502,6 +567,23 @@ final class JiraController
             '/^(?:\d+\s*[wdhm]\s*)+$/i',
             $value
         );
+    }
+
+    private function unsupportedContentType(Request $request): ?JsonResponse
+    {
+        if (
+            '' === $request->getContent()
+            || str_starts_with(
+                (string) $request->headers->get('Content-Type'),
+                'application/json'
+            )
+        ) {
+            return null;
+        }
+
+        return new JsonResponse([
+            'error' => $this->translator->trans('api.json_required'),
+        ], Response::HTTP_UNSUPPORTED_MEDIA_TYPE);
     }
 
     /**

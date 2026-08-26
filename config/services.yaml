@@ -22,3 +22,5 @@ services:
             $baseUrl: '%jira.base_url%'
             $email: '%jira.email%'
             $apiToken: '%jira.api_token%'
+
+    Symfony\Component\Security\Http\EventListener\IsCsrfTokenValidAttributeListener: ~
