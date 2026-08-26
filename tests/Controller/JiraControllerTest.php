@@ -45,13 +45,7 @@ final class JiraControllerTest extends TestCase
                 'user@example.com',
                 'token'
             ),
-            new JiraMediaProxy(
-                $http,
-                'https://jira.example.test',
-                'user@example.com',
-                'token',
-                new Translator('fr')
-            )
+            new AdfDocumentFactory()
         );
         $cache = new ArrayAdapter();
         $controller = new JiraController(
@@ -78,6 +72,13 @@ final class JiraControllerTest extends TestCase
                 new AdfDocumentFactory()
             ),
             new AdfDocumentFactory(),
+            new JiraMediaProxy(
+                new MockHttpClient(),
+                'https://jira.example.test',
+                'user@example.com',
+                'token',
+                new Translator('fr')
+            ),
             new Translator('fr'),
             new NullLogger()
         );
@@ -263,13 +264,7 @@ final class JiraControllerTest extends TestCase
                 'user@example.com',
                 'token'
             ),
-            new JiraMediaProxy(
-                $http,
-                'https://jira.example.test',
-                'user@example.com',
-                'token',
-                new Translator('fr')
-            )
+            new AdfDocumentFactory()
         );
         $cache = new ArrayAdapter();
 
@@ -297,6 +292,13 @@ final class JiraControllerTest extends TestCase
                 new AdfDocumentFactory()
             ),
             new AdfDocumentFactory(),
+            new JiraMediaProxy(
+                new MockHttpClient(),
+                'https://jira.example.test',
+                'user@example.com',
+                'token',
+                new Translator('fr')
+            ),
             new Translator('fr'),
             new NullLogger()
         );

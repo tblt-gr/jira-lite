@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Tests\Board;
 
 use App\Board\BoardSnapshotProvider;
+use App\Jira\Document\AdfDocumentFactory;
 use App\Jira\JiraClient;
-use App\Jira\JiraMediaProxy;
 use App\Jira\JiraViewMapper;
 use App\Jira\Repository\BoardRepository;
 
@@ -16,7 +16,6 @@ use PHPUnit\Framework\TestCase;
 use Symfony\Component\Cache\Adapter\ArrayAdapter;
 use Symfony\Component\HttpClient\MockHttpClient;
 use Symfony\Component\HttpClient\Response\MockResponse;
-use Symfony\Component\Translation\Translator;
 
 final class BoardSnapshotProviderTest extends TestCase
 {
@@ -45,13 +44,7 @@ final class BoardSnapshotProviderTest extends TestCase
                 'user@example.com',
                 'token'
             ),
-            new JiraMediaProxy(
-                $http,
-                'https://jira.example.test',
-                'user@example.com',
-                'token',
-                new Translator('fr')
-            )
+            new AdfDocumentFactory()
         );
         $provider = new BoardSnapshotProvider(
             $jira,

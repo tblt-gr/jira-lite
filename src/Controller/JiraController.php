@@ -6,6 +6,7 @@ namespace App\Controller;
 
 use App\Board\BoardSnapshotProvider;
 use App\Jira\Document\AdfDocumentFactory;
+use App\Jira\JiraMediaProxy;
 use App\Jira\Repository\BoardRepository;
 use App\Jira\Repository\IssueRepository;
 use App\Jira\Repository\UserRepository;
@@ -45,6 +46,7 @@ final class JiraController
         private readonly UserRepository $users,
         private readonly IssueRepository $issues,
         private readonly AdfDocumentFactory $documents,
+        private readonly JiraMediaProxy $mediaProxy,
         private readonly TranslatorInterface $translator,
         private readonly LoggerInterface $logger,
     ) {
@@ -197,7 +199,7 @@ final class JiraController
         }
 
         try {
-            $media = $this->jira->getMedia($url);
+            $media = $this->mediaProxy->getMedia($url);
         } catch (InvalidArgumentException) {
             return new Response(status: Response::HTTP_BAD_REQUEST);
         } catch (Throwable) {
@@ -226,7 +228,7 @@ final class JiraController
         string $variant,
     ): Response {
         try {
-            $media = $this->jira->getAttachmentImage(
+            $media = $this->mediaProxy->getAttachmentImage(
                 $attachmentId,
                 'thumbnail' === $variant
             );
