@@ -51,8 +51,7 @@
     gap: 9px;
 }
 
-.home-button,
-.home-button:hover {
+.home-button {
     flex: 0 0 auto;
     border-color: transparent;
     background: transparent;
@@ -61,7 +60,8 @@
 }
 
 .home-button:hover {
-    background: var(--chip);
+    border-color: var(--border);
+    background: var(--surface-soft);
     color: var(--text);
 }
 
@@ -126,8 +126,8 @@
 button {
     border: 1px solid transparent;
     border-radius: var(--radius);
-    background: var(--primary);
-    color: var(--on-primary);
+    background: transparent;
+    color: var(--text-muted);
     padding: 6px 11px;
     font-size: 12px;
     font-weight: 500;
@@ -136,7 +136,21 @@ button {
 }
 
 button:hover {
+    border-color: var(--border);
+    background: var(--surface-soft);
+    color: var(--text);
+}
+
+button.primary-button {
+    border-color: var(--primary);
+    background: var(--primary);
+    color: var(--on-primary);
+}
+
+button.primary-button:hover {
+    border-color: var(--primary-hover);
     background: var(--primary-hover);
+    color: var(--on-primary);
 }
 
 button:active {
@@ -168,27 +182,26 @@ textarea:disabled {
 }
 
 .secondary-button {
-    background: var(--surface-raised);
-    border-color: var(--border);
-    color: var(--text);
+    border-color: transparent;
+    background: transparent;
+    color: var(--text-muted);
 }
 
 .secondary-button:hover {
-    background: var(--card-hover);
-    border-color: color-mix(in srgb, var(--border) 60%, var(--text-muted));
-}
-
-.icon-button,
-.icon-button:hover {
-    border-color: transparent;
-    background: transparent;
+    border-color: var(--border);
+    background: var(--surface-soft);
+    color: var(--text);
 }
 
 .icon-button {
+    border-color: transparent;
+    background: transparent;
     color: var(--text-muted);
 }
 
 .icon-button:hover {
+    border-color: var(--border);
+    background: var(--surface-soft);
     color: var(--text);
 }
 
@@ -196,26 +209,6 @@ textarea:disabled {
     display: flex;
     align-items: center;
     gap: 7px;
-}
-
-.reload-button,
-.reload-button:hover {
-    border-color: transparent;
-    background: transparent;
-}
-
-.reload-button:hover {
-    color: var(--primary-hover);
-}
-
-.theme-toggle-button,
-.theme-toggle-button:hover {
-    border-color: transparent;
-    background: transparent;
-}
-
-.theme-toggle-button:hover {
-    color: var(--primary-hover);
 }
 
 .icon-button {
@@ -345,6 +338,8 @@ main {
 
 .epic-multiselect,
 .filter-multiselect {
+    min-width: 0;
+    max-width: 100%;
     position: relative;
     width: min(270px, 28vw);
     flex: 0 0 auto;
@@ -363,14 +358,12 @@ main {
 
 .epic-filter-trigger,
 .filter-trigger {
+    min-width: 0;
+    max-width: 100%;
     width: 100%;
     display: flex;
     align-items: center;
     gap: 7px;
-}
-
-.epic-filter-trigger {
-    width: auto;
 }
 
 #epic-filter-label,
@@ -444,6 +437,10 @@ main {
     width: min(280px, calc(100vw - 24px));
 }
 
+.epic-filter-menu {
+    width: 100%;
+}
+
 .epic-filter-menu-head,
 .filter-menu-head {
     position: sticky;
@@ -464,16 +461,18 @@ main {
 
 .epic-filter-clear,
 .filter-clear {
-    border: 0;
+    border: 1px solid transparent;
     background: transparent;
-    color: var(--primary-hover);
+    color: var(--text-muted);
     padding: 3px 5px;
     font-size: 10px;
 }
 
 .epic-filter-clear:hover,
 .filter-clear:hover {
-    background: var(--primary-soft);
+    border-color: var(--border);
+    background: var(--surface-soft);
+    color: var(--text);
 }
 
 .epic-filter-clear:disabled,
@@ -566,7 +565,8 @@ main {
 }
 
 .favorite-button:hover {
-    background: var(--chip);
+    border-color: var(--border);
+    background: var(--surface-soft);
     color: var(--text);
 }
 
@@ -726,9 +726,9 @@ main {
 }
 
 .group-collapse:hover {
-    border-color: transparent;
-    background: transparent;
-    color: var(--text-muted);
+    border-color: var(--border);
+    background: var(--surface-soft);
+    color: var(--text);
 }
 
 .group-collapse-icon {
@@ -1072,4 +1072,3 @@ main {
 .empty-state span {
     font-size: 12px;
 }
-

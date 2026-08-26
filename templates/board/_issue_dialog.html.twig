@@ -156,7 +156,7 @@
                     </div>
                     <div class="comment-form-footer">
                         <span>{{ 'dialog.comment_hint'|trans }}</span>
-                        <button type="submit">{{ 'dialog.comment_action'|trans }}</button>
+                        <button class="primary-button" type="submit">{{ 'dialog.comment_action'|trans }}</button>
                     </div>
                 </form>
                 <div id="issue-comments-list" class="issue-comments-list"></div>
@@ -192,7 +192,7 @@
                     <label for="worklog-comment">{{ 'dialog.optional_note'|trans }}</label>
                     <textarea id="worklog-comment" name="comment" rows="3"></textarea>
                     <div class="inline-edit-actions">
-                        <button type="submit">{{ 'dialog.log_action'|trans }}</button>
+                        <button class="primary-button" type="submit">{{ 'dialog.log_action'|trans }}</button>
                         <button class="secondary-button" type="button" data-cancel-edit="worklog">{{ 'common.cancel'|trans }}</button>
                     </div>
                 </form>
@@ -229,7 +229,7 @@
                         <label for="remaining-estimate-input">{{ 'dialog.remaining_time'|trans }}</label>
                         <input id="remaining-estimate-input" name="remainingEstimate" placeholder="{{ 'dialog.remaining_time_example'|trans }}">
                         <div class="inline-edit-actions">
-                            <button type="submit">{{ 'common.save'|trans }}</button>
+                            <button class="primary-button" type="submit">{{ 'common.save'|trans }}</button>
                             <button class="secondary-button" type="button" data-cancel-edit="fields">{{ 'common.cancel'|trans }}</button>
                         </div>
                     </form>

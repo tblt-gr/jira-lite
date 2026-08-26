@@ -294,6 +294,7 @@ export function createIssueDialog(context) {
         textarea.value = adfToText(comment.body).trim();
         actions.className = 'inline-edit-actions';
         save.type = 'submit';
+        save.className = 'primary-button';
         save.textContent = trans('common.save');
         cancel.type = 'button';
         cancel.className = 'secondary-button';

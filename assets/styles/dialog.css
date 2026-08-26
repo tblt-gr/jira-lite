@@ -81,7 +81,7 @@ dialog::backdrop {
     display: grid;
     place-items: center;
     padding: 0;
-    border: 0;
+    border: 1px solid transparent;
     border-radius: var(--radius);
     background: transparent;
     color: var(--text-muted);
@@ -93,7 +93,8 @@ dialog::backdrop {
 }
 
 #close-dialog:hover {
-    background: var(--chip);
+    border-color: var(--border);
+    background: var(--surface-soft);
     color: var(--text);
 }
 
@@ -174,7 +175,7 @@ dialog::backdrop {
     display: grid;
     place-items: center;
     opacity: 0;
-    border: 0;
+    border: 1px solid transparent;
     border-radius: var(--radius-sm);
     background: transparent;
     color: var(--text-subtle);
@@ -193,7 +194,8 @@ dialog::backdrop {
 }
 
 .field-pin-button:hover {
-    background: var(--primary-soft);
+    border-color: var(--border);
+    background: var(--surface-soft);
     color: var(--text);
 }
 
@@ -430,7 +432,7 @@ a.issue-image-preview {
     display: grid;
     place-items: center;
     padding: 0;
-    border: 0;
+    border: 1px solid transparent;
     border-radius: var(--radius);
     background: transparent;
     color: var(--text-muted);
@@ -438,7 +440,8 @@ a.issue-image-preview {
 }
 
 #image-viewer-close:hover {
-    background: var(--card-hover);
+    border-color: var(--border);
+    background: var(--surface-soft);
     color: var(--text);
 }
 
@@ -630,7 +633,7 @@ a.issue-image-preview {
 }
 
 .quiet-icon-button:hover {
-    border-color: var(--border-soft);
+    border-color: var(--border);
     background: var(--surface-soft);
     color: var(--text);
 }
@@ -664,7 +667,7 @@ a.issue-image-preview {
 
 .section-edit-button {
     height: 24px;
-    border: 0;
+    border: 1px solid transparent;
     border-radius: var(--radius-sm);
     background: transparent;
     color: var(--text-muted);
@@ -674,7 +677,8 @@ a.issue-image-preview {
 }
 
 .section-edit-button:hover {
-    background: var(--chip);
+    border-color: var(--border);
+    background: var(--surface-soft);
     color: var(--text);
 }
 
@@ -866,7 +870,7 @@ a.issue-image-preview {
     height: 20px;
     display: grid;
     place-items: center;
-    border: 0;
+    border: 1px solid transparent;
     border-radius: 50%;
     background: transparent;
     color: inherit;
@@ -875,7 +879,8 @@ a.issue-image-preview {
 }
 
 .comment-reply-context button:hover {
-    background: color-mix(in srgb, var(--primary) 14%, transparent);
+    border-color: var(--border);
+    background: var(--surface-soft);
 }
 
 .comment-form textarea {
@@ -903,16 +908,9 @@ a.issue-image-preview {
 
 .comment-form-footer button {
     height: 28px;
-    border-color: transparent;
-    background: var(--accent);
-    color: var(--on-accent);
     padding: 0 12px;
     font-size: 12px;
     font-weight: 500;
-}
-
-.comment-form-footer button:hover {
-    background: var(--primary-hover);
 }
 
 .emoji-picker {
@@ -927,7 +925,7 @@ a.issue-image-preview {
     height: 29px;
     display: grid;
     place-items: center;
-    border: 0;
+    border: 1px solid transparent;
     background: transparent;
     color: var(--text-muted);
     padding: 0;
@@ -936,7 +934,8 @@ a.issue-image-preview {
 
 .emoji-picker-trigger:hover,
 .emoji-picker-trigger[aria-expanded="true"] {
-    background: var(--chip);
+    border-color: var(--border);
+    background: var(--surface-soft);
 }
 
 .emoji-menu {
@@ -963,7 +962,7 @@ a.issue-image-preview {
     height: 28px;
     display: grid;
     place-items: center;
-    border: 0;
+    border: 1px solid transparent;
     background: transparent;
     padding: 0;
     font-size: 17px;
@@ -971,7 +970,8 @@ a.issue-image-preview {
 
 .emoji-option:hover,
 .emoji-option:focus-visible {
-    background: var(--chip);
+    border-color: var(--border);
+    background: var(--surface-soft);
     transform: scale(1.08);
 }
 
@@ -1051,7 +1051,7 @@ a.issue-image-preview {
 }
 
 .issue-comment-actions button {
-    border: 0;
+    border: 1px solid transparent;
     border-radius: var(--radius-sm);
     background: transparent;
     color: var(--text-subtle);
@@ -1060,7 +1060,8 @@ a.issue-image-preview {
 }
 
 .issue-comment-actions button:hover {
-    background: var(--chip);
+    border-color: var(--border);
+    background: var(--surface-soft);
     color: var(--text);
 }
 
@@ -1169,7 +1170,6 @@ a.issue-image-preview {
 
 .issue-transition-picker .filter-trigger {
     height: 34px;
-    border-color: transparent;
     padding-inline: 8px;
 }
 

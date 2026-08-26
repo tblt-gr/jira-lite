@@ -77,9 +77,80 @@ function createGroupHeader(context, group, sprintLabel, grouped, collapsed) {
 
 export function createBoardView(context) {
     let renderFrame = null;
+    let scrollSaveTimer = null;
+    let initialScrollRestored = false;
+    const scrollStorageKey = `jira-lite:${context.boardId}:board-scroll`;
+
+    function readScrollPosition() {
+        try {
+            const position = JSON.parse(
+                window.localStorage.getItem(scrollStorageKey) || '{}'
+            );
+            const left = Number(position.left);
+            const top = Number(position.top);
+
+            return {
+                left: Number.isFinite(left) && left >= 0 ? left : 0,
+                top: Number.isFinite(top) && top >= 0 ? top : 0
+            };
+        } catch {
+            return { left: 0, top: 0 };
+        }
+    }
+
+    let savedScrollPosition = readScrollPosition();
+
+    function saveScrollPosition() {
+        if (!initialScrollRestored) {
+            return;
+        }
+
+        savedScrollPosition = {
+            left: context.board.scrollLeft,
+            top: context.board.scrollTop
+        };
+
+        try {
+            window.localStorage.setItem(
+                scrollStorageKey,
+                JSON.stringify(savedScrollPosition)
+            );
+        } catch {
+            // Scrolling remains available when storage is unavailable.
+        }
+    }
+
+    function scheduleScrollSave() {
+        if (!initialScrollRestored) {
+            return;
+        }
+
+        if (scrollSaveTimer !== null) {
+            window.clearTimeout(scrollSaveTimer);
+        }
+
+        scrollSaveTimer = window.setTimeout(() => {
+            scrollSaveTimer = null;
+            saveScrollPosition();
+        }, 120);
+    }
+
+    context.board.addEventListener('scroll', scheduleScrollSave, {
+        passive: true,
+        signal: context.signal
+    });
+    window.addEventListener('pagehide', saveScrollPosition, {
+        signal: context.signal
+    });
 
     function render(revealFirstIssue = false) {
         const { state, board } = context;
+
+        if (renderFrame !== null) {
+            window.cancelAnimationFrame(renderFrame);
+            renderFrame = null;
+        }
+
         state.selectedIssueKeys.clear();
         state.selectedColumnId = null;
         const previousScrollLeft = board.scrollLeft;
@@ -244,6 +315,12 @@ export function createBoardView(context) {
         context.updateToggleAllEpics();
         renderFrame = window.requestAnimationFrame(() => {
             renderFrame = null;
+            if (!initialScrollRestored) {
+                initialScrollRestored = true;
+                board.scrollTo(savedScrollPosition);
+                return;
+            }
+
             if (revealFirstIssue && columnsToReveal.length) {
                 const { workflow, firstPopulatedColumn } = columnsToReveal[0];
 
@@ -281,6 +358,12 @@ export function createBoardView(context) {
     return {
         render,
         destroy() {
+            if (scrollSaveTimer !== null) {
+                window.clearTimeout(scrollSaveTimer);
+                scrollSaveTimer = null;
+            }
+            saveScrollPosition();
+
             if (renderFrame !== null) {
                 window.cancelAnimationFrame(renderFrame);
                 renderFrame = null;

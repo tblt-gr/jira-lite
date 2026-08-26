@@ -478,26 +478,6 @@ export function createIssueView(context) {
         }
     }
 
-    function createExternalLinkIcon() {
-        const namespace = 'http://www.w3.org/2000/svg';
-        const svg = document.createElementNS(namespace, 'svg');
-        const arrow = document.createElementNS(namespace, 'path');
-        const frame = document.createElementNS(namespace, 'path');
-
-        svg.classList.add('ui-icon');
-        svg.setAttribute('viewBox', '0 0 24 24');
-        svg.setAttribute('aria-hidden', 'true');
-        arrow.setAttribute('d', 'M14 5h5v5M19 5l-9 9');
-        frame.setAttribute(
-            'd',
-            'M19 13v5a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V6' +
-            'a1 1 0 0 1 1-1h5'
-        );
-        svg.append(arrow, frame);
-
-        return svg;
-    }
-
     function createFileIcon() {
         const namespace = 'http://www.w3.org/2000/svg';
         const svg = document.createElementNS(namespace, 'svg');

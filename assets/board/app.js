@@ -724,6 +724,7 @@ export function mountBoard(root, boardId) {
     }
 
     boardView = createBoardView({
+        boardId,
         state,
         board,
         counter,
