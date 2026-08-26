@@ -197,8 +197,7 @@ export function createMultiSelect({
         update();
     }
 
-    trigger.addEventListener('click', event => {
-        event.stopPropagation();
+    trigger.addEventListener('click', () => {
         const shouldOpen = menu.hidden;
 
         menu.hidden = !shouldOpen;

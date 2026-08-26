@@ -750,8 +750,7 @@ export function mountBoard(root, boardId) {
     restoreCollapsedEpics();
 
     search.addEventListener('input', () => renderBoard(), listenerOptions);
-    epicFilterTrigger.addEventListener('click', event => {
-        event.stopPropagation();
+    epicFilterTrigger.addEventListener('click', () => {
         const open = epicFilterMenu.hidden;
 
         epicFilterMenu.hidden = !open;
