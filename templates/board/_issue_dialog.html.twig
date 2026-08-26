@@ -167,19 +167,22 @@
             <section class="issue-time-tracking">
                 <div class="sidebar-panel-heading">
                     <h3>{{ 'dialog.time_tracking'|trans }}</h3>
-                    <button id="toggle-worklog" class="section-edit-button" type="button">
-                        {{ 'dialog.log_work'|trans }}
-                    </button>
                 </div>
-                <div class="time-tracking-summary">
-                    <div class="time-progress" aria-hidden="true">
+                <button
+                    id="toggle-worklog"
+                    class="time-tracking-summary"
+                    type="button"
+                    title="{{ 'dialog.log_work'|trans }}"
+                    aria-label="{{ 'dialog.log_work'|trans }}"
+                >
+                    <span class="time-progress">
                         <span id="time-progress-bar"></span>
-                    </div>
-                    <div class="time-tracking-values">
+                    </span>
+                    <span class="time-tracking-values">
                         <span id="time-spent">{{ 'dialog.no_logged_time'|trans }}</span>
                         <span id="time-remaining"></span>
-                    </div>
-                </div>
+                    </span>
+                </button>
                 <form id="worklog-form" class="stacked-edit-form worklog-form" hidden>
                     <label for="worklog-time">{{ 'dialog.time_spent'|trans }}</label>
                     <input

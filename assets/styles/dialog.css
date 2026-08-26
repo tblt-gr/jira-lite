@@ -1246,11 +1246,25 @@ a.issue-image-preview {
 }
 
 .time-tracking-summary {
+    width: 100%;
     padding: 5px 0 2px;
+    display: block;
+    border: 0;
+    background: transparent;
+    color: inherit;
+    cursor: pointer;
+    font: inherit;
+    text-align: left;
+}
+
+.time-tracking-summary:focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 3px;
 }
 
 .time-progress {
     height: 5px;
+    display: block;
     overflow: hidden;
     border-radius: 999px;
     background: var(--border-soft);
