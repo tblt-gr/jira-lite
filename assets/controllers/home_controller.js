@@ -1,6 +1,5 @@
 import { Controller } from '@hotwired/stimulus';
 import {
-    favoritesFirst,
     readFavoriteBoards,
     toggleFavoriteBoard,
     updateFavoriteButton
@@ -48,7 +47,5 @@ export default class extends Controller {
             }
         });
 
-        favoritesFirst(this.items, item => item.dataset.boardId, favorites)
-            .forEach(item => this.element.append(item));
     }
 }

@@ -52,17 +52,15 @@
 }
 
 .home-button {
+    height: 30px;
     flex: 0 0 auto;
-    border-color: transparent;
-    background: transparent;
-    color: var(--text-muted);
+    justify-content: center;
+    padding: 6px 11px;
+    border: 1px solid transparent;
+    border-radius: var(--radius);
     text-decoration: none;
-}
-
-.home-button:hover {
-    border-color: var(--border);
-    background: var(--surface-soft);
-    color: var(--text);
+    transition: background 120ms ease, border-color 120ms ease,
+        transform 120ms ease;
 }
 
 .board-switcher-field {
