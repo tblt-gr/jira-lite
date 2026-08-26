@@ -8,11 +8,14 @@ vendor/
 public/assets/
 assets/vendor/
 
-.env.local
-.env.*.local
+.env
+.env.*
+!.env.example
+.php-cs-fixer.cache
+node_modules/
+tests/
 
 .phpunit.cache/
 phpunit.xml
 
-docs/
 AGENTS.md

@@ -11,9 +11,9 @@ services:
     container_name: jira-lite-app
     restart: unless-stopped
     ports:
-      - "${BIND_ADDRESS:-127.0.0.1}:${PORT:-5472}:80"
+      - "${BIND_ADDRESS:-127.0.0.1}:${PORT:-5472}:8080"
     environment:
-      SERVER_NAME: :80
+      SERVER_NAME: :8080
       APP_ENV: ${APP_ENV:-dev}
       APP_SECRET: ${APP_SECRET:-}
       JIRA_BASE_URL: ${JIRA_BASE_URL:-}

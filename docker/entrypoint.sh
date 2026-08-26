@@ -7,9 +7,9 @@ if [ "${1#-}" != "$1" ]; then
 fi
 
 if [ "$1" = 'frankenphp' ] || [ "$1" = 'php' ] || [ "$1" = 'bin/console' ]; then
-    # Ensure var directories exist with write permissions
+    # Ensure var directories exist with write permissions.
     mkdir -p var/cache var/log var/share
-    chmod -R 777 var 2>/dev/null || true
+    chmod -R 775 var 2>/dev/null || true
 
     if [ "$APP_ENV" != 'prod' ]; then
         if [ ! -d vendor ] || [ ! -f vendor/autoload.php ]; then
