@@ -6,10 +6,12 @@ namespace App\Tests\Controller;
 
 use App\Board\BoardSnapshotProvider;
 use App\Controller\JiraController;
+use App\Jira\Document\AdfDocumentFactory;
 use App\Jira\JiraClient;
 use App\Jira\JiraMediaProxy;
 use App\Jira\JiraViewMapper;
 use App\Jira\Repository\BoardRepository;
+use App\Jira\Repository\IssueRepository;
 use App\Jira\Repository\UserRepository;
 
 use const JSON_THROW_ON_ERROR;
@@ -66,6 +68,16 @@ final class JiraControllerTest extends TestCase
                 'user@example.com',
                 'token'
             )),
+            new IssueRepository(
+                new JiraClient(
+                    $http,
+                    'https://jira.example.test',
+                    'user@example.com',
+                    'token'
+                ),
+                new AdfDocumentFactory()
+            ),
+            new AdfDocumentFactory(),
             new Translator('fr'),
             new NullLogger()
         );
@@ -275,6 +287,16 @@ final class JiraControllerTest extends TestCase
                 'user@example.com',
                 'token'
             )),
+            new IssueRepository(
+                new JiraClient(
+                    $http,
+                    'https://jira.example.test',
+                    'user@example.com',
+                    'token'
+                ),
+                new AdfDocumentFactory()
+            ),
+            new AdfDocumentFactory(),
             new Translator('fr'),
             new NullLogger()
         );

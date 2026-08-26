@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use App\Board\BoardSnapshotProvider;
+use App\Jira\Document\AdfDocumentFactory;
 use App\Jira\Repository\BoardRepository;
+use App\Jira\Repository\IssueRepository;
 use App\Jira\Repository\UserRepository;
 
 use function array_key_exists;
@@ -41,6 +43,8 @@ final class JiraController
         private readonly CacheInterface $cache,
         private readonly BoardSnapshotProvider $snapshots,
         private readonly UserRepository $users,
+        private readonly IssueRepository $issues,
+        private readonly AdfDocumentFactory $documents,
         private readonly TranslatorInterface $translator,
         private readonly LoggerInterface $logger,
     ) {
@@ -179,7 +183,7 @@ final class JiraController
     public function issue(string $issueKey): JsonResponse
     {
         return new JsonResponse(
-            $this->jira->getIssue($issueKey)
+            $this->issues->getIssue($issueKey)
         );
     }
 
@@ -245,14 +249,14 @@ final class JiraController
     public function transitions(string $issueKey): JsonResponse
     {
         return new JsonResponse(
-            $this->jira->getTransitions($issueKey)
+            $this->issues->getTransitions($issueKey)
         );
     }
 
     #[Route('/issue/{issueKey}/comments', methods: ['GET'])]
     public function comments(string $issueKey): JsonResponse
     {
-        $response = $this->jira->getIssueComments($issueKey);
+        $response = $this->issues->getIssueComments($issueKey);
 
         try {
             $currentUser = $this->cache->get(
@@ -324,7 +328,7 @@ final class JiraController
             $description = trim((string) $data['description']);
             $fields['description'] = '' === $description
                 ? null
-                : $this->jira->plainTextDocument($description);
+                : $this->documents->plainTextDocument($description);
         }
 
         if (array_key_exists('labels', $data)) {
@@ -396,7 +400,7 @@ final class JiraController
             ], 400);
         }
 
-        $this->jira->updateIssue($issueKey, $fields);
+        $this->issues->updateIssue($issueKey, $fields);
 
         return new JsonResponse(['success' => true]);
     }
@@ -425,7 +429,7 @@ final class JiraController
         }
 
         return new JsonResponse(
-            $this->jira->addIssueComment(
+            $this->issues->addIssueComment(
                 $issueKey,
                 $comment,
                 $this->mentionsFromRequest($data)
@@ -463,7 +467,7 @@ final class JiraController
         }
 
         return new JsonResponse(
-            $this->jira->updateIssueComment(
+            $this->issues->updateIssueComment(
                 $issueKey,
                 $commentId,
                 $comment,
@@ -491,7 +495,7 @@ final class JiraController
             return $response;
         }
 
-        $this->jira->deleteIssueComment($issueKey, $commentId);
+        $this->issues->deleteIssueComment($issueKey, $commentId);
 
         return new JsonResponse(status: 204);
     }
@@ -521,7 +525,7 @@ final class JiraController
         }
 
         return new JsonResponse(
-            $this->jira->addIssueWorklog(
+            $this->issues->addIssueWorklog(
                 $issueKey,
                 $timeSpent,
                 '' === $comment ? null : $comment
@@ -555,7 +559,7 @@ final class JiraController
             ], 400);
         }
 
-        $this->jira->transitionIssue(
+        $this->issues->transitionIssue(
             $issueKey,
             $transitionId
         );
@@ -565,7 +569,7 @@ final class JiraController
             $this->snapshots->invalidateIssues((int) $boardId);
         }
 
-        return new JsonResponse($this->jira->getIssue($issueKey), headers: [
+        return new JsonResponse($this->issues->getIssue($issueKey), headers: [
             'Cache-Control' => 'no-store',
         ]);
     }
