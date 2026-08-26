@@ -20,7 +20,7 @@
         href="{{ current_board_icon_url }}"
         {% if not current_board_icon %}type="image/png"{% endif %}
     >
-    {{ importmap('app') }}
+    {{ importmap('app', {nonce: app.request.attributes.get('_csp_nonce')}) }}
 </head>
 <body
     data-controller="board"

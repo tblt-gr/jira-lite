@@ -6,7 +6,7 @@
     <meta name="csrf-token" content="{{ csrf_token('jira_api') }}">
     <title>{{ 'home.page_title'|trans }}</title>
     <link rel="icon" href="{{ asset('images/favicon.png') }}" type="image/png">
-    {{ importmap('app') }}
+    {{ importmap('app', {nonce: app.request.attributes.get('_csp_nonce')}) }}
 </head>
 <body class="home-page">
 <header class="topbar">
