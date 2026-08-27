@@ -14,10 +14,22 @@ use App\Jira\Document\AdfDocumentFactory;
 use App\Jira\Repository\BoardRepository;
 use App\Jira\Repository\IssueRepository;
 use App\Jira\Repository\UserRepository;
+
+use function array_key_exists;
+use function array_slice;
+
 use DateTimeImmutable;
 use Exception;
 use InvalidArgumentException;
+
+use function is_array;
+use function is_int;
+use function is_string;
+
 use Psr\Log\LoggerInterface;
+
+use function sprintf;
+
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -26,13 +38,6 @@ use Symfony\Contracts\Cache\CacheInterface;
 use Symfony\Contracts\Cache\ItemInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use Throwable;
-
-use function array_key_exists;
-use function array_slice;
-use function is_array;
-use function is_int;
-use function is_string;
-use function sprintf;
 
 final class JiraApiRequestHandler
 {
@@ -278,18 +283,28 @@ final class JiraApiRequestHandler
     private function editableFields(array $data, UpdateIssueRequest $payload): array
     {
         $fields = [];
-        if (array_key_exists('summary', $data)) { $fields['summary'] = $payload->summary; }
-        if (array_key_exists('description', $data)) { $fields['description'] = '' === $payload->description ? null : $this->documents->plainTextDocument((string) $payload->description); }
+        if (array_key_exists('summary', $data)) {
+            $fields['summary'] = $payload->summary;
+        }
+        if (array_key_exists('description', $data)) {
+            $fields['description'] = '' === $payload->description ? null : $this->documents->plainTextDocument((string) $payload->description);
+        }
         if (array_key_exists('labels', $data)) {
             $labels = is_array($payload->labels) ? $payload->labels : [];
             $fields['labels'] = array_values(array_unique(array_filter(array_map(static fn (mixed $label): string => trim((string) $label), $labels), static fn (string $label): bool => '' !== $label)));
         }
-        if (array_key_exists('dueDate', $data)) { $fields['duedate'] = $payload->dueDate; }
+        if (array_key_exists('dueDate', $data)) {
+            $fields['duedate'] = $payload->dueDate;
+        }
         $timeTracking = [];
         foreach (['originalEstimate', 'remainingEstimate'] as $input) {
-            if (array_key_exists($input, $data) && null !== $payload->{$input}) { $timeTracking[$input] = $payload->{$input}; }
+            if (array_key_exists($input, $data) && null !== $payload->{$input}) {
+                $timeTracking[$input] = $payload->{$input};
+            }
         }
-        if ([] !== $timeTracking) { $fields['timetracking'] = $timeTracking; }
+        if ([] !== $timeTracking) {
+            $fields['timetracking'] = $timeTracking;
+        }
 
         return $fields;
     }
@@ -299,13 +314,19 @@ final class JiraApiRequestHandler
      */
     private function mentionsFromRequest(array $data): array
     {
-        if (!is_array($data['mentions'] ?? null)) { return []; }
+        if (!is_array($data['mentions'] ?? null)) {
+            return [];
+        }
         $mentions = [];
         foreach (array_slice($data['mentions'], 0, 20) as $mention) {
-            if (!is_array($mention)) { continue; }
+            if (!is_array($mention)) {
+                continue;
+            }
             $accountId = trim((string) ($mention['accountId'] ?? ''));
             $text = trim((string) ($mention['text'] ?? ''));
-            if ('' === $accountId || '' === $text || !str_starts_with($text, '@') || mb_strlen($accountId) > 255 || mb_strlen($text) > 160) { continue; }
+            if ('' === $accountId || '' === $text || !str_starts_with($text, '@') || mb_strlen($accountId) > 255 || mb_strlen($text) > 160) {
+                continue;
+            }
             $mentions[$accountId] = ['accountId' => $accountId, 'text' => $text];
         }
 

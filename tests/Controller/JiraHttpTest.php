@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Tests\Controller;
 
+use const JSON_THROW_ON_ERROR;
+
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
 final class JiraHttpTest extends WebTestCase

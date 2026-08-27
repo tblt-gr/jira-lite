@@ -13,12 +13,12 @@ use App\Jira\JiraViewMapper;
 use App\Jira\Repository\BoardRepository;
 use App\Jira\Repository\IssueRepository;
 use App\Jira\Repository\UserRepository;
+use App\Service\JiraApiRequestHandler;
 
 use const JSON_THROW_ON_ERROR;
 
 use LogicException;
 use PHPUnit\Framework\TestCase;
-use App\Service\JiraApiRequestHandler;
 use Psr\Log\NullLogger;
 use Symfony\Component\Cache\Adapter\ArrayAdapter;
 use Symfony\Component\HttpClient\MockHttpClient;
