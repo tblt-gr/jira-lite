@@ -23,8 +23,8 @@ test('ADF helpers tolerate incomplete Jira documents', () => {
 
 test('epic helpers have safe fallbacks for incomplete issues', () => {
     assert.equal(canonicalEpicId({ key: 'APP-10' }), 'APP-10');
-    assert.equal(epicColor({ color: { key: 'color_1' } }), '#8b7cf6');
-    assert.equal(epicColor({}), '#8b7cf6');
+    assert.equal(epicColor({ color: { key: 'color_1' } }), '#6757d8');
+    assert.equal(epicColor({}), '#6757d8');
     assert.equal(epicLabel({}, 'Sans epic'), 'Sans epic');
     assert.equal(issueBelongsToEpic({ fields: {} }, '10'), false);
     assert.equal(issueBelongsToEpic({ fields: { epic: { id: 10 } } }, '10'), true);

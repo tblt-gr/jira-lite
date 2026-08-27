@@ -17,6 +17,7 @@ export function createIssueDialog(context) {
     const selectedTransitionIds = new Set();
     const labels = { all: trans('dialog.choose_status'), title: trans('dialog.new_status'), clear: '', empty: trans('dialog.no_transition'), selected: () => '' };
     let issueRequestController = null;
+    let restoreFocusElement = null;
     const { clear: clearTimers, schedule: scheduleTimeout } = createTimeoutScheduler();
     const forms = createIssueForms({ root, state, api, adfToText, showToast, trans, signal });
     const mentions = createMentionMenu({
@@ -117,7 +118,11 @@ export function createIssueDialog(context) {
             labels.all = issue.fields?.status?.name ? trans('dialog.current_status', { status: issue.fields.status.name }) : trans('dialog.choose_status');
             selectedTransitionIds.clear();
             transitionPicker.setOptions((transitions.transitions || []).map(item => ({ id: String(item.id), name: item.name || item.to?.name || String(item.id) })));
-            if (!dialog.open) { dialog.showModal(); } else {
+            if (!dialog.open) {
+                restoreFocusElement = document.activeElement instanceof HTMLElement
+                    ? document.activeElement : null;
+                dialog.showModal();
+            } else {
                 ['.issue-dialog-main', '.issue-sidebar', '.issue-dialog-layout'].forEach(selector => { root.querySelector(selector).scrollTop = 0; });
             }
         } catch (error) {
@@ -149,5 +154,12 @@ export function createIssueDialog(context) {
     }
 
     root.querySelector('#close-dialog').addEventListener('click', () => dialog.close(), { signal });
+    dialog.addEventListener('close', () => {
+        const element = restoreFocusElement;
+        restoreFocusElement = null;
+        window.requestAnimationFrame(() => {
+            if (element?.isConnected) { element.focus(); }
+        });
+    }, { signal });
     return { openIssue, destroy() { lifecycleController.abort(); issueRequestController?.abort(); clearTimers(); dialog.close(); } };
 }

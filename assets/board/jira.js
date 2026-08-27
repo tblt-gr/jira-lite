@@ -1,14 +1,14 @@
 const EPIC_COLORS = {
-    color_1: '#8b7cf6',
-    color_2: '#f87171',
-    color_3: '#fb923c',
-    color_4: '#facc15',
+    color_1: '#6757d8',
+    color_2: '#dc3e45',
+    color_3: '#c45c16',
+    color_4: '#8a6800',
     color_5: '#94a3b8',
-    color_6: '#34d399',
-    color_7: '#38bdf8',
-    color_8: '#c084fc',
-    color_9: '#f472b6',
-    color_10: '#fb7185'
+    color_6: '#087f5b',
+    color_7: '#1377a5',
+    color_8: '#8152bd',
+    color_9: '#bc3176',
+    color_10: '#c13d54'
 };
 
 export function adfToText(node) {
@@ -162,7 +162,7 @@ export function epicColor(epic) {
         return value;
     }
 
-    return EPIC_COLORS[value] || '#8b7cf6';
+    return EPIC_COLORS[value] || '#6757d8';
 }
 
 export function epicLabel(epic, fallback = '') {
