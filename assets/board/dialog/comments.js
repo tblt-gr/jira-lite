@@ -161,3 +161,78 @@ export async function removeComment({
         button.disabled = false;
     }
 }
+
+export function openCommentEditor({
+    article,
+    body,
+    comment,
+    issueKey,
+    api,
+    adfToText,
+    adfMentions,
+    refresh,
+    setFormBusy,
+    showToast,
+    trans
+}) {
+    if (article.querySelector('.comment-edit-form')) {
+        return;
+    }
+
+    const form = document.createElement('form');
+    const textarea = document.createElement('textarea');
+    const actions = document.createElement('div');
+    const save = document.createElement('button');
+    const cancel = document.createElement('button');
+
+    form.className = 'comment-edit-form';
+    textarea.rows = 4;
+    textarea.required = true;
+    textarea.value = adfToText(comment.body).trim();
+    actions.className = 'inline-edit-actions';
+    save.type = 'submit';
+    save.className = 'primary-button';
+    save.textContent = trans('common.save');
+    cancel.type = 'button';
+    cancel.className = 'secondary-button';
+    cancel.textContent = trans('common.cancel');
+    actions.append(save, cancel);
+    form.append(textarea, actions);
+    body.hidden = true;
+    article.append(form);
+    textarea.focus();
+
+    cancel.addEventListener('click', () => {
+        form.remove();
+        body.hidden = false;
+    });
+    form.addEventListener('submit', async event => {
+        event.preventDefault();
+        const updatedComment = textarea.value.trim();
+
+        if (!updatedComment) {
+            return;
+        }
+
+        setFormBusy(form, true);
+
+        try {
+            await api(
+                `/api/jira/issue/${encodeURIComponent(issueKey)}`
+                + `/comments/${encodeURIComponent(comment.id)}`,
+                {
+                    method: 'PUT',
+                    body: JSON.stringify({
+                        comment: updatedComment,
+                        mentions: adfMentions(comment.body)
+                    })
+                }
+            );
+            await refresh();
+            showToast(trans('dialog.comment_updated'), 'success');
+        } catch (error) {
+            showToast(error.message, 'error');
+            setFormBusy(form, false);
+        }
+    });
+}
