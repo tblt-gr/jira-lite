@@ -1,3 +1,4 @@
+# Development profile: source code is mounted and APP_ENV defaults to dev.
 # Jira Lite is a local tool. It binds to the loopback interface by default.
 #
 # BIND_ADDRESS must stay 127.0.0.1 unless the application has been given
