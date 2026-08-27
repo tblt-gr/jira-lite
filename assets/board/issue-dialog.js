@@ -1,6 +1,7 @@
 import { api } from './api.js';
 import { formatCommentDate } from './dialog/comments.js';
 import { COMMENT_EMOJIS } from './dialog/emojis.js';
+import { createTimeoutScheduler } from './dialog/timers.js';
 import {
     createImage,
     jiraMediaUrl
@@ -45,17 +46,8 @@ export function createIssueDialog(context) {
     let mentionRequestToken = 0;
     let activeMentionRange = null;
     let issueRequestController = null;
-    const timers = new Set();
-
-    function scheduleTimeout(callback, delay) {
-        const timer = window.setTimeout(() => {
-            timers.delete(timer);
-            callback();
-        }, delay);
-        timers.add(timer);
-
-        return timer;
-    }
+    const { clear: clearTimers, schedule: scheduleTimeout } =
+        createTimeoutScheduler();
 
     const {
         renderEditableFields,
@@ -995,8 +987,7 @@ export function createIssueDialog(context) {
         destroy() {
             lifecycleController.abort();
             issueRequestController?.abort();
-            timers.forEach(timer => window.clearTimeout(timer));
-            timers.clear();
+            clearTimers();
             dialog.close();
         }
     };
