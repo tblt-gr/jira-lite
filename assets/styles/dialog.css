@@ -1,3 +1,5 @@
-@import url('./dialog-media.css');
-@import url('./dialog-editors.css');
+@import url('./dialog-shell.css');
+@import url('./dialog-details.css');
+@import url('./dialog-comments.css');
+@import url('./dialog-forms.css');
 @import url('./dialog-activity.css');
