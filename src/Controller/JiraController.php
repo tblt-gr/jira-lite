@@ -5,6 +5,9 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use App\Board\BoardSnapshotProvider;
+use App\Dto\Request\AddCommentRequest;
+use App\Dto\Request\AddWorklogRequest;
+use App\Dto\Request\TransitionRequest;
 use App\Jira\Document\AdfDocumentFactory;
 use App\Jira\JiraMediaProxy;
 use App\Jira\Repository\BoardRepository;
@@ -31,6 +34,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsCsrfTokenValid;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Contracts\Cache\CacheInterface;
 use Symfony\Contracts\Cache\ItemInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
@@ -49,6 +53,7 @@ final class JiraController
         private readonly JiraMediaProxy $mediaProxy,
         private readonly TranslatorInterface $translator,
         private readonly LoggerInterface $logger,
+        private readonly ValidatorInterface $validator,
     ) {
     }
 
@@ -422,19 +427,20 @@ final class JiraController
         }
 
         $data = $request->toArray();
-        $comment = trim((string) ($data['comment'] ?? ''));
+        $payload = new AddCommentRequest(
+            trim((string) ($data['comment'] ?? '')),
+            $this->mentionsFromRequest($data)
+        );
 
-        if ('' === $comment) {
-            return new JsonResponse([
-                'error' => $this->translator->trans('api.empty_comment'),
-            ], 400);
+        if ($response = $this->validationResponse($payload)) {
+            return $response;
         }
 
         return new JsonResponse(
             $this->issues->addIssueComment(
                 $issueKey,
-                $comment,
-                $this->mentionsFromRequest($data)
+                $payload->comment,
+                $payload->mentions
             ),
             201
         );
@@ -460,20 +466,21 @@ final class JiraController
         }
 
         $data = $request->toArray();
-        $comment = trim((string) ($data['comment'] ?? ''));
+        $payload = new AddCommentRequest(
+            trim((string) ($data['comment'] ?? '')),
+            $this->mentionsFromRequest($data)
+        );
 
-        if ('' === $comment) {
-            return new JsonResponse([
-                'error' => $this->translator->trans('api.empty_comment'),
-            ], 400);
+        if ($response = $this->validationResponse($payload)) {
+            return $response;
         }
 
         return new JsonResponse(
             $this->issues->updateIssueComment(
                 $issueKey,
                 $commentId,
-                $comment,
-                $this->mentionsFromRequest($data)
+                $payload->comment,
+                $payload->mentions
             )
         );
     }
@@ -517,20 +524,22 @@ final class JiraController
         }
 
         $data = $request->toArray();
-        $timeSpent = trim((string) ($data['timeSpent'] ?? ''));
-        $comment = trim((string) ($data['comment'] ?? ''));
+        $payload = new AddWorklogRequest(
+            trim((string) ($data['timeSpent'] ?? '')),
+            '' === trim((string) ($data['comment'] ?? ''))
+                ? null
+                : trim((string) $data['comment'])
+        );
 
-        if (!$this->isJiraDuration($timeSpent)) {
-            return new JsonResponse([
-                'error' => $this->translator->trans('api.worklog_format'),
-            ], 400);
+        if ($response = $this->validationResponse($payload)) {
+            return $response;
         }
 
         return new JsonResponse(
             $this->issues->addIssueWorklog(
                 $issueKey,
-                $timeSpent,
-                '' === $comment ? null : $comment
+                $payload->timeSpent,
+                $payload->comment
             ),
             201
         );
@@ -551,24 +560,25 @@ final class JiraController
         }
 
         $data = $request->toArray();
-        $transitionId = $data['transitionId'] ?? null;
+        $payload = new TransitionRequest(
+            is_string($data['transitionId'] ?? null)
+                ? $data['transitionId']
+                : '',
+            is_int($data['boardId'] ?? null)
+                ? $data['boardId']
+                : null
+        );
 
-        if (!is_string($transitionId) || '' === $transitionId) {
-            return new JsonResponse([
-                'error' => $this->translator->trans(
-                    'api.transition_required'
-                ),
-            ], 400);
+        if ($response = $this->validationResponse($payload)) {
+            return $response;
         }
 
         $this->issues->transitionIssue(
             $issueKey,
-            $transitionId
+            $payload->transitionId
         );
-        $boardId = $data['boardId'] ?? null;
-
-        if (is_int($boardId) || ctype_digit((string) $boardId)) {
-            $this->snapshots->invalidateIssues((int) $boardId);
+        if (null !== $payload->boardId) {
+            $this->snapshots->invalidateIssues($payload->boardId);
         }
 
         return new JsonResponse($this->issues->getIssue($issueKey), headers: [
@@ -576,12 +586,17 @@ final class JiraController
         ]);
     }
 
-    private function isJiraDuration(string $value): bool
+    private function validationResponse(object $payload): ?JsonResponse
     {
-        return '' !== $value && (bool) preg_match(
-            '/^(?:\d+\s*[wdhm]\s*)+$/i',
-            $value
-        );
+        $errors = [];
+
+        foreach ($this->validator->validate($payload) as $violation) {
+            $errors[$violation->getPropertyPath()] = $violation->getMessage();
+        }
+
+        return [] === $errors
+            ? null
+            : new JsonResponse(['errors' => $errors], 422);
     }
 
     private function unsupportedContentType(Request $request): ?JsonResponse

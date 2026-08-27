@@ -24,6 +24,7 @@ use Symfony\Component\HttpClient\MockHttpClient;
 use Symfony\Component\HttpClient\Response\MockResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Translation\Translator;
+use Symfony\Component\Validator\Validation;
 
 final class JiraControllerTest extends TestCase
 {
@@ -80,7 +81,9 @@ final class JiraControllerTest extends TestCase
                 new Translator('fr')
             ),
             new Translator('fr'),
-            new NullLogger()
+            new NullLogger(), Validation::createValidatorBuilder()
+                ->enableAttributeMapping()
+                ->getValidator()
         );
         $request = Request::create(
             '/api/jira/issue/APP-1/transition',
@@ -300,7 +303,9 @@ final class JiraControllerTest extends TestCase
                 new Translator('fr')
             ),
             new Translator('fr'),
-            new NullLogger()
+            new NullLogger(), Validation::createValidatorBuilder()
+                ->enableAttributeMapping()
+                ->getValidator()
         );
     }
 }
