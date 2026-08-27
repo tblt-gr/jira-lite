@@ -8,6 +8,7 @@ use App\Board\BoardSnapshotProvider;
 use App\Dto\Request\AddCommentRequest;
 use App\Dto\Request\AddWorklogRequest;
 use App\Dto\Request\TransitionRequest;
+use App\Dto\Request\UpdateIssueRequest;
 use App\Jira\Document\AdfDocumentFactory;
 use App\Jira\JiraMediaProxy;
 use App\Jira\Repository\BoardRepository;
@@ -317,58 +318,57 @@ final class JiraController
         }
 
         $data = $request->toArray();
+        $payload = new UpdateIssueRequest(
+            array_key_exists('summary', $data)
+                ? trim((string) $data['summary'])
+                : null,
+            array_key_exists('description', $data)
+                ? trim((string) $data['description'])
+                : null,
+            $data['labels'] ?? null,
+            array_key_exists('dueDate', $data)
+                && '' !== trim((string) $data['dueDate'])
+                ? trim((string) $data['dueDate'])
+                : null,
+            array_key_exists('originalEstimate', $data)
+                && '' !== trim((string) $data['originalEstimate'])
+                ? trim((string) $data['originalEstimate'])
+                : null,
+            array_key_exists('remainingEstimate', $data)
+                && '' !== trim((string) $data['remainingEstimate'])
+                ? trim((string) $data['remainingEstimate'])
+                : null,
+        );
+
+        if ($response = $this->validationResponse($payload)) {
+            return $response;
+        }
         $fields = [];
 
         if (array_key_exists('summary', $data)) {
-            $summary = trim((string) $data['summary']);
-
-            if ('' === $summary || mb_strlen($summary) > 255) {
-                return new JsonResponse([
-                    'error' => $this->translator->trans('api.summary_length'),
-                ], 400);
-            }
-
-            $fields['summary'] = $summary;
+            $fields['summary'] = $payload->summary;
         }
 
         if (array_key_exists('description', $data)) {
-            $description = trim((string) $data['description']);
-            $fields['description'] = '' === $description
+            $fields['description'] = '' === $payload->description
                 ? null
-                : $this->documents->plainTextDocument($description);
+                : $this->documents->plainTextDocument(
+                    (string) $payload->description
+                );
         }
 
         if (array_key_exists('labels', $data)) {
-            if (!is_array($data['labels'])) {
-                return new JsonResponse([
-                    'error' => $this->translator->trans('api.labels_list'),
-                ], 400);
-            }
-
             $fields['labels'] = array_values(array_unique(array_filter(
                 array_map(
                     static fn (mixed $label): string => trim((string) $label),
-                    $data['labels']
+                    $payload->labels
                 ),
                 static fn (string $label): bool => '' !== $label
             )));
         }
 
         if (array_key_exists('dueDate', $data)) {
-            $dueDate = trim((string) $data['dueDate']);
-
-            if (
-                '' !== $dueDate
-                && !preg_match('/^\d{4}-\d{2}-\d{2}$/', $dueDate)
-            ) {
-                return new JsonResponse([
-                    'error' => $this->translator->trans(
-                        'api.due_date_invalid'
-                    ),
-                ], 400);
-            }
-
-            $fields['duedate'] = '' === $dueDate ? null : $dueDate;
+            $fields['duedate'] = $payload->dueDate;
         }
 
         $timeTracking = [];
@@ -381,18 +381,11 @@ final class JiraController
                 continue;
             }
 
-            $value = trim((string) $data[$input]);
+            $value = 'originalEstimate' === $input
+                ? $payload->originalEstimate
+                : $payload->remainingEstimate;
 
-            if ('' !== $value && !$this->isJiraDuration($value)) {
-                return new JsonResponse([
-                    'error' => $this->translator->trans(
-                        'api.duration_invalid',
-                        ['%value%' => $value]
-                    ),
-                ], 400);
-            }
-
-            if ('' !== $value) {
+            if (null !== $value) {
                 $timeTracking[$jiraField] = $value;
             }
         }
