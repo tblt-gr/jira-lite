@@ -7,6 +7,10 @@ namespace App\Jira;
 use function count;
 use function is_array;
 
+use const PHP_URL_PATH;
+
+use Psr\Log\LoggerInterface;
+use Psr\Log\NullLogger;
 use Symfony\Contracts\HttpClient\Exception\ExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\HttpExceptionInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
@@ -21,6 +25,7 @@ final class JiraClient
         private readonly string $baseUrl,
         private readonly string $email,
         private readonly string $apiToken,
+        private readonly LoggerInterface $logger = new NullLogger(),
     ) {
     }
 
@@ -35,6 +40,7 @@ final class JiraClient
         array $options = [],
     ): array {
         try {
+            $startedAt = microtime(true);
             $response = $this->httpClient->request(
                 $method,
                 rtrim($this->baseUrl, '/').$uri,
@@ -50,11 +56,24 @@ final class JiraClient
                 )
             );
 
-            return $this->decode($response);
+            $payload = $this->decode($response);
+            $this->logger->debug('Jira API request completed.', [
+                'method' => $method,
+                'path' => parse_url($uri, PHP_URL_PATH) ?: '/',
+                'status' => $response->getStatusCode(),
+                'duration_ms' => (int) ((microtime(true) - $startedAt) * 1000),
+            ]);
+
+            return $payload;
         } catch (ExceptionInterface $exception) {
             $status = $exception instanceof HttpExceptionInterface
                 ? $exception->getResponse()->getStatusCode()
                 : null;
+            $this->logger->debug('Jira API request failed.', [
+                'method' => $method,
+                'path' => parse_url($uri, PHP_URL_PATH) ?: '/',
+                'status' => $status,
+            ]);
 
             throw new JiraException($status, $exception);
         }
@@ -96,6 +115,10 @@ final class JiraClient
         $lastPage['startAt'] = 0;
         $lastPage['maxResults'] = count($issues);
         $lastPage['total'] = count($issues);
+        $this->logger->info('Jira issue pages fetched.', [
+            'path' => parse_url($uri, PHP_URL_PATH) ?: '/',
+            'pages' => (int) ceil(count($issues) / self::PAGE_SIZE),
+        ]);
 
         return $lastPage;
     }

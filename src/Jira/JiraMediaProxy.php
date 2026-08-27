@@ -17,8 +17,11 @@ use InvalidArgumentException;
 use function is_array;
 use function is_string;
 
+use const PHP_URL_PATH;
 use const PHP_URL_SCHEME;
 
+use Psr\Log\LoggerInterface;
+use Psr\Log\NullLogger;
 use RuntimeException;
 
 use function sprintf;
@@ -44,6 +47,7 @@ final class JiraMediaProxy
         private readonly string $email,
         private readonly string $apiToken,
         private readonly TranslatorInterface $translator,
+        private readonly LoggerInterface $logger = new NullLogger(),
     ) {
     }
 
@@ -90,8 +94,15 @@ final class JiraMediaProxy
                 $options['auth_basic'] = [$this->email, $this->apiToken];
             }
 
+            $startedAt = microtime(true);
             $response = $this->client->request('GET', $url, $options);
             $status = $response->getStatusCode();
+            $this->logger->debug('Jira media request completed.', [
+                'method' => 'GET',
+                'path' => parse_url($url, PHP_URL_PATH) ?: '/',
+                'status' => $status,
+                'duration_ms' => (int) ((microtime(true) - $startedAt) * 1000),
+            ]);
             $headers = $response->getHeaders(false);
 
             if ($status >= 300 && $status < 400) {

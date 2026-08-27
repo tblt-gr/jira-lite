@@ -40,3 +40,7 @@ services:
             $apiToken: '%jira.api_token%'
         tags:
             - { name: monolog.processor }
+
+    App\Logger\RequestIdProcessor:
+        tags:
+            - { name: monolog.processor }
