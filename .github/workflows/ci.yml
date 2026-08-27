@@ -37,6 +37,9 @@ jobs:
       - name: composer validate
         run: composer validate --strict --no-check-publish
 
+      - name: composer audit
+        run: composer audit
+
       - name: composer cs
         run: composer cs
 
