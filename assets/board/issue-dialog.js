@@ -1,5 +1,5 @@
 import { api } from './api.js';
-import { formatCommentDate } from './dialog/comments.js';
+import { renderComments } from './dialog/comments.js';
 import { COMMENT_EMOJIS } from './dialog/emojis.js';
 import { createTimeoutScheduler } from './dialog/timers.js';
 import {
@@ -89,96 +89,24 @@ export function createIssueDialog(context) {
             state.currentUser = response.currentUser;
         }
 
-        container.replaceChildren();
-
         if (!comments.length) {
+            container.replaceChildren();
             container.textContent = response?.unavailable
                 ? trans('dialog.comments_unavailable')
                 : trans('dialog.no_comments');
             return;
         }
 
-        comments.forEach(comment => {
-            const article = document.createElement('article');
-            const header = document.createElement('header');
-            const author = document.createElement('div');
-            const authorName = document.createElement('strong');
-            const date = document.createElement('time');
-            const actions = document.createElement('div');
-            const body = document.createElement('div');
-            const avatar = createImage(
-                comment.author?.avatarUrls?.['32x32'],
-                '',
-                'issue-comment-avatar'
-            );
-
-            article.className = 'issue-comment';
-            author.className = 'issue-comment-author';
-            actions.className = 'issue-comment-actions';
-            authorName.textContent =
-                comment.author?.displayName || trans('common.anonymous');
-            date.textContent = formatCommentDate(
-                comment.updated || comment.created,
-                document.documentElement.lang
-            );
-            if (
-                comment.updated
-                && comment.created
-                && comment.updated !== comment.created
-            ) {
-                date.textContent += ` · ${trans('dialog.edited')}`;
-            }
-            date.dateTime = comment.updated || comment.created || '';
-            body.className = 'issue-comment-body';
-
-            if (avatar) {
-                avatar.addEventListener('error', () => avatar.remove(), {
-                    once: true
-                });
-                header.append(avatar);
-            }
-
-            author.append(authorName, date);
-            header.append(author, actions);
-
-            if (comment.author?.accountId) {
-                const reply = document.createElement('button');
-                reply.type = 'button';
-                reply.textContent = trans('dialog.reply');
-                reply.addEventListener('click', () => replyToComment(comment));
-                actions.append(reply);
-            }
-
-            if (
-                comment.id
-                && comment.author?.accountId
-                && comment.author.accountId === state.currentUser?.accountId
-            ) {
-                const edit = document.createElement('button');
-                edit.type = 'button';
-                edit.textContent = trans('common.edit');
-                edit.addEventListener('click', () => {
-                    openCommentEditor(article, body, comment);
-                });
-                actions.append(edit);
-
-                const remove = document.createElement('button');
-                remove.type = 'button';
-                remove.className = 'comment-delete-button';
-                remove.textContent = trans('common.delete');
-                remove.addEventListener('click', () => {
-                    deleteComment(comment, remove);
-                });
-                actions.append(remove);
-            }
-
-            renderRichText(
-                body,
-                comment.body,
-                trans('common.empty_comment')
-            );
-            article.append(header, body);
-            container.append(article);
+        renderComments({
+            container,
+            comments,
+            currentUser: state.currentUser,
+            locale: document.documentElement.lang,
+            trans,
+            renderRichText,
+            onReply: replyToComment,
+            onEdit: openCommentEditor,
+            onDelete: deleteComment
         });
     }
 
