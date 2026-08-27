@@ -18,7 +18,7 @@ final class JiraMediaController
     {
     }
 
-    #[Route('/media', methods: ['GET'])]
+    #[Route('/media', name: 'app_jira_media', methods: ['GET'])]
     public function media(Request $request): Response
     {
         $url = $request->query->getString('url');
