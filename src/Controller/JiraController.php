@@ -7,6 +7,7 @@ namespace App\Controller;
 use App\Board\BoardSnapshotProvider;
 use App\Dto\Request\AddCommentRequest;
 use App\Dto\Request\AddWorklogRequest;
+use App\Dto\Request\CreateIssueRequest;
 use App\Dto\Request\TransitionRequest;
 use App\Dto\Request\UpdateIssueRequest;
 use App\Jira\Document\AdfDocumentFactory;
@@ -127,51 +128,32 @@ final class JiraController
         }
 
         $data = $request->toArray();
-        $summary = trim((string) ($data['summary'] ?? ''));
-        $description = trim((string) ($data['description'] ?? ''));
-        $issueTypeId = trim((string) ($data['issueTypeId'] ?? ''));
-        $sprintId = trim((string) ($data['sprintId'] ?? ''));
-        $epicKey = trim((string) ($data['epicKey'] ?? ''));
+        $payload = new CreateIssueRequest(
+            trim((string) ($data['issueTypeId'] ?? '')),
+            trim((string) ($data['summary'] ?? '')),
+            '' === trim((string) ($data['description'] ?? ''))
+                ? null
+                : trim((string) $data['description']),
+            '' === trim((string) ($data['sprintId'] ?? ''))
+                ? null
+                : trim((string) $data['sprintId']),
+            '' === trim((string) ($data['epicKey'] ?? ''))
+                ? null
+                : trim((string) $data['epicKey']),
+        );
 
-        if ('' === $summary || mb_strlen($summary) > 255) {
-            return new JsonResponse([
-                'error' => $this->translator->trans('api.summary_length'),
-            ], 400);
-        }
-
-        if ('' === $issueTypeId || !ctype_digit($issueTypeId)) {
-            return new JsonResponse([
-                'error' => $this->translator->trans(
-                    'api.issue_type_required'
-                ),
-            ], 400);
-        }
-
-        if ('' !== $sprintId && !ctype_digit($sprintId)) {
-            return new JsonResponse([
-                'error' => $this->translator->trans(
-                    'api.sprint_invalid'
-                ),
-            ], 400);
-        }
-
-        if (
-            '' !== $epicKey
-            && !preg_match('/^[A-Z][A-Z0-9_]*-\d+$/i', $epicKey)
-        ) {
-            return new JsonResponse([
-                'error' => $this->translator->trans('api.epic_invalid'),
-            ], 400);
+        if ($response = $this->validationResponse($payload)) {
+            return $response;
         }
 
         try {
             $issue = $this->jira->createBoardIssue(
                 $boardId,
-                $issueTypeId,
-                $summary,
-                '' === $description ? null : $description,
-                '' === $sprintId ? null : $sprintId,
-                '' === $epicKey ? null : $epicKey
+                $payload->issueTypeId,
+                $payload->summary,
+                $payload->description,
+                $payload->sprintId,
+                $payload->epicKey
             );
         } catch (InvalidArgumentException) {
             return new JsonResponse([
