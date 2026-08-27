@@ -1,45 +1,86 @@
-# Jira Lite
+<h1 align="center">Jira Lite</h1>
+<h4 align="center">A fast, local-first interface for everyday Jira board workflows.</h4>
 
-[![CI](https://github.com/tblt-gr/jira-lite/actions/workflows/ci.yml/badge.svg)](https://github.com/tblt-gr/jira-lite/actions/workflows/ci.yml)
-[![PHP 8.5+](https://img.shields.io/badge/PHP-8.5%2B-777BB4)](https://www.php.net/)
-[![Symfony 7.4](https://img.shields.io/badge/Symfony-7.4-000000)](https://symfony.com/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+<p align="center">
+<a href="https://github.com/tblt-gr/jira-lite/actions/workflows/ci.yml"><img src="https://github.com/tblt-gr/jira-lite/actions/workflows/ci.yml/badge.svg?branch=main" alt="CI"></a>
+<a href="https://www.php.net/"><img src="https://img.shields.io/badge/PHP-8.5%2B-777BB4?logo=php&logoColor=white" alt="PHP 8.5+"></a>
+<a href="https://symfony.com/"><img src="https://img.shields.io/badge/Symfony-7.4-000000?logo=symfony" alt="Symfony 7.4"></a>
+<a href="./LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="MIT License"></a>
+</p>
 
-Jira Lite is a fast, **local** interface for the Jira workflows used every day: browse boards, filter epics, inspect issues, comment, log work, and transition status without loading Jira’s full UI.
+<hr>
+<p align="center">
+<a href="#status">Status</a> &bull;
+<a href="#features">Features</a> &bull;
+<a href="#stack">Stack</a> &bull;
+<a href="#quick-start">Quick Start</a> &bull;
+<a href="#configuration">Configuration</a> &bull;
+<a href="#development">Development</a> &bull;
+<a href="#security">Security</a> &bull;
+<a href="#contributing">Contributing</a>
+</p>
+<hr>
+
+Jira Lite keeps the frequently used Jira board actions close at hand: browse boards, filter epics,
+inspect issues, comment, log work and transition status—without loading Jira’s full interface.
+It is intentionally designed for **local, single-user use**.
+
+## Status
+
+Jira Lite is actively maintained. The `main` branch is protected by PHP, JavaScript and production
+Docker checks. It targets PHP 8.5 and Symfony 7.4.
+
+## Features
+
+- **Board navigation** with column, version, issue-type and epic filters
+- **Issue workspace** with description, fields, links, attachments and image preview
+- **Collaboration actions**: comments, mentions, worklogs and inline edits
+- **Workflow transitions** through a keyboard-accessible status picker
+- **Fresh data** through short-lived snapshots and delta polling
+- **French and English** UI
+- **Safe media proxy**: Jira credentials never reach the browser
+
+## Stack
+
+| Layer | Technology |
+| --- | --- |
+| Backend | PHP 8.5 · Symfony 7.4 · Twig · Monolog |
+| Frontend | ES modules · Stimulus · AssetMapper · CSS |
+| Quality | PHPUnit · PHPStan level 8 · PHP CS Fixer · ESLint · Node test runner |
+| Runtime | FrankenPHP · Docker Compose · GitHub Actions |
+| Integration | Jira Cloud REST API · server-side media proxy |
+
+## Architecture
 
 ```mermaid
 flowchart LR
     Browser[Browser] -->|127.0.0.1| App[Symfony / Jira Lite]
-    App -->|HTTPS API token| Jira[Jira Cloud]
+    App -->|HTTPS with API token| Jira[Jira Cloud]
 ```
 
-## Features
+Jira is the source of truth. Jira Lite has no database: repositories encapsulate Jira calls, DTOs
+shape board data, and short-lived snapshots keep navigation responsive.
 
-- Fast board navigation with filters, epics and delta refresh.
-- Issue details, rich-text comments, mentions, attachments and worklogs.
-- Inline issue editing and keyboard-accessible status transitions.
-- French and English interface.
-- Server-side Jira media proxy that keeps credentials out of the browser.
+## Quick Start
 
-## Quick start
-
-Docker is the recommended local runtime:
+### Docker
 
 ```bash
 cp .env.example .env.local
-# Fill JIRA_BASE_URL, JIRA_EMAIL, JIRA_API_TOKEN and APP_SECRET in .env.local
+# Set APP_SECRET, JIRA_BASE_URL, JIRA_EMAIL and JIRA_API_TOKEN in .env.local
 docker compose up -d
 ```
 
-Open <http://127.0.0.1:5472>. The development compose file mounts the source code and runs in `dev` mode.
+Open <http://127.0.0.1:5472>. This development profile mounts the source code and runs with
+`APP_ENV=dev`.
 
-For a compiled, day-to-day local runtime, use:
+For an immutable, compiled local runtime:
 
 ```bash
 docker compose -f compose.prod.yaml up -d
 ```
 
-Without Docker, install dependencies and use PHP’s built-in server:
+### Local PHP
 
 ```bash
 composer install
@@ -48,58 +89,74 @@ php -S 127.0.0.1:8000 -t public public/index.php
 
 ## Configuration
 
-Copy `.env.example` to `.env.local`; never commit it.
+Copy `.env.example` to `.env.local`; real environment files and Jira credentials must never be
+committed.
 
-| Variable | Required | Default | Description |
-|---|---:|---|---|
-| `APP_ENV` | no | `dev` | Symfony environment. |
-| `APP_SECRET` | yes | — | Random Symfony application secret. |
-| `DEFAULT_URI` | no | `http://localhost` | Base URI used by Symfony. |
-| `TRUSTED_HOSTS` | no | loopback regex | Host allowlist protecting against DNS rebinding. |
-| `JIRA_BASE_URL` | yes | — | Jira Cloud instance URL. |
-| `JIRA_EMAIL` | yes | — | Jira account email used by the server. |
-| `JIRA_API_TOKEN` | yes | — | Jira API token used by the server. |
-| `JIRA_STORY_POINTS_FIELD` | no | `customfield_10016` | Primary story-points custom field. |
-| `JIRA_FALLBACK_STORY_POINTS_FIELD` | no | `customfield_10026` | Fallback story-points custom field. |
-| `BIND_ADDRESS` | no | `127.0.0.1` | Docker published address; keep the loopback default. |
-| `PORT` | no | `5472` | Docker host port. |
+| Scope | Variable | Description | Default |
+| --- | --- | --- | --- |
+| Shared | `APP_ENV` | Symfony environment | `dev` |
+| Shared | `APP_SECRET` | Random Symfony application secret | — |
+| Shared | `DEFAULT_URI` | Symfony base URI | `http://localhost` |
+| Shared | `TRUSTED_HOSTS` | Loopback host allowlist | loopback regex |
+| Jira | `JIRA_BASE_URL` | Jira Cloud instance URL | — |
+| Jira | `JIRA_EMAIL` | Server-side Jira account email | — |
+| Jira | `JIRA_API_TOKEN` | Server-side Jira API token | — |
+| Jira | `JIRA_STORY_POINTS_FIELD` | Primary story-points custom field | `customfield_10016` |
+| Jira | `JIRA_FALLBACK_STORY_POINTS_FIELD` | Fallback story-points custom field | `customfield_10026` |
+| Docker | `BIND_ADDRESS` | Published address; keep loopback | `127.0.0.1` |
+| Docker | `PORT` | Local host port | `5472` |
 
-Generate a secret with `php -r "echo bin2hex(random_bytes(32)), PHP_EOL;"`.
-
-## Architecture
-
-The Symfony application exposes HTML pages and a small `/api/jira` API. Controller classes stay thin; Jira repositories own remote calls, DTOs represent board data, and browser code is split into ES modules under `assets/board/`. No database is required: Jira remains the source of truth and short-lived snapshots smooth remote API latency.
-
-## Development and tests
-
-Requirements: PHP 8.5+, Composer, Node.js, Docker (recommended), and a Jira Cloud API token for manual integration checks.
+Generate a secret with:
 
 ```bash
-composer install
-npm ci
+php -r "echo bin2hex(random_bytes(32)), PHP_EOL;"
+```
+
+## Development
+
+```bash
+make install  # Composer and Node dependencies
+make check    # Composer check and JavaScript lint
+make test     # PHPUnit and JavaScript tests
+make up       # Docker development profile
+make down     # Stop the profile
+make help     # List all available targets
+```
+
+Equivalent direct commands remain available:
+
+```bash
 composer check
 npm run lint
 npm test
 ```
 
-`composer check` validates Composer metadata, Symfony configuration, translations, Twig templates, coding style, PHPStan and PHPUnit. JavaScript is served by AssetMapper; Node.js is only used for linting and tests.
+`composer check` validates Composer metadata, Symfony configuration, translations, Twig templates,
+coding style, PHPStan and PHPUnit. Node.js is used for linting and tests only; AssetMapper serves
+the browser modules.
 
-## Scope and security
+## Security
 
-Jira Lite is a **local** tool. It listens on `127.0.0.1`, protects writes with a CSRF token, and accepts only hosts declared in `TRUSTED_HOSTS`. Application authentication is deliberately out of scope; see [ADR-0002](docs/adr/0002-no-application-authentication.md). To expose the service beyond the workstation, add at minimum authentication, TLS, and a reverse proxy.
+Jira Lite is a **local** tool. It listens on `127.0.0.1`, protects writing routes with a stateless
+CSRF token, limits Jira API requests, and accepts only hosts declared in `TRUSTED_HOSTS`.
 
-Do not commit `.env.local`, Jira credentials, or API tokens. See [SECURITY.md](SECURITY.md) for the complete local threat model and reporting guidance.
+Application authentication, TLS termination and multi-user authorization are intentionally out of
+scope. If the service must be exposed beyond the workstation, add authentication, TLS and a reverse
+proxy first. See [SECURITY.md](./SECURITY.md) and
+[ADR-0002](./docs/adr/0002-no-application-authentication.md) for the complete rationale.
 
-## Architecture decisions
-
-The project records its key trade-offs in [Architecture Decision Records](docs/adr/), including the local-only boundary, no application authentication, no database, and the server-side media proxy.
-
-## Known limitations
+## Limitations
 
 - One configured Jira identity is used for all requests.
-- The service is intentionally single-user and local-only.
-- It targets Jira Cloud APIs and needs valid instance-specific custom-field configuration when defaults differ.
+- The application is single-user and local-only by design.
+- Jira Cloud is required; custom fields may need instance-specific configuration.
+
+## Contributing
+
+Read [CONTRIBUTING.md](./CONTRIBUTING.md) before opening a pull request. Please include the
+user-visible outcome, verification performed and screenshots for UI changes. Security reports must
+follow [SECURITY.md](./SECURITY.md), not a public issue.
 
 ## License
 
-Jira Lite is released under the [MIT License](LICENSE).
+[MIT](./LICENSE) © 2026 Jira Lite contributors.
