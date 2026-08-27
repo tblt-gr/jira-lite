@@ -173,7 +173,8 @@ final class JiraController
     public function issue(string $issueKey): JsonResponse
     {
         return new JsonResponse(
-            $this->issues->getIssue($issueKey)
+            $this->issues->getIssue($issueKey),
+            headers: ['Cache-Control' => 'no-store']
         );
     }
 

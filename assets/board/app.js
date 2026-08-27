@@ -56,6 +56,7 @@ export function mountBoard(root, boardId) {
         },
         selectedIssueKeys: new Set(),
         selectedColumnId: null,
+        issueRevisions: new Map(),
         currentUser: null,
         commentMentions: []
     };
@@ -738,6 +739,21 @@ export function mountBoard(root, boardId) {
     function renderBoard(revealFirstIssue = false) {
         boardView.render(revealFirstIssue);
     }
+
+    function markIssuesUpdated(issues) {
+        issues.forEach(issue => {
+            if (!issue?.key) {
+                return;
+            }
+
+            const key = String(issue.key);
+            state.issueRevisions.set(
+                key,
+                (state.issueRevisions.get(key) || 0) + 1
+            );
+        });
+    }
+
     function createCard(issue, epic = null) {
         const card = createCardView(
             issue,
@@ -811,7 +827,8 @@ export function mountBoard(root, boardId) {
         boardId,
         trans,
         showToast,
-        renderBoard
+        renderBoard,
+        markIssuesUpdated
     });
 
     const issueDialog = createIssueDialog({

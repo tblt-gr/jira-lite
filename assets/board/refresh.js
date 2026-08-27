@@ -20,6 +20,9 @@ export function createIssueRefresher(context) {
 
         refreshing = true;
         requestController = new AbortController();
+        const revisionsAtRequestStart = new Map(
+            context.state.issueRevisions || []
+        );
 
         try {
             const changes = await api(
@@ -28,9 +31,15 @@ export function createIssueRefresher(context) {
                 }`,
                 { signal: requestController.signal }
             );
-            const changedIssues = Array.isArray(changes.issues)
+            const candidateIssues = Array.isArray(changes.issues)
                 ? changes.issues
                 : [];
+            const changedIssues = candidateIssues.filter(issue => {
+                const key = String(issue?.key || '');
+
+                return (context.state.issueRevisions?.get(key) || 0)
+                    === (revisionsAtRequestStart.get(key) || 0);
+            });
             const removedKeys = Array.isArray(changes.removed)
                 ? changes.removed.map(String)
                 : [];

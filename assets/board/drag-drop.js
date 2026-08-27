@@ -8,7 +8,8 @@ export function createDragDrop(context) {
         boardId,
         trans,
         showToast,
-        renderBoard
+        renderBoard,
+        markIssuesUpdated
     } = context;
     const lifecycleController = new AbortController();
     const listenerOptions = { signal: lifecycleController.signal };
@@ -331,6 +332,10 @@ export function createDragDrop(context) {
             originalStatus: { ...(issue.fields?.status || {}) }
         }));
 
+        // Empêche un rafraîchissement démarré avant cette transition de
+        // réécrire l'ancien statut une fois sa réponse reçue.
+        markIssuesUpdated(prepared.map(({ issue }) => issue));
+
         prepared.forEach(({ issue, card, originalStatus }) => {
             issue.fields.status = {
                 ...originalStatus,
@@ -363,13 +368,25 @@ export function createDragDrop(context) {
                         }));
                     }
 
-                    return api(`${issueUrl}/transition`, {
+                    const transitionedIssue = await api(`${issueUrl}/transition`, {
                         method: 'POST',
                         body: JSON.stringify({
                             transitionId: selected.id,
                             boardId
                         })
                     });
+
+                    // Jira peut publier le nouveau statut juste après la
+                    // transition. Une lecture sans cache confirme donc l'état
+                    // réellement enregistré avant de mettre le tableau à jour.
+                    try {
+                        return await api(issueUrl, { cache: 'no-store' });
+                    } catch {
+                        // La transition a déjà réussi : son résultat reste la
+                        // meilleure information disponible si la vérification
+                        // ponctuelle échoue.
+                        return transitionedIssue;
+                    }
                 }
             ));
             const failedCards = new Set();
@@ -379,14 +396,27 @@ export function createDragDrop(context) {
                 const item = prepared[index];
 
                 if (result.status === 'fulfilled') {
+                    const updatedFields = result.value.fields || {};
+                    const updatedStatusId = String(
+                        updatedFields.status?.id || ''
+                    );
+
                     item.issue.fields = {
                         ...item.issue.fields,
-                        ...(result.value.fields || {})
+                        ...updatedFields,
+                        // Ne jamais faire revenir visuellement le ticket avec
+                        // un statut obsolète retourné pendant la propagation
+                        // Jira. Le prochain rafraîchissement confirmera l'état.
+                        ...(!targetStatusIds.has(updatedStatusId)
+                            ? { status: item.issue.fields.status }
+                            : {})
                     };
+                    markIssuesUpdated([item.issue]);
                     return;
                 }
 
                 item.issue.fields.status = item.originalStatus;
+                markIssuesUpdated([item.issue]);
                 failedCards.add(item.card);
                 ++failedCount;
             });
