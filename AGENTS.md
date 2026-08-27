@@ -2,9 +2,9 @@
 
 ## Project Structure & Module Organization
 
-This project provides a fast, lightweight interface for common Jira workflows, avoiding the cost of loading Jira's full UI. Favor responsiveness, focused features, and minimal client-side overhead over feature parity with Jira.
+This project provides a fast, lightweight **local** interface for common Jira workflows, avoiding the cost of loading Jira's full UI. Favor responsiveness, focused features, and minimal client-side overhead over feature parity with Jira. It is designed to remain loopback-only; authentication, TLS, and multi-user deployment are outside its current scope.
 
-This is a Symfony 7.4 application targeting PHP 8.2+. Backend code lives in `src/`: controllers expose page and `/api/jira` routes, while `src/Service/JiraApiService.php` contains Jira integration logic. Twig views are in `templates/`; configuration and dependency wiring are under `config/`. Browser code is organized as ES modules in `assets/`, with Stimulus controllers in `assets/controllers/`, board modules in `assets/board/`, and styles in `assets/styles/`. Public entry points and static images belong in `public/`. Keep generated `var/`, `vendor/`, `public/assets/`, and `assets/vendor/` content out of commits.
+This is a Symfony 7.4 application targeting PHP 8.5+. Backend code lives in `src/`: controllers expose page and `/api/jira` routes, while Jira repositories and application services contain Jira integration logic. Twig views are in `templates/`; configuration and dependency wiring are under `config/`. Browser code is organized as ES modules in `assets/`, with Stimulus controllers in `assets/controllers/`, board modules in `assets/board/`, and styles in `assets/styles/`. Public entry points and static images belong in `public/`. Keep generated `var/`, `vendor/`, `public/assets/`, and `assets/vendor/` content out of commits.
 
 ## Build, Test, and Development Commands
 
@@ -21,7 +21,7 @@ Follow `.editorconfig`: UTF-8, LF line endings, four-space indentation, final ne
 
 ## Testing Guidelines
 
-No test framework or test files are currently committed. For every change, run `composer validate --strict`, `php bin/console cache:clear`, and syntax-check changed PHP files with `php -l path/to/File.php`. Manually exercise affected pages and API routes against a test Jira instance. If adding PHPUnit, place tests under `tests/` using the existing `App\Tests\` namespace and name files `*Test.php`.
+PHPUnit and JavaScript unit tests are committed under `tests/`. For every change, run `composer validate --strict`, `composer check`, `npm run lint`, and syntax-check changed PHP files with `php -l path/to/File.php`. Manually exercise affected pages and API routes against a test Jira instance. PHPUnit tests use the `App\Tests\` namespace and files are named `*Test.php`.
 
 ## Commit & Pull Request Guidelines
 
