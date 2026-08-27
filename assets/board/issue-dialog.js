@@ -1,4 +1,5 @@
 import { api } from './api.js';
+import { COMMENT_EMOJIS } from './dialog/emojis.js';
 import {
     createImage,
     jiraMediaUrl
@@ -9,13 +10,6 @@ import {
     adfMentions,
     adfToText
 } from './jira.js';
-
-const COMMENT_EMOJIS = [
-    '😀', '😃', '😊', '😂', '😉', '😍', '🥳', '🤔',
-    '😅', '😢', '😮', '😬', '👍', '👎', '👏', '🙏',
-    '💪', '🤝', '👌', '👀', '❤️', '💜', '🔥', '✨',
-    '🎉', '✅', '❌', '⚠️', '🚀', '💡', '🐛', '⏳'
-];
 
 export function createIssueDialog(context) {
     const { root, state, showToast, jiraIssueUrl, renderBoard, trans } = context;
