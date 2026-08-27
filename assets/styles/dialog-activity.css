@@ -1,0 +1,434 @@
+
+.comment-form:focus-within {
+    border-color: var(--card-border-hover);
+}
+
+.comment-reply-context {
+    width: fit-content;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin: 1px 4px 4px;
+    border-radius: 999px;
+    background: var(--accent-soft);
+    color: var(--text);
+    padding: 3px 5px 3px 9px;
+    font-size: 10px;
+}
+
+.comment-reply-context[hidden] {
+    display: none;
+}
+
+.comment-reply-context button {
+    width: 20px;
+    height: 20px;
+    display: grid;
+    place-items: center;
+    border: 1px solid transparent;
+    border-radius: 50%;
+    background: transparent;
+    color: inherit;
+    padding: 0;
+    font-size: 15px;
+}
+
+.comment-reply-context button:hover {
+    border-color: var(--border);
+    background: var(--surface-soft);
+}
+
+.comment-form textarea {
+    min-height: 72px;
+    border: 0;
+    background: transparent;
+    box-shadow: none;
+}
+
+.comment-form textarea:focus {
+    border-color: transparent;
+    box-shadow: none;
+}
+
+.comment-form-footer {
+    justify-content: space-between;
+    gap: 12px;
+    padding: 6px 2px 0 39px;
+}
+
+.comment-form-footer span {
+    color: var(--text-subtle);
+    font-size: 10px;
+}
+
+.comment-form-footer button {
+    height: 28px;
+    padding: 0 12px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.emoji-picker {
+    position: absolute;
+    bottom: 10px;
+    left: 10px;
+    z-index: 6;
+}
+
+.emoji-picker-trigger {
+    width: 29px;
+    height: 29px;
+    display: grid;
+    place-items: center;
+    border: 1px solid transparent;
+    background: transparent;
+    color: var(--text-muted);
+    padding: 0;
+    font-size: 17px;
+}
+
+.emoji-picker-trigger:hover,
+.emoji-picker-trigger[aria-expanded="true"] {
+    border-color: var(--border);
+    background: var(--surface-soft);
+}
+
+.emoji-menu {
+    width: 258px;
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    gap: 2px;
+    position: absolute;
+    bottom: calc(100% + 6px);
+    left: 0;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface-raised);
+    padding: 6px;
+    box-shadow: 0 16px 38px #02061775;
+}
+
+.emoji-menu[hidden] {
+    display: none;
+}
+
+.emoji-option {
+    width: 28px;
+    height: 28px;
+    display: grid;
+    place-items: center;
+    border: 1px solid transparent;
+    background: transparent;
+    padding: 0;
+    font-size: 17px;
+}
+
+.emoji-option:hover,
+.emoji-option:focus-visible {
+    border-color: var(--border);
+    background: var(--surface-soft);
+    transform: scale(1.08);
+}
+
+.mention-menu {
+    max-height: 210px;
+    position: absolute;
+    right: 8px;
+    bottom: 46px;
+    left: 8px;
+    z-index: 5;
+    overflow-y: auto;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface-raised);
+    padding: 5px;
+    box-shadow: 0 16px 38px #02061775;
+}
+
+.mention-menu[hidden] {
+    display: none;
+}
+
+.mention-option {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border: 0;
+    background: transparent;
+    color: var(--text);
+    padding: 7px 8px;
+    text-align: left;
+}
+
+.mention-option:hover,
+.mention-option.is-active {
+    background: var(--accent-soft);
+    color: var(--text);
+}
+
+.mention-avatar {
+    width: 25px;
+    height: 25px;
+    flex: 0 0 auto;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.mention-menu-empty {
+    display: block;
+    color: var(--text-muted);
+    padding: 9px;
+    font-size: 11px;
+    text-align: center;
+}
+
+.comment-mention {
+    border-radius: 3px;
+    background: var(--accent-soft);
+    color: var(--text);
+    padding: 1px 3px;
+    font-weight: 550;
+}
+
+.issue-comment-actions {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    margin-left: auto;
+    opacity: 0;
+    transition: opacity 120ms ease;
+}
+
+.issue-comment:hover .issue-comment-actions,
+.issue-comment:focus-within .issue-comment-actions {
+    opacity: 1;
+}
+
+.issue-comment-actions button {
+    border: 1px solid transparent;
+    border-radius: var(--radius-sm);
+    background: transparent;
+    color: var(--text-subtle);
+    padding: 3px 7px;
+    font-size: 11px;
+}
+
+.issue-comment-actions button:hover {
+    border-color: var(--border);
+    background: var(--surface-soft);
+    color: var(--text);
+}
+
+.issue-comment-actions .comment-delete-button:hover {
+    background: color-mix(in srgb, #fb7185 12%, transparent);
+    color: #fb7185;
+}
+
+.comment-edit-form {
+    display: grid;
+    gap: 8px;
+}
+
+.comment-edit-form textarea {
+    width: 100%;
+    min-height: 88px;
+    resize: vertical;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    outline: none;
+    background: var(--surface-raised);
+    color: var(--text);
+    padding: 9px 10px;
+    font: inherit;
+}
+
+.comment-edit-form textarea:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+.sidebar-panel-heading {
+    margin-bottom: 9px;
+}
+
+.issue-time-tracking {
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border-soft);
+}
+
+.issue-pinned-fields {
+    padding: 16px 0 12px;
+    border-bottom: 1px solid var(--border-soft);
+}
+
+.issue-pinned-fields[hidden] {
+    display: none;
+}
+
+.issue-pinned-fields .sidebar-panel-heading {
+    margin-bottom: 4px;
+}
+
+.time-tracking-summary {
+    width: 100%;
+    padding: 5px 0 2px;
+    display: block;
+    border: 0;
+    background: transparent;
+    color: inherit;
+    cursor: pointer;
+    font: inherit;
+    text-align: left;
+}
+
+.time-tracking-summary:focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 3px;
+}
+
+.time-progress {
+    height: 5px;
+    display: block;
+    overflow: hidden;
+    border-radius: 999px;
+    background: var(--border-soft);
+}
+
+.time-progress span {
+    width: 0;
+    height: 100%;
+    display: block;
+    border-radius: inherit;
+    background: linear-gradient(90deg, var(--primary), var(--focus));
+    transition: width 180ms ease;
+}
+
+.time-tracking-values {
+    justify-content: space-between;
+    gap: 10px;
+    margin-top: 7px;
+    color: var(--text-muted);
+    font-size: 10px;
+}
+
+.worklog-form {
+    margin-top: 12px;
+}
+
+.sidebar-fields-form {
+    display: grid;
+    grid-template-columns: 120px minmax(0, 1fr);
+    align-items: center;
+    gap: 9px;
+    padding: 10px 0 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+}
+
+.sidebar-fields-form .inline-edit-actions {
+    grid-column: 1 / -1;
+    margin-top: 3px;
+}
+
+.issue-transition-picker {
+    width: min(190px, 28vw);
+    min-width: 120px;
+}
+
+.issue-transition-picker .filter-trigger {
+    height: 34px;
+    padding-inline: 8px;
+}
+
+.issue-transition-picker .filter-menu {
+    width: min(280px, calc(100vw - 24px));
+    right: 0;
+    left: auto;
+}
+
+.issue-sidebar-accordion {
+    border-bottom: 1px solid var(--border-soft);
+}
+
+.issue-sidebar-accordion[hidden] {
+    display: none;
+}
+
+.issue-sidebar-accordion > summary {
+    min-height: 46px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    cursor: pointer;
+    color: var(--text-muted);
+    font-size: 12px;
+    font-weight: 600;
+    list-style: none;
+}
+
+.issue-sidebar-accordion > summary::-webkit-details-marker {
+    display: none;
+}
+
+.issue-sidebar-accordion > summary:hover {
+    color: var(--text);
+}
+
+.accordion-chevron {
+    width: 14px;
+    height: 14px;
+    transition: transform 150ms ease;
+}
+
+.issue-sidebar-accordion[open] .accordion-chevron {
+    transform: rotate(90deg);
+}
+
+.sidebar-accordion-content {
+    position: relative;
+    padding: 0 0 14px;
+}
+
+.sidebar-section-actions {
+    display: flex;
+    justify-content: flex-end;
+    min-height: 24px;
+    margin: -5px 0 2px;
+}
+
+.toast-region {
+    position: fixed;
+    right: 18px;
+    bottom: 18px;
+    z-index: 100;
+    width: min(360px, calc(100vw - 28px));
+    display: grid;
+    gap: 8px;
+    pointer-events: none;
+}
+
+.toast {
+    opacity: 0;
+    transform: translateY(8px);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--primary);
+    border-radius: var(--radius);
+    background: var(--surface-raised);
+    color: var(--text);
+    padding: 11px 13px;
+    box-shadow: 0 14px 36px #02061775;
+    font-size: 12px;
+    transition: opacity 180ms ease, transform 180ms ease;
+}
+
+.toast.is-visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.toast-error {
+    border-left-color: #fb7185;
+}

@@ -1,0 +1,413 @@
+/* Contrôles de la barre d'outils : même repos et même survol partout. */
+.epic-toggle-all,
+.view-option,
+.epic-filter-trigger,
+.filter-trigger {
+    height: 32px;
+    border: 1px solid transparent;
+    border-radius: var(--radius);
+    background: transparent;
+    color: var(--text-muted);
+    padding: 0 10px;
+    font-size: 13px;
+    white-space: nowrap;
+    transition: background 120ms ease, border-color 120ms ease,
+        color 120ms ease;
+}
+
+.epic-toggle-all:hover,
+.view-option:hover,
+.view-option.is-active,
+.epic-filter-trigger:hover,
+.filter-trigger:hover,
+.epic-multiselect.is-open .epic-filter-trigger,
+.filter-multiselect.is-open .filter-trigger {
+    background: var(--surface-soft);
+    border-color: var(--border);
+    color: var(--text);
+}
+
+.epic-toggle-all[hidden] {
+    display: none;
+}
+
+.counter {
+    margin-left: auto;
+    color: var(--text-muted);
+    font-size: 12px;
+    white-space: nowrap;
+}
+
+.epic-multiselect,
+.filter-multiselect {
+    min-width: 0;
+    max-width: 100%;
+    position: relative;
+    width: min(270px, 28vw);
+    flex: 0 0 auto;
+}
+
+.filter-multiselect {
+    width: min(180px, 18vw);
+}
+
+.filter-option-icon {
+    width: 14px;
+    height: 14px;
+    flex: 0 0 auto;
+    object-fit: contain;
+}
+
+.epic-filter-trigger,
+.filter-trigger {
+    min-width: 0;
+    max-width: 100%;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+}
+
+#epic-filter-label,
+.filter-label {
+    min-width: 0;
+    flex: 1;
+    overflow: hidden;
+    text-align: left;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.epic-filter-count,
+.filter-count {
+    min-width: 20px;
+    border-radius: var(--radius-sm);
+    background: var(--accent-soft);
+    color: var(--text);
+    padding: 1px 5px;
+    font-size: 10px;
+    font-weight: 500;
+    text-align: center;
+}
+
+.epic-filter-count:empty,
+.filter-count:empty {
+    display: none;
+}
+
+.epic-filter-chevron,
+.filter-chevron {
+    width: 16px;
+    height: 16px;
+    flex: 0 0 auto;
+    color: var(--text-subtle);
+    fill: none;
+    stroke: currentColor;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-width: 1.8;
+    transition: transform 140ms ease;
+}
+
+.epic-multiselect.is-open .epic-filter-chevron,
+.filter-multiselect.is-open .filter-chevron {
+    transform: rotate(180deg);
+}
+
+.epic-filter-menu,
+.filter-menu {
+    width: min(360px, calc(100vw - 24px));
+    max-height: min(430px, 65vh);
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    z-index: 50;
+    overflow-y: auto;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface-raised);
+    padding: 6px;
+    box-shadow: 0 20px 48px #0206177a;
+}
+
+.epic-filter-menu[hidden],
+.filter-menu[hidden] {
+    display: none;
+}
+
+.filter-menu {
+    width: min(280px, calc(100vw - 24px));
+}
+
+.epic-filter-menu {
+    width: 100%;
+}
+
+.epic-filter-menu-head,
+.filter-menu-head {
+    position: sticky;
+    top: -6px;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin: -2px -2px 4px;
+    padding: 8px;
+    border-bottom: 1px solid var(--border-soft);
+    background: var(--surface-raised);
+    color: var(--text-muted);
+    font-size: 11px;
+    font-weight: 650;
+}
+
+.epic-filter-clear,
+.filter-clear {
+    border: 1px solid transparent;
+    background: transparent;
+    color: var(--text-muted);
+    padding: 3px 5px;
+    font-size: 10px;
+}
+
+.epic-filter-clear:hover,
+.filter-clear:hover {
+    border-color: var(--border);
+    background: var(--surface-soft);
+    color: var(--text);
+}
+
+.epic-filter-clear:disabled,
+.filter-clear:disabled {
+    opacity: .4;
+    cursor: default;
+}
+
+.epic-filter-option,
+.filter-option {
+    --epic-color: #8b7cf6;
+    min-height: 38px;
+    display: grid;
+    grid-template-columns: auto auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 7px;
+    border-radius: var(--radius);
+    color: var(--text-muted);
+    padding: 6px 8px;
+    cursor: pointer;
+}
+
+.epic-filter-all-option {
+    --epic-color: #8b7cf6;
+    min-height: 38px;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 7px;
+    margin-bottom: 3px;
+    border-bottom: 1px solid var(--border-soft);
+    border-radius: var(--radius);
+    color: var(--text);
+    padding: 6px 8px 9px;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.epic-filter-option:hover,
+.filter-option:hover,
+.epic-filter-option.is-selected,
+.filter-option.is-selected,
+.epic-filter-all-option:hover,
+.epic-filter-all-option.is-selected,
+.epic-filter-all-option.is-indeterminate {
+    background: color-mix(in srgb, var(--epic-color) 10%, transparent);
+    color: var(--text);
+}
+
+.epic-filter-option input,
+.filter-option input,
+.epic-filter-all-option input {
+    width: 14px;
+    height: 14px;
+    margin: 0;
+    accent-color: var(--epic-color);
+}
+
+.epic-filter-all-option > span:nth-of-type(1) {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.epic-filter-option > span:nth-of-type(2),
+.filter-option > span:nth-of-type(2) {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.epic-dot,
+.group-color {
+    flex: 0 0 auto;
+    background: var(--epic-color);
+}
+
+.epic-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+}
+
+.epic-count,
+.filter-option-count {
+    min-width: 20px;
+    padding: 1px 5px;
+    border-radius: var(--radius-sm);
+    background: color-mix(in srgb, var(--text-muted) 12%, transparent);
+    color: var(--text-muted);
+    font-size: 10px;
+    text-align: center;
+}
+
+.filter-option-count:empty {
+    display: none;
+}
+
+.board-switcher .filter-option {
+    --epic-color: var(--text);
+    grid-template-columns: auto auto minmax(0, 1fr) auto auto;
+}
+
+.favorite-button {
+    width: 26px;
+    height: 26px;
+    flex: 0 0 auto;
+    display: grid;
+    place-items: center;
+    padding: 0;
+    border-color: transparent;
+    border-radius: var(--radius-sm);
+    background: transparent;
+    color: var(--text-subtle);
+    transition: color 120ms ease, background 120ms ease;
+}
+
+.favorite-button:hover {
+    border-color: var(--border);
+    background: var(--surface-soft);
+    color: var(--text);
+}
+
+.favorite-button.is-favorite,
+.favorite-button.is-favorite:hover {
+    color: var(--favorite);
+}
+
+.favorite-icon {
+    width: 15px;
+    height: 15px;
+    display: block;
+    fill: none;
+    stroke: currentColor;
+    stroke-linejoin: round;
+    stroke-width: 1.6;
+}
+
+.favorite-button.is-favorite .favorite-icon {
+    fill: currentColor;
+}
+
+.epic-filter-empty,
+.filter-empty {
+    color: var(--text-muted);
+    padding: 16px 10px;
+    font-size: 11px;
+    text-align: center;
+}
+
+.board {
+    --workflow-column-width: 265px;
+    --workflow-min-width: 100%;
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: auto;
+    scrollbar-gutter: stable;
+    transition: box-shadow 120ms ease;
+}
+
+.board.is-auto-scrolling-left {
+    box-shadow: inset 24px 0 20px -22px var(--primary);
+}
+
+.board.is-auto-scrolling-right {
+    box-shadow: inset -24px 0 20px -22px var(--primary);
+}
+
+.board-group {
+    --epic-color: #64748b;
+    min-width: 0;
+    display: grid;
+    grid-template-rows: auto 430px;
+    gap: 9px;
+    padding: 12px;
+    border: 1px solid var(--border-soft);
+    border-radius: var(--radius-lg);
+    background: var(--surface);
+}
+
+.board-group:not(:last-child) {
+    margin-bottom: 14px;
+}
+
+.board-group:only-child {
+    height: auto;
+    min-width: max(100%, var(--workflow-min-width));
+    grid-template-rows: auto auto;
+}
+
+.board.is-grouped .board-group,
+.board.is-grouped .board-group:only-child {
+    height: auto;
+    min-width: max(
+        100%,
+        var(--workflow-min-width)
+    );
+    grid-template-rows: auto auto;
+}
+
+.board.is-grouped .board-group.is-collapsed {
+    grid-template-rows: auto;
+}
+
+.board-group-header {
+    min-height: 40px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.board.is-grouped .group-actions {
+    position: sticky;
+    left: 12px;
+    z-index: 5;
+    background: var(--surface);
+}
+
+.board-group-header.is-collapsible {
+    cursor: pointer;
+    user-select: none;
+}
+
+.group-color {
+    width: 4px;
+    height: 30px;
+    flex: 0 0 auto;
+    border-radius: var(--radius);
+}
+
+.board-group-key {
+    flex: 0 0 auto;
+    color: var(--text-muted);
+    font-size: 14px;
+    font-weight: 700;
+}
