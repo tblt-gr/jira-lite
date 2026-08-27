@@ -65,4 +65,31 @@ final class JiraHttpTest extends WebTestCase
         );
         self::assertCount(1, $crawler->filterXPath('//html[@lang="en"]'));
     }
+
+    public function testValidationFailuresUseTheFrontendErrorContract(): void
+    {
+        $client = static::createClient();
+        $crawler = $client->request('GET', '/');
+        $token = $crawler->filterXPath('//meta[@name="csrf-token"]')->attr('content');
+
+        $client->request(
+            'POST',
+            '/api/jira/issue/APP-1/worklogs',
+            server: [
+                'CONTENT_TYPE' => 'application/json',
+                'HTTP_X_CSRF_TOKEN' => $token,
+            ],
+            content: json_encode(['timeSpent' => '1x'], JSON_THROW_ON_ERROR)
+        );
+
+        self::assertResponseStatusCodeSame(422);
+        self::assertSame(
+            ['errors' => ['timeSpent' => 'This value is not a valid Jira duration.']],
+            json_decode(
+                (string) $client->getResponse()->getContent(),
+                true,
+                flags: JSON_THROW_ON_ERROR
+            )
+        );
+    }
 }
