@@ -1,4 +1,4 @@
-import { createImage } from '../dom.js';
+import { createAvatar } from '../dom.js';
 
 export function formatCommentDate(value, locale) {
     const date = new Date(value);
@@ -34,9 +34,9 @@ export function renderComments({
         const date = document.createElement('time');
         const actions = document.createElement('div');
         const body = document.createElement('div');
-        const avatar = createImage(
-            comment.author?.avatarUrls?.['32x32'],
-            '',
+        const avatar = createAvatar(
+            comment.author,
+            32,
             'issue-comment-avatar'
         );
 
@@ -56,9 +56,6 @@ export function renderComments({
         body.className = 'issue-comment-body';
 
         if (avatar) {
-            avatar.addEventListener('error', () => avatar.remove(), {
-                once: true
-            });
             header.append(avatar);
         }
 

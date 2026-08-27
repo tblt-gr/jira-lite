@@ -1,4 +1,5 @@
 import {
+    createAvatar,
     createImage,
     jiraAttachmentMediaUrl,
     jiraMediaUrl
@@ -118,7 +119,8 @@ export function createIssueView(context) {
         label,
         value,
         iconUrl = null,
-        fieldKey = null
+        fieldKey = null,
+        user = null
     ) {
         if (value === undefined || value === null || value === '') {
             return;
@@ -131,13 +133,17 @@ export function createIssueView(context) {
         labelElement.className = 'issue-meta-label';
         labelElement.textContent = label;
         valueElement.className = 'issue-meta-value';
-        const icon = createImage(iconUrl, '', 'meta-icon');
+        const icon = user
+            ? createAvatar(user, 24, 'meta-icon')
+            : createImage(iconUrl, '', 'meta-icon');
 
         if (icon) {
-            icon.addEventListener('error', () => icon.remove(), {
-                once: true,
-                signal: context.signal
-            });
+            if (!user) {
+                icon.addEventListener('error', () => icon.remove(), {
+                    once: true,
+                    signal: context.signal
+                });
+            }
             valueElement.append(icon);
         }
 
@@ -302,7 +308,8 @@ export function createIssueView(context) {
             field.label,
             field.value,
             field.iconUrl,
-            field.key
+            field.key,
+            field.user
         ));
     }
 
@@ -352,19 +359,19 @@ export function createIssueView(context) {
                 key: 'assignee',
                 label: trans('issue.assignee'),
                 value: fields.assignee?.displayName || trans('common.unassigned'),
-                iconUrl: fields.assignee?.avatarUrls?.['24x24']
+                user: fields.assignee
             },
             {
                 key: 'reporter',
                 label: trans('issue.reporter'),
                 value: fields.reporter?.displayName,
-                iconUrl: fields.reporter?.avatarUrls?.['24x24']
+                user: fields.reporter
             },
             {
                 key: 'creator',
                 label: trans('issue.creator'),
                 value: fields.creator?.displayName,
-                iconUrl: fields.creator?.avatarUrls?.['24x24']
+                user: fields.creator
             },
             {
                 key: 'sprint',

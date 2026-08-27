@@ -64,6 +64,34 @@
     border-radius: 50%;
 }
 
+.user-avatar {
+    display: inline-grid;
+    flex: 0 0 auto;
+    place-items: center;
+    overflow: hidden;
+    background: var(--accent-soft);
+    color: var(--primary-hover);
+    font-size: 8px;
+    font-weight: 700;
+    line-height: 1;
+}
+
+.user-avatar-image,
+.user-avatar-fallback {
+    width: 100%;
+    height: 100%;
+    grid-area: 1 / 1;
+}
+
+.user-avatar-image {
+    object-fit: cover;
+}
+
+.user-avatar-fallback {
+    display: grid;
+    place-items: center;
+}
+
 .field-pin-button {
     width: 24px;
     height: 24px;
@@ -257,4 +285,3 @@
     text-overflow: ellipsis;
     white-space: nowrap;
 }
-

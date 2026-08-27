@@ -165,7 +165,7 @@ a.issue-image-preview {
     height: 22px;
     flex: 0 0 auto;
     border-radius: 50%;
-    object-fit: cover;
+    font-size: 9px;
 }
 
 .issue-comment-author {
@@ -211,4 +211,3 @@ a.issue-image-preview {
     clip: rect(0, 0, 0, 0);
     white-space: nowrap;
 }
-
