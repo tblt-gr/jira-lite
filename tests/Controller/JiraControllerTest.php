@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace App\Tests\Controller;
 
 use App\Board\BoardSnapshotProvider;
-use App\Controller\JiraController;
+use App\Controller\JiraBoardController;
+use App\Controller\JiraIssueController;
 use App\Jira\Document\AdfDocumentFactory;
 use App\Jira\JiraClient;
-use App\Jira\JiraMediaProxy;
 use App\Jira\JiraViewMapper;
 use App\Jira\Repository\BoardRepository;
 use App\Jira\Repository\IssueRepository;
@@ -18,6 +18,7 @@ use const JSON_THROW_ON_ERROR;
 
 use LogicException;
 use PHPUnit\Framework\TestCase;
+use App\Service\JiraApiRequestHandler;
 use Psr\Log\NullLogger;
 use Symfony\Component\Cache\Adapter\ArrayAdapter;
 use Symfony\Component\HttpClient\MockHttpClient;
@@ -39,52 +40,7 @@ final class JiraControllerTest extends TestCase
                 ],
             ], JSON_THROW_ON_ERROR)),
         ]);
-        $jira = new BoardRepository(
-            new JiraClient(
-                $http,
-                'https://jira.example.test',
-                'user@example.com',
-                'token'
-            ),
-            new AdfDocumentFactory()
-        );
-        $cache = new ArrayAdapter();
-        $controller = new JiraController(
-            $jira,
-            $cache,
-            new BoardSnapshotProvider(
-                $jira,
-                $cache,
-                new JiraViewMapper('customfield_10016', 'customfield_10026')
-            ),
-            new UserRepository(new JiraClient(
-                new MockHttpClient(),
-                'https://jira.example.test',
-                'user@example.com',
-                'token'
-            )),
-            new IssueRepository(
-                new JiraClient(
-                    $http,
-                    'https://jira.example.test',
-                    'user@example.com',
-                    'token'
-                ),
-                new AdfDocumentFactory()
-            ),
-            new AdfDocumentFactory(),
-            new JiraMediaProxy(
-                new MockHttpClient(),
-                'https://jira.example.test',
-                'user@example.com',
-                'token',
-                new Translator('fr')
-            ),
-            new Translator('fr'),
-            new NullLogger(), Validation::createValidatorBuilder()
-                ->enableAttributeMapping()
-                ->getValidator()
-        );
+        $controller = $this->createIssueController($http);
         $request = Request::create(
             '/api/jira/issue/APP-1/transition',
             'POST',
@@ -258,9 +214,24 @@ final class JiraControllerTest extends TestCase
         self::assertSame(['APP-123'], $sprintPayload['issues']);
     }
 
-    private function createController(MockHttpClient $http): JiraController
+    private function createController(MockHttpClient $http): JiraBoardController
     {
-        $jira = new BoardRepository(
+        [$issues, $users, $snapshots, $handler] = $this->dependencies($http);
+
+        return new JiraBoardController($snapshots, $handler);
+    }
+
+    private function createIssueController(MockHttpClient $http): JiraIssueController
+    {
+        [$issues, $users, $snapshots, $handler] = $this->dependencies($http);
+
+        return new JiraIssueController($issues, $users, $handler);
+    }
+
+    /** @return array{IssueRepository, UserRepository, BoardSnapshotProvider, JiraApiRequestHandler} */
+    private function dependencies(MockHttpClient $http): array
+    {
+        $boards = new BoardRepository(
             new JiraClient(
                 $http,
                 'https://jira.example.test',
@@ -270,42 +241,39 @@ final class JiraControllerTest extends TestCase
             new AdfDocumentFactory()
         );
         $cache = new ArrayAdapter();
-
-        return new JiraController(
-            $jira,
+        $snapshots = new BoardSnapshotProvider(
+            $boards,
             $cache,
-            new BoardSnapshotProvider(
-                $jira,
-                $cache,
-                new JiraViewMapper('customfield_10016', 'customfield_10026')
-            ),
-            new UserRepository(new JiraClient(
-                new MockHttpClient(),
+            new JiraViewMapper('customfield_10016', 'customfield_10026')
+        );
+        $users = new UserRepository(new JiraClient(
+            new MockHttpClient(),
+            'https://jira.example.test',
+            'user@example.com',
+            'token'
+        ));
+        $issues = new IssueRepository(
+            new JiraClient(
+                $http,
                 'https://jira.example.test',
                 'user@example.com',
                 'token'
-            )),
-            new IssueRepository(
-                new JiraClient(
-                    $http,
-                    'https://jira.example.test',
-                    'user@example.com',
-                    'token'
-                ),
-                new AdfDocumentFactory()
             ),
-            new AdfDocumentFactory(),
-            new JiraMediaProxy(
-                new MockHttpClient(),
-                'https://jira.example.test',
-                'user@example.com',
-                'token',
-                new Translator('fr')
-            ),
-            new Translator('fr'),
-            new NullLogger(), Validation::createValidatorBuilder()
-                ->enableAttributeMapping()
-                ->getValidator()
+            new AdfDocumentFactory()
         );
+        $translator = new Translator('fr');
+        $handler = new JiraApiRequestHandler(
+            $boards,
+            $issues,
+            $users,
+            $snapshots,
+            $cache,
+            new AdfDocumentFactory(),
+            $translator,
+            new NullLogger(),
+            Validation::createValidatorBuilder()->enableAttributeMapping()->getValidator()
+        );
+
+        return [$issues, $users, $snapshots, $handler];
     }
 }
