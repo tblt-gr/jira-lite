@@ -21,9 +21,12 @@
 </p>
 <hr>
 
-Jira Lite keeps the frequently used Jira board actions close at hand: browse boards, filter epics,
-inspect issues, comment, log work and transition status—without loading Jira’s full interface.
-It is intentionally designed for **local, single-user use**.
+Jira Lite keeps the everyday Jira actions close at hand: create issues, browse boards, move issues
+through the workflow, edit summaries and descriptions, comment, and log work—without loading Jira’s
+full interface. It is intentionally designed for **local, single-user use**.
+
+The product deliberately focuses on these common actions and a fast, simple interface. It is not
+intended to reproduce Jira's administration, reporting, or advanced project-management features.
 
 ## Status
 
@@ -33,9 +36,10 @@ Docker checks. It targets PHP 8.5 and Symfony 7.4.
 ## Features
 
 - **Board navigation** with column, version, issue-type and epic filters
+- **Issue creation** with type, summary, description, and optional sprint and epic
 - **Issue workspace** with description, fields, links, attachments and image preview
-- **Collaboration actions**: comments, mentions, worklogs and inline edits
-- **Workflow transitions** through a keyboard-accessible status picker
+- **Everyday updates**: edit summaries and descriptions, comment, mention people and log work
+- **Workflow transitions** by moving cards or using a keyboard-accessible status picker
 - **Fresh data** through short-lived snapshots and delta polling
 - **French and English** UI
 - **Safe media proxy**: Jira credentials never reach the browser
@@ -159,4 +163,4 @@ follow [SECURITY.md](./SECURITY.md), not a public issue.
 
 ## License
 
-[MIT](./LICENSE) © 2026 Jira Lite contributors.
+[MIT](./LICENSE) © 2026 tblt-gr
