@@ -1,6 +1,6 @@
 import { api } from './api.js';
 import { renderComments } from './dialog/comments.js';
-import { COMMENT_EMOJIS } from './dialog/emojis.js';
+import { COMMENT_EMOJIS, renderEmojiMenu } from './dialog/emojis.js';
 import { createTimeoutScheduler } from './dialog/timers.js';
 import {
     createImage,
@@ -269,24 +269,6 @@ export function createIssueDialog(context) {
         commentInput.setSelectionRange(caret, caret);
     }
 
-    function renderEmojiMenu() {
-        emojiMenu.replaceChildren();
-
-        COMMENT_EMOJIS.forEach(emoji => {
-            const button = document.createElement('button');
-
-            button.type = 'button';
-            button.className = 'emoji-option';
-            button.textContent = emoji;
-            button.setAttribute('aria-label', trans('dialog.insert_emoji', {
-                emoji
-            }));
-            button.addEventListener('click', () => {
-                insertCommentEmoji(emoji);
-            });
-            emojiMenu.append(button);
-        });
-    }
 
     function selectMentionUser(user) {
         if (!activeMentionRange) {
@@ -804,7 +786,12 @@ export function createIssueDialog(context) {
     fieldsForm.addEventListener('submit', submitEditableFields, listenerOptions);
     commentForm.addEventListener('submit', submitComment, listenerOptions);
     worklogForm.addEventListener('submit', submitWorklog, listenerOptions);
-    renderEmojiMenu();
+    renderEmojiMenu({
+        menu: emojiMenu,
+        emojis: COMMENT_EMOJIS,
+        trans,
+        onSelect: insertCommentEmoji
+    });
     emojiPickerTrigger.addEventListener('click', event => {
         event.stopPropagation();
         const open = emojiMenu.hidden;
