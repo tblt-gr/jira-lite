@@ -44,3 +44,8 @@ services:
     App\Logger\RequestIdProcessor:
         tags:
             - { name: monolog.processor }
+
+    App\EventSubscriber\ApiRateLimitSubscriber:
+        arguments:
+            $readLimiter: '@limiter.jira_api_read'
+            $writeLimiter: '@limiter.jira_api_write'

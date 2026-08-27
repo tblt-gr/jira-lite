@@ -210,6 +210,7 @@ api.sprint_invalid: The selected sprint is invalid.
 api.epic_invalid: The selected epic is invalid.
 api.board_project_required: This Jira board is not associated with a project where issues can be created.
 api.json_required: The request body must be JSON.
+api.rate_limited: Too many requests to Jira. Please try again shortly.
 api.csrf_invalid: The security token is invalid or has expired.
 api.jira_not_found: The requested Jira resource was not found.
 api.jira_rate_limited: Jira is temporarily limiting requests. Try again shortly.

@@ -1,0 +1,10 @@
+framework:
+    rate_limiter:
+        jira_api_read:
+            policy: sliding_window
+            limit: 120
+            interval: '1 minute'
+        jira_api_write:
+            policy: sliding_window
+            limit: 30
+            interval: '1 minute'
