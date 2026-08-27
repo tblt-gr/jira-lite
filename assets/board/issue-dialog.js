@@ -1,4 +1,5 @@
 import { api } from './api.js';
+import { formatCommentDate } from './dialog/comments.js';
 import { COMMENT_EMOJIS } from './dialog/emojis.js';
 import {
     createImage,
@@ -86,19 +87,6 @@ export function createIssueDialog(context) {
         signal: lifecycleController.signal
     });
 
-    function formatCommentDate(value) {
-        const date = new Date(value);
-
-        if (Number.isNaN(date.getTime())) {
-            return '';
-        }
-
-        return new Intl.DateTimeFormat(document.documentElement.lang, {
-            dateStyle: 'medium',
-            timeStyle: 'short'
-        }).format(date);
-    }
-
     function renderIssueComments(response, embeddedComments = null) {
         const container = root.querySelector('#issue-comments-list');
         const comments = Array.isArray(response?.comments)
@@ -138,7 +126,8 @@ export function createIssueDialog(context) {
             authorName.textContent =
                 comment.author?.displayName || trans('common.anonymous');
             date.textContent = formatCommentDate(
-                comment.updated || comment.created
+                comment.updated || comment.created,
+                document.documentElement.lang
             );
             if (
                 comment.updated
