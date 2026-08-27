@@ -132,3 +132,32 @@ export function replyToComment({
         commentInput.value.length
     );
 }
+
+export async function removeComment({
+    api,
+    comment,
+    button,
+    issueKey,
+    refresh,
+    showToast,
+    trans
+}) {
+    if (!comment.id || !window.confirm(trans('dialog.delete_comment_confirm'))) {
+        return;
+    }
+
+    button.disabled = true;
+
+    try {
+        await api(
+            `/api/jira/issue/${encodeURIComponent(issueKey)}`
+            + `/comments/${encodeURIComponent(comment.id)}`,
+            { method: 'DELETE' }
+        );
+        await refresh();
+        showToast(trans('dialog.comment_deleted'), 'success');
+    } catch (error) {
+        showToast(error.message, 'error');
+        button.disabled = false;
+    }
+}

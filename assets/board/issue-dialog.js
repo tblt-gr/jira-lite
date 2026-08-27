@@ -1,5 +1,9 @@
 import { api } from './api.js';
-import { renderComments, replyToComment } from './dialog/comments.js';
+import {
+    removeComment,
+    renderComments,
+    replyToComment
+} from './dialog/comments.js';
 import { COMMENT_EMOJIS, renderEmojiMenu } from './dialog/emojis.js';
 import { createTimeoutScheduler } from './dialog/timers.js';
 import {
@@ -126,32 +130,19 @@ export function createIssueDialog(context) {
     }
 
     async function deleteComment(comment, button) {
-        if (!state.issue || !comment.id) {
+        if (!state.issue) {
             return;
         }
 
-        const confirmed = window.confirm(
-            trans('dialog.delete_comment_confirm')
-        );
-
-        if (!confirmed) {
-            return;
-        }
-
-        button.disabled = true;
-
-        try {
-            await api(
-                `/api/jira/issue/${encodeURIComponent(state.issue.key)}`
-                + `/comments/${encodeURIComponent(comment.id)}`,
-                { method: 'DELETE' }
-            );
-            await refreshIssueComments();
-            showToast(trans('dialog.comment_deleted'), 'success');
-        } catch (error) {
-            showToast(error.message, 'error');
-            button.disabled = false;
-        }
+        await removeComment({
+            api,
+            comment,
+            button,
+            issueKey: state.issue.key,
+            refresh: refreshIssueComments,
+            showToast,
+            trans
+        });
     }
 
     function openCommentEditor(article, body, comment) {
