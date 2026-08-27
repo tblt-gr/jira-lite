@@ -733,6 +733,13 @@ main {
     gap: 16px;
 }
 
+.board.is-grouped .group-actions {
+    position: sticky;
+    left: 12px;
+    z-index: 5;
+    background: var(--surface);
+}
+
 .board-group-header.is-collapsible {
     cursor: pointer;
     user-select: none;
