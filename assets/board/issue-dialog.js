@@ -1,5 +1,5 @@
 import { api } from './api.js';
-import { renderComments } from './dialog/comments.js';
+import { renderComments, replyToComment } from './dialog/comments.js';
 import { COMMENT_EMOJIS, renderEmojiMenu } from './dialog/emojis.js';
 import { createTimeoutScheduler } from './dialog/timers.js';
 import {
@@ -104,7 +104,13 @@ export function createIssueDialog(context) {
             locale: document.documentElement.lang,
             trans,
             renderRichText,
-            onReply: replyToComment,
+            onReply: comment => replyToComment({
+                comment,
+                commentInput,
+                replyContext,
+                mergeMention: mergeCommentMention,
+                trans
+            }),
             onEdit: openCommentEditor,
             onDelete: deleteComment
         });
@@ -146,38 +152,6 @@ export function createIssueDialog(context) {
             showToast(error.message, 'error');
             button.disabled = false;
         }
-    }
-
-    function replyToComment(comment) {
-        const displayName = comment.author?.displayName;
-        const accountId = comment.author?.accountId;
-
-        if (!displayName || !accountId) {
-            return;
-        }
-
-        const mention = {
-            accountId,
-            text: `@${displayName}`
-        };
-        const current = commentInput.value.trimStart();
-
-        if (!current.includes(mention.text)) {
-            commentInput.value = `${mention.text} ${current}`;
-        }
-
-        mergeCommentMention(mention);
-        replyContext.hidden = false;
-        replyContext.dataset.accountId = accountId;
-        root.querySelector('#comment-reply-label').textContent = trans(
-            'dialog.reply_to',
-            { name: displayName }
-        );
-        commentInput.focus();
-        commentInput.setSelectionRange(
-            commentInput.value.length,
-            commentInput.value.length
-        );
     }
 
     function openCommentEditor(article, body, comment) {

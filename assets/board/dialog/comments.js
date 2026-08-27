@@ -97,3 +97,38 @@ export function renderComments({
         container.append(article);
     });
 }
+
+export function replyToComment({
+    comment,
+    commentInput,
+    replyContext,
+    mergeMention,
+    trans
+}) {
+    const displayName = comment.author?.displayName;
+    const accountId = comment.author?.accountId;
+
+    if (!displayName || !accountId) {
+        return;
+    }
+
+    const mention = { accountId, text: `@${displayName}` };
+    const current = commentInput.value.trimStart();
+
+    if (!current.includes(mention.text)) {
+        commentInput.value = `${mention.text} ${current}`;
+    }
+
+    mergeMention(mention);
+    replyContext.hidden = false;
+    replyContext.dataset.accountId = accountId;
+    replyContext.querySelector('#comment-reply-label').textContent = trans(
+        'dialog.reply_to',
+        { name: displayName }
+    );
+    commentInput.focus();
+    commentInput.setSelectionRange(
+        commentInput.value.length,
+        commentInput.value.length
+    );
+}
