@@ -18,6 +18,7 @@ RUN install-php-extensions \
 
 # Environment configuration
 ENV COMPOSER_ALLOW_SUPERUSER=1 \
+    DEFAULT_URI=http://localhost \
     SERVER_NAME=:8080
 
 # Base PHP configuration
@@ -73,7 +74,9 @@ ENV APP_ENV=prod
 COPY docker/php/conf.d/app.prod.ini $PHP_INI_DIR/conf.d/
 COPY --from=frankenphp_builder --chown=app:app /app /app
 
-RUN chown -R app:app /app/var && chmod -R 775 /app/var
+RUN mkdir -p /data/caddy /config/caddy && \
+    chown -R app:app /app/var /data /config && \
+    chmod -R 775 /app/var /data /config
 
 USER app
 
