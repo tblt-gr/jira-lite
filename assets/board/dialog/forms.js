@@ -1,5 +1,6 @@
 import { COMMENT_EMOJIS, renderEmojiMenu } from './emojis.js';
 
+// This module owns issue edit forms; issue-dialog.js supplies refresh and rendering callbacks.
 export function createIssueForms({ root, state, api, adfToText, showToast, trans, signal }) {
     const summaryElement = root.querySelector('#issue-summary');
     const summaryForm = root.querySelector('#summary-form');

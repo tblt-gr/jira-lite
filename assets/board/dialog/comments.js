@@ -1,5 +1,6 @@
 import { createAvatar } from '../dom.js';
 
+// This module owns comment rendering and mutations; issue-dialog.js supplies state and callbacks.
 export function formatCommentDate(value, locale) {
     const date = new Date(value);
 

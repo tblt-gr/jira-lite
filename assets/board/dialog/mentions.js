@@ -1,5 +1,6 @@
 import { createImage } from '../dom.js';
 
+// This module owns mention autocomplete; issue-dialog.js supplies API and form integration.
 export function createMentionMenu({
     api,
     commentInput,

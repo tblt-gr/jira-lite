@@ -1,4 +1,4 @@
-import { api } from './api.js';
+import { moveIssuesToColumn } from './drag-drop-transition.js';
 import { createTransitionCache } from './transitions.js';
 
 export function createDragDrop(context) {
@@ -302,162 +302,25 @@ export function createDragDrop(context) {
                 return;
             }
 
-            moveIssuesToColumn(
-                issues.map((issue, index) => ({
+            moveIssuesToColumn({
+                items: issues.map((issue, index) => ({
                     issue,
                     card: cards[index]
                 })),
                 sourceColumn,
-                columnElement,
+                targetColumn: columnElement,
                 column,
-                targetStatusIds
-            );
+                targetStatusIds,
+                boardId,
+                trans,
+                showToast,
+                renderBoard,
+                markIssuesUpdated,
+                updateColumnCount,
+                clearIssueSelection
+            });
         }, listenerOptions);
     }
-
-    async function moveIssuesToColumn(
-        items,
-        sourceColumn,
-        targetColumn,
-        column,
-        targetStatusIds,
-    ) {
-        const originalOrder = Array.from(
-            sourceColumn.querySelectorAll('.card')
-        );
-        const optimisticStatusId = targetStatusIds.values().next().value;
-        const prepared = items.map(({ issue, card }) => ({
-            issue,
-            card,
-            originalStatus: { ...(issue.fields?.status || {}) }
-        }));
-
-        // Empêche un rafraîchissement démarré avant cette transition de
-        // réécrire l'ancien statut une fois sa réponse reçue.
-        markIssuesUpdated(prepared.map(({ issue }) => issue));
-
-        prepared.forEach(({ issue, card, originalStatus }) => {
-            issue.fields.status = {
-                ...originalStatus,
-                id: optimisticStatusId,
-                name: column.name
-            };
-            targetColumn.append(card);
-            card.classList.add('is-transitioning');
-            card.draggable = false;
-        });
-
-        updateColumnCount(sourceColumn);
-        updateColumnCount(targetColumn);
-        targetColumn.classList.add('is-updating');
-
-        try {
-            const results = await Promise.allSettled(prepared.map(
-                async ({ issue }) => {
-                    const issueUrl =
-                        `/api/jira/issue/${encodeURIComponent(issue.key)}`;
-                    const transitions = await api(`${issueUrl}/transitions`);
-                    const selected = (transitions.transitions || [])
-                        .find(item =>
-                            targetStatusIds.has(String(item.to?.id))
-                        );
-
-                    if (!selected) {
-                        throw new Error(trans('drag.no_transition', {
-                            column: column.name
-                        }));
-                    }
-
-                    const transitionedIssue = await api(`${issueUrl}/transition`, {
-                        method: 'POST',
-                        body: JSON.stringify({
-                            transitionId: selected.id,
-                            boardId
-                        })
-                    });
-
-                    // Jira peut publier le nouveau statut juste après la
-                    // transition. Une lecture sans cache confirme donc l'état
-                    // réellement enregistré avant de mettre le tableau à jour.
-                    try {
-                        return await api(issueUrl, { cache: 'no-store' });
-                    } catch {
-                        // La transition a déjà réussi : son résultat reste la
-                        // meilleure information disponible si la vérification
-                        // ponctuelle échoue.
-                        return transitionedIssue;
-                    }
-                }
-            ));
-            const failedCards = new Set();
-            let failedCount = 0;
-
-            results.forEach((result, index) => {
-                const item = prepared[index];
-
-                if (result.status === 'fulfilled') {
-                    const updatedFields = result.value.fields || {};
-                    const updatedStatusId = String(
-                        updatedFields.status?.id || ''
-                    );
-
-                    item.issue.fields = {
-                        ...item.issue.fields,
-                        ...updatedFields,
-                        // Ne jamais faire revenir visuellement le ticket avec
-                        // un statut obsolète retourné pendant la propagation
-                        // Jira. Le prochain rafraîchissement confirmera l'état.
-                        ...(!targetStatusIds.has(updatedStatusId)
-                            ? { status: item.issue.fields.status }
-                            : {})
-                    };
-                    markIssuesUpdated([item.issue]);
-                    return;
-                }
-
-                item.issue.fields.status = item.originalStatus;
-                markIssuesUpdated([item.issue]);
-                failedCards.add(item.card);
-                ++failedCount;
-            });
-
-            originalOrder.forEach(originalCard => {
-                if (
-                    originalCard.parentElement === sourceColumn ||
-                    failedCards.has(originalCard)
-                ) {
-                    sourceColumn.append(originalCard);
-                }
-            });
-
-            updateColumnCount(sourceColumn);
-            updateColumnCount(targetColumn);
-
-            if (failedCount) {
-                showToast(
-                    trans(
-                        failedCount === 1
-                            ? 'drag.failed_one'
-                            : 'drag.failed_many',
-                        { count: failedCount }
-                    ),
-                    'error'
-                );
-            }
-
-            if (prepared.some(item => !item.card.isConnected)) {
-                renderBoard(false);
-            }
-        } finally {
-            prepared.forEach(({ card }) => {
-                card.classList.remove('is-transitioning');
-                card.draggable = true;
-            });
-            targetColumn.classList.remove('is-updating');
-            clearIssueSelection();
-        }
-    }
-
 
     function handleBoardDragover(event) {
         updateDragAutoScroll(event.clientX);

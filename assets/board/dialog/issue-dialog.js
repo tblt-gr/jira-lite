@@ -1,12 +1,13 @@
-import { api } from './api.js';
-import { openCommentEditor, removeComment, renderComments, replyToComment } from './dialog/comments.js';
-import { createIssueForms } from './dialog/forms.js';
-import { createMentionMenu } from './dialog/mentions.js';
-import { createTimeoutScheduler } from './dialog/timers.js';
-import { jiraMediaUrl } from './dom.js';
-import { createIssueView } from './issue-view.js';
-import { createMultiSelect } from './multi-select.js';
-import { adfMentions, adfToText } from './jira.js';
+// This module owns dialog orchestration and lifecycle; sibling modules own rendering and forms.
+import { api } from '../api.js';
+import { jiraMediaUrl } from '../dom.js';
+import { createIssueView } from '../issue-view.js';
+import { adfMentions, adfToText } from '../jira.js';
+import { createMultiSelect } from '../multi-select.js';
+import { openCommentEditor, removeComment, renderComments, replyToComment } from './comments.js';
+import { createIssueForms } from './forms.js';
+import { createMentionMenu } from './mentions.js';
+import { createTimeoutScheduler } from './timers.js';
 
 export function createIssueDialog(context) {
     const { root, state, showToast, jiraIssueUrl, renderBoard, trans } = context;
