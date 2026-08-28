@@ -1,10 +1,14 @@
 import {
+    UNASSIGNED_ID,
     WITHOUT_VERSION_ID,
+    assigneeId,
+    availableAssignees,
     availableColumns,
     availableIssueTypes,
     availableVersions,
     statusColumnMap
 } from './board-model.js';
+import { createAssigneeFilter } from './assignee-filter.js';
 import { createMultiSelect } from './multi-select.js';
 
 // This module owns non-epic filter catalogs, controls and URL synchronization.
@@ -13,6 +17,7 @@ export function createBoardFilters(context) {
 
     function entries() {
         return [
+            ['assignee', state.selectedAssigneeIds],
             ['version', state.selectedVersionIds],
             ['type', state.selectedTypeIds],
             ['column', state.selectedColumnIds]
@@ -77,6 +82,16 @@ export function createBoardFilters(context) {
             state.selectedColumnIds
         ]
     ];
+    const assigneeFilter = createAssigneeFilter({
+        container: context.assigneeFilter,
+        selected: state.selectedAssigneeIds,
+        onChange: () => {
+            writeToUrl();
+            context.renderBoard(false);
+        },
+        signal
+    });
+
     function catalogs() {
         const issues = state.data?.issues?.issues || [];
         const statusToColumn = statusColumnMap(
@@ -93,6 +108,19 @@ export function createBoardFilters(context) {
         const withoutVersion = issues.filter(issue =>
             !(issue.fields?.fixVersions || []).length
         ).length;
+        const assignees = availableAssignees(state.data);
+        const hasUnassigned = issues.some(issue =>
+            assigneeId(issue.fields?.assignee) === null
+        );
+
+        if (hasUnassigned) {
+            assignees.push({
+                id: UNASSIGNED_ID,
+                name: trans('common.unassigned'),
+                user: null
+            });
+        }
+
         if (withoutVersion) {
             versions.push({
                 id: WITHOUT_VERSION_ID,
@@ -102,6 +130,7 @@ export function createBoardFilters(context) {
         }
 
         return {
+            assignees,
             versions,
             types: availableIssueTypes(state.data).map(type => ({
                 ...type,
@@ -135,6 +164,18 @@ export function createBoardFilters(context) {
     function render() {
         const values = catalogs();
         let purged = false;
+
+        const allowedAssigneeIds = new Set(
+            values.assignees.map(assignee => assignee.id)
+        );
+
+        Array.from(state.selectedAssigneeIds).forEach(id => {
+            if (!allowedAssigneeIds.has(id)) {
+                state.selectedAssigneeIds.delete(id);
+                purged = true;
+            }
+        });
+        assigneeFilter.setOptions(values.assignees);
 
         selects.forEach(([select, catalogName, selected]) => {
             const options = values[catalogName];

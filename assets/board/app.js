@@ -24,6 +24,7 @@ function createBoardState() {
         issue: null,
         selectedEpicIds: new Set(),
         epicFilterActive: false,
+        selectedAssigneeIds: new Set(),
         selectedVersionIds: new Set(),
         selectedTypeIds: new Set(),
         selectedColumnIds: new Set(),
@@ -168,6 +169,7 @@ export function mountBoard(root, boardId) {
     });
     const filters = createBoardFilters({
         state,
+        assigneeFilter: root.querySelector('#assignee-filter'),
         versionFilter: root.querySelector('#version-filter'),
         typeFilter: root.querySelector('#type-filter'),
         columnFilter: root.querySelector('#column-filter'),
