@@ -161,6 +161,7 @@ export function createBoardView(context) {
             epicFilterActive: state.epicFilterActive,
             view: state.view,
             searchQuery: context.search.value,
+            selectedAssigneeIds: state.selectedAssigneeIds,
             selectedVersionIds: state.selectedVersionIds,
             selectedTypeIds: state.selectedTypeIds,
             selectedColumnIds: state.selectedColumnIds

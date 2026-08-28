@@ -72,6 +72,7 @@ export function availableEpics(data) {
 }
 
 export const WITHOUT_VERSION_ID = 'none';
+export const UNASSIGNED_ID = '__unassigned__';
 
 function boardIssuesOf(data) {
     return data?.issues?.issues || [];
@@ -79,6 +80,40 @@ function boardIssuesOf(data) {
 
 function byName(first, second) {
     return first.name.localeCompare(second.name);
+}
+
+export function assigneeId(assignee) {
+    const id = assignee?.accountId
+        ?? assignee?.key
+        ?? assignee?.name
+        ?? assignee?.displayName;
+
+    if (id === undefined || id === null || String(id) === '') {
+        return null;
+    }
+
+    return String(id);
+}
+
+export function availableAssignees(data) {
+    const assignees = new Map();
+
+    boardIssuesOf(data).forEach(issue => {
+        const assignee = issue.fields?.assignee;
+        const id = assigneeId(assignee);
+
+        if (!id || assignees.has(id)) {
+            return;
+        }
+
+        assignees.set(id, {
+            id,
+            name: String(assignee.displayName ?? id),
+            user: assignee
+        });
+    });
+
+    return Array.from(assignees.values()).sort(byName);
 }
 
 export function availableVersions(data) {
@@ -193,6 +228,18 @@ function issueMatchesColumns(issue, selectedIds, statusToColumn) {
     return Boolean(column) && selectedIds.has(String(column.name));
 }
 
+function issueMatchesAssignees(issue, selectedIds) {
+    if (!selectedIds?.size) {
+        return true;
+    }
+
+    const id = assigneeId(issue.fields?.assignee);
+
+    return id === null
+        ? selectedIds.has(UNASSIGNED_ID)
+        : selectedIds.has(id);
+}
+
 export function epicForIssue(issue, epicCatalog) {
     const issueIds = issueEpicIds(issue);
 
@@ -219,6 +266,7 @@ export function createBoardViewModel({
     epicFilterActive,
     view,
     searchQuery,
+    selectedAssigneeIds,
     selectedVersionIds,
     selectedTypeIds,
     selectedColumnIds
@@ -228,6 +276,7 @@ export function createBoardViewModel({
     const statusToColumn = statusColumnMap(columns);
     const matchingIssues = issues.filter(issue =>
         issueMatchesSearch(issue, searchQuery)
+        && issueMatchesAssignees(issue, selectedAssigneeIds)
         && issueMatchesVersions(issue, selectedVersionIds)
         && issueMatchesTypes(issue, selectedTypeIds)
         && issueMatchesColumns(issue, selectedColumnIds, statusToColumn)
@@ -251,6 +300,7 @@ export function createBoardViewModel({
     if (view === 'epic') {
         const displayedEpics = filtersByEpic ? selectedEpics : epics;
         const hidesEmptyGroups = String(searchQuery || '').trim() !== ''
+            || Boolean(selectedAssigneeIds?.size)
             || Boolean(selectedVersionIds?.size)
             || Boolean(selectedTypeIds?.size)
             || Boolean(selectedColumnIds?.size);

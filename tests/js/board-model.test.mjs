@@ -2,7 +2,9 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 
 import {
+    UNASSIGNED_ID,
     WITHOUT_VERSION_ID,
+    availableAssignees,
     availableColumns,
     availableIssueTypes,
     availableVersions,
@@ -34,7 +36,12 @@ const filterData = {
                         name: 'Bug',
                         iconUrl: 'bug.png'
                     },
-                    fixVersions: [{ id: '100', name: '1.4.0' }]
+                    fixVersions: [{ id: '100', name: '1.4.0' }],
+                    assignee: {
+                        accountId: 'alice',
+                        displayName: 'Alice Martin',
+                        avatarUrls: { '24x24': 'alice.png' }
+                    }
                 }
             },
             {
@@ -46,7 +53,11 @@ const filterData = {
                     fixVersions: [
                         { id: '100', name: '1.4.0' },
                         { id: '101', name: '1.5.0' }
-                    ]
+                    ],
+                    assignee: {
+                        accountId: 'bob',
+                        displayName: 'Bob Durand'
+                    }
                 }
             },
             {
@@ -127,6 +138,21 @@ test('lists board issue types once, sorted by name', () => {
     ]);
 });
 
+test('lists only assignees with a board issue', () => {
+    assert.deepEqual(availableAssignees(filterData), [
+        {
+            id: 'alice',
+            name: 'Alice Martin',
+            user: filterData.issues.issues[0].fields.assignee
+        },
+        {
+            id: 'bob',
+            name: 'Bob Durand',
+            user: filterData.issues.issues[1].fields.assignee
+        }
+    ]);
+});
+
 test('lists board columns in configuration order', () => {
     assert.deepEqual(availableColumns(filterData), [
         { id: 'À faire', name: 'À faire' },
@@ -174,6 +200,20 @@ test('filters issues by selected board columns', () => {
     assert.deepEqual(
         filteredKeys({ selectedColumnIds: new Set(['En cours']) }),
         ['APP-2']
+    );
+});
+
+test('filters issues by multiple selected assignees', () => {
+    assert.deepEqual(
+        filteredKeys({ selectedAssigneeIds: new Set(['alice', 'bob']) }),
+        ['APP-1', 'APP-2']
+    );
+});
+
+test('filters unassigned issues', () => {
+    assert.deepEqual(
+        filteredKeys({ selectedAssigneeIds: new Set([UNASSIGNED_ID]) }),
+        ['APP-3']
     );
 });
 

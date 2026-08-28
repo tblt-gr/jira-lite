@@ -1,4 +1,5 @@
 import { api } from './api.js';
+import { createAssigneeFilter } from './assignee-filter.js';
 import { jiraMediaUrl } from './dom.js';
 import { createIssueRefresher } from './refresh.js';
 import { createCardView } from './card-view.js';
@@ -11,7 +12,10 @@ import { trans } from './i18n.js';
 import { createMultiSelect } from './multi-select.js';
 import { createFavoriteButton, favoritesFirst } from '../favorites.js';
 import {
+    UNASSIGNED_ID,
     WITHOUT_VERSION_ID,
+    assigneeId,
+    availableAssignees as selectAvailableAssignees,
     availableColumns as selectAvailableColumns,
     availableEpics as selectAvailableEpics,
     availableIssueTypes as selectAvailableIssueTypes,
@@ -41,6 +45,7 @@ export function mountBoard(root, boardId) {
         issue: null,
         selectedEpicIds: new Set(),
         epicFilterActive: false,
+        selectedAssigneeIds: new Set(),
         selectedVersionIds: new Set(),
         selectedTypeIds: new Set(),
         selectedColumnIds: new Set(),
@@ -68,6 +73,7 @@ export function mountBoard(root, boardId) {
     const epicFilterLabel = root.querySelector('#epic-filter-label');
     const epicFilterCount = root.querySelector('#epic-filter-count');
     const epicFilterMenu = root.querySelector('#epic-filter-menu');
+    const assigneeFilter = root.querySelector('#assignee-filter');
     const versionFilter = root.querySelector('#version-filter');
     const typeFilter = root.querySelector('#type-filter');
     const columnFilter = root.querySelector('#column-filter');
@@ -637,6 +643,18 @@ export function mountBoard(root, boardId) {
         const withoutVersion = issues.filter(issue =>
             !(issue.fields?.fixVersions || []).length
         ).length;
+        const assignees = selectAvailableAssignees(state.data);
+        const hasUnassigned = issues.some(issue =>
+            assigneeId(issue.fields?.assignee) === null
+        );
+
+        if (hasUnassigned) {
+            assignees.push({
+                id: UNASSIGNED_ID,
+                name: trans('common.unassigned'),
+                user: null
+            });
+        }
 
         if (withoutVersion) {
             versions.push({
@@ -667,11 +685,12 @@ export function mountBoard(root, boardId) {
             }).length
         }));
 
-        return { versions, types, columns };
+        return { assignees, versions, types, columns };
     }
 
     function filterEntries() {
         return [
+            ['assignee', state.selectedAssigneeIds],
             ['version', state.selectedVersionIds],
             ['type', state.selectedTypeIds],
             ['column', state.selectedColumnIds]
@@ -704,6 +723,7 @@ export function mountBoard(root, boardId) {
     function renderFilters() {
         const catalogs = filterCatalogs();
         const targets = [
+            [assigneeSelect, catalogs.assignees, state.selectedAssigneeIds],
             [versionSelect, catalogs.versions, state.selectedVersionIds],
             [typeSelect, catalogs.types, state.selectedTypeIds],
             [columnSelect, catalogs.columns, state.selectedColumnIds]
@@ -992,6 +1012,16 @@ export function mountBoard(root, boardId) {
                 .map(({ id, name }) => ({ id, name }))
         );
     }
+
+    const assigneeSelect = createAssigneeFilter({
+        container: assigneeFilter,
+        selected: state.selectedAssigneeIds,
+        onChange: () => {
+            writeFiltersToUrl();
+            renderBoard(false);
+        },
+        signal: lifecycleController.signal
+    });
 
     const versionSelect = createFilterSelect(
         versionFilter,

@@ -51,6 +51,77 @@
     width: min(180px, 18vw);
 }
 
+.assignee-filter {
+    min-width: 0;
+    max-width: min(340px, 32vw);
+    display: flex;
+    align-items: center;
+    gap: 0;
+    overflow-x: auto;
+    padding: 2px;
+    scrollbar-width: thin;
+}
+
+.assignee-filter[hidden] {
+    display: none;
+}
+
+.assignee-filter-button {
+    width: 28px;
+    height: 28px;
+    flex: 0 0 auto;
+    display: grid;
+    place-items: center;
+    position: relative;
+    margin-left: -6px;
+    border: 2px solid transparent;
+    border-radius: 50%;
+    background: transparent;
+    padding: 1px;
+    transition: border-color 120ms ease, background 120ms ease,
+        transform 120ms ease;
+}
+
+.assignee-filter-button:first-child {
+    margin-left: 0;
+}
+
+.assignee-filter-button:hover {
+    border-color: var(--border);
+    background: var(--surface-soft);
+    transform: translateY(-1px);
+}
+
+.assignee-filter-button.is-selected {
+    border-color: var(--primary);
+    background: var(--accent-soft);
+}
+
+.assignee-filter-button:hover,
+.assignee-filter-button:focus-visible {
+    z-index: 1000 !important;
+}
+
+.assignee-filter-button:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 1px;
+}
+
+.assignee-filter-avatar {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+}
+
+.assignee-filter-unassigned {
+    display: grid;
+    place-items: center;
+    border: 1px dashed var(--text-subtle);
+    color: var(--text-muted);
+    font-size: 11px;
+    font-weight: 700;
+}
+
 .filter-option-icon {
     width: 14px;
     height: 14px;

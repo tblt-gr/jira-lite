@@ -44,6 +44,7 @@ board.epics_title: Sprint epics
 board.clear_all: Clear all
 board.selected_epics: '{count} epics selected'
 board.no_epic_selected: No epic selected
+board.assignees_title: Filter by assignee
 board.all_versions: All versions
 board.all_types: All issue types
 board.all_columns: All columns

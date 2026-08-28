@@ -139,6 +139,11 @@
         flex: 1 1 100%;
     }
 
+    .assignee-filter {
+        width: 100%;
+        max-width: 100%;
+    }
+
     .epic-toggle-all {
         flex: 1;
         justify-content: center;
