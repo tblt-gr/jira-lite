@@ -1,21 +1,31 @@
 # Contributing to Jira Lite
 
-Thank you for contributing to Jira Lite. Do not report suspected vulnerabilities through public
-issues or pull requests; follow the [Security Policy](./SECURITY.md) instead.
+**Jira Lite is a personal project.** It was built for one person's needs and is maintained for
+those needs alone. External contributions are not expected, feature requests are not tracked, and
+pull requests may be closed without review. There is no commitment to respond, merge or maintain
+anything on someone else's behalf.
+
+This document exists for two reasons: to record the conventions the project holds itself to, and to
+help anyone who forks it work in the same grain. If you want changes for your own use, fork the
+repository—that is the supported path.
+
+Do not report suspected vulnerabilities through public issues or pull requests; follow the
+[Security Policy](./SECURITY.md) instead.
 
 ## Product boundary
 
 Jira Lite is a fast, local-first, single-user Jira client. Changes should preserve its loopback-only
 deployment, focused Jira workflows and low client-side overhead. Authentication, TLS termination
-and multi-user deployment require an explicit architecture and security review before implementation.
+and multi-user deployment are out of scope; it is not built for production deployment or for reuse
+in other environments.
 
 ## Before you start
 
 - Start from an up-to-date `main` branch.
-- Use one focused branch per issue, such as `feat/short-description`, `fix/short-description`,
+- Use one focused branch per change, such as `feat/short-description`, `fix/short-description`,
   `docs/short-description` or `chore/short-description`.
-- Use the bug or feature issue form when opening an issue. Describe expected behaviour and
-  acceptance criteria without exposing Jira URLs, credentials or private issue content.
+- When an issue is opened, use the bug or feature form. Describe expected behaviour and acceptance
+  criteria without exposing Jira URLs, credentials or private issue content.
 
 ## Local setup
 
@@ -99,6 +109,9 @@ docs: clarify local setup
 ```
 
 ## Pull requests
+
+Pull requests from outside the project are not solicited and carry no review commitment. The rules
+below apply to the project's own branches, and to forks that keep the same workflow.
 
 - Target `main` and keep one coherent change per pull request.
 - Use a Conventional Commit title and link the related issue.

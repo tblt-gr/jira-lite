@@ -32,8 +32,14 @@ intended to reproduce Jira's administration, reporting, or advanced project-mana
 
 ## Status
 
-Jira Lite is actively maintained. The `main` branch is protected by PHP, JavaScript and production
-Docker checks. It targets PHP 8.5 and Symfony 7.4.
+**This is a personal project.** It was built for my own needs, it is maintained for my own needs,
+and there is no intention to deploy it to production, distribute it, or support its reuse by anyone
+else. There is no roadmap, no compatibility promise between versions, and no guarantee that it fits
+another Jira instance or workflow. Read it, fork it, take ideas from it—but treat it as someone
+else's workstation tool, not as a product.
+
+The `main` branch is protected by PHP, JavaScript and production Docker checks. It targets PHP 8.5
+and Symfony 7.4.
 
 ## Features
 
@@ -202,12 +208,18 @@ the local-only scope, persistence, frontend, media proxy, cache and refresh mode
 - One configured Jira identity is used for all requests.
 - The application is single-user and local-only by design.
 - Jira Cloud is required; custom fields may need instance-specific configuration.
+- Built for a single personal setup: it is not designed, tested or supported for production
+  deployment or reuse in other environments.
 
 ## Contributing
 
-Read [CONTRIBUTING.md](./CONTRIBUTING.md) before opening a pull request. Please include the
-user-visible outcome, verification performed and screenshots for UI changes. Security reports must
-follow [SECURITY.md](./SECURITY.md), not a public issue.
+External contributions are not expected. This is a personal project, feature requests are not
+tracked, and pull requests may be closed without review. If you want it to behave differently, fork
+it—that is the supported path.
+
+[CONTRIBUTING.md](./CONTRIBUTING.md) documents the conventions the project holds itself to, which is
+useful if you fork it or open a pull request anyway. Security reports must follow
+[SECURITY.md](./SECURITY.md), not a public issue.
 
 ## License
 
