@@ -30,3 +30,6 @@
 ###< friendsofphp/php-cs-fixer ###
 
 /node_modules/
+
+# Machine-local Docker trust store override.
+/compose.override.yaml
