@@ -25,6 +25,8 @@ Jira Lite keeps the everyday Jira actions close at hand: create issues, browse b
 through the workflow, edit summaries and descriptions, comment, and log work—without loading Jira’s
 full interface. It is intentionally designed for **local, single-user use**.
 
+![Jira Lite board with sample data](./docs/assets/board-preview.png)
+
 The product deliberately focuses on these common actions and a fast, simple interface. It is not
 intended to reproduce Jira's administration, reporting, or advanced project-management features.
 
@@ -148,6 +150,9 @@ Application authentication, TLS termination and multi-user authorization are int
 scope. If the service must be exposed beyond the workstation, add authentication, TLS and a reverse
 proxy first. See [SECURITY.md](./SECURITY.md) and
 [ADR-0002](./docs/adr/0002-no-application-authentication.md) for the complete rationale.
+
+The complete [architecture decision record](./docs/adr/README.md) explains the trade-offs behind
+the local-only scope, persistence, frontend, media proxy, cache and refresh model.
 
 ## Limitations
 

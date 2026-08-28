@@ -1,22 +1,26 @@
-# ADR-0002 — Pas d’authentification applicative
+# ADR-0002 — No application-level authentication
 
-## Contexte
+## Status
 
-Le modèle de menace local conserve trois vecteurs : CSRF depuis un autre onglet, DNS rebinding et exposition LAN accidentelle.
+Accepted.
 
-## Décision
+## Context
 
-L’OS est la frontière d’accès ; Jira Lite n’ajoute pas de login. Les écritures sont protégées par CSRF, les hôtes par `trusted_hosts` et le service par le bind loopback.
+The local threat model retains three attack vectors: CSRF from another browser tab, DNS rebinding, and accidental LAN exposure. The workstation and OS session already form the access boundary for this single-user tool.
 
-## Alternatives
+## Decision
 
-- Form login `InMemoryUser` : rejeté, car il augmente la gestion de secrets sans isoler des utilisateurs locaux.
-- OAuth Atlassian 3LO : rejeté, car il change le produit vers une application multi-utilisateur.
+The OS is the access boundary; Jira Lite does not add a login. CSRF protects write operations, `trusted_hosts` restricts accepted hosts, and loopback binding restricts network access.
 
-## Conséquences
+## Alternatives considered
 
-Une seule identité Jira est utilisée par l’application.
+- **`InMemoryUser` form login** — rejected because it introduces a second local secret without isolating multiple Jira identities.
+- **Atlassian OAuth 3LO** — rejected for the current scope because it requires sessions, token refresh, and per-user cache isolation.
 
-## Déclencheurs de réévaluation
+## Consequences
 
-Exposition hors loopback, poste partagé, périmètres Jira distincts ou besoin d’attribution individuelle des actions.
+The application uses one Jira identity. Write operations remain protected by CSRF, hosts by `trusted_hosts`, and network access by loopback binding. Actions appear in Jira under the configured server-side identity.
+
+## Reconsideration triggers
+
+Exposure beyond loopback, a shared workstation, distinct Jira permissions, a requirement for individual action attribution, or adoption of Atlassian OAuth 3LO.
