@@ -21,6 +21,7 @@ export function renderComments({
     locale,
     trans,
     renderRichText,
+    readOnly = false,
     onReply,
     onEdit,
     onDelete
@@ -63,7 +64,7 @@ export function renderComments({
         author.append(authorName, date);
         header.append(author, actions);
 
-        if (comment.author?.accountId) {
+        if (!readOnly && comment.author?.accountId) {
             const reply = document.createElement('button');
             reply.type = 'button';
             reply.textContent = trans('dialog.reply');
@@ -72,7 +73,8 @@ export function renderComments({
         }
 
         if (
-            comment.id
+            !readOnly
+            && comment.id
             && comment.author?.accountId
             && comment.author.accountId === currentUser?.accountId
         ) {
@@ -148,7 +150,7 @@ export async function removeComment({
 
     try {
         await api(
-            `/api/jira/issue/${encodeURIComponent(issueKey)}`
+            `/issue/${encodeURIComponent(issueKey)}`
             + `/comments/${encodeURIComponent(comment.id)}`,
             { method: 'DELETE' }
         );
@@ -216,7 +218,7 @@ export function openCommentEditor({
 
         try {
             await api(
-                `/api/jira/issue/${encodeURIComponent(issueKey)}`
+                `/issue/${encodeURIComponent(issueKey)}`
                 + `/comments/${encodeURIComponent(comment.id)}`,
                 {
                     method: 'PUT',

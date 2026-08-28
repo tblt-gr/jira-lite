@@ -1,4 +1,4 @@
-import { api } from './api.js';
+import { createApi } from './api.js';
 import { createBoardFilters } from './board-filters.js';
 import { createBoardShell } from './board-shell.js';
 import { createBoardView, currentSprintName } from './board-view.js';
@@ -47,7 +47,7 @@ function createBoardState() {
 }
 
 // This module composes board features; DOM-heavy controls live in focused modules.
-export function mountBoard(root, boardId) {
+export function mountBoard(root, boardId, options = {}) {
     const lifecycleController = new AbortController();
     const { signal } = lifecycleController;
     const listenerOptions = { signal };
@@ -57,6 +57,8 @@ export function mountBoard(root, boardId) {
     const counter = root.querySelector('#counter');
     const reloadButton = root.querySelector('#reload');
     let boardRequestController = null;
+    const request = createApi(options.apiBaseUrl);
+    const readOnly = Boolean(options.readOnly);
 
     const shell = createBoardShell({ root, boardId, state, signal });
 
@@ -91,7 +93,9 @@ export function mountBoard(root, boardId) {
         trans,
         showToast: shell.showToast,
         renderBoard,
-        markIssuesUpdated
+        markIssuesUpdated,
+        api: request,
+        readOnly
     });
     const issueDialog = createIssueDialog({
         root,
@@ -100,7 +104,9 @@ export function mountBoard(root, boardId) {
         state,
         showToast: shell.showToast,
         jiraIssueUrl: shell.jiraIssueUrl,
-        renderBoard
+        renderBoard,
+        api: request,
+        readOnly
     });
 
     function openIssue(issueKey) {
@@ -109,6 +115,7 @@ export function mountBoard(root, boardId) {
 
     function createCard(issue, epic = null) {
         const card = createCardView(issue, epic, storyPoints(issue), trans, signal);
+        card.draggable = !readOnly;
 
         return connectCard(card, issue, {
             state,
@@ -151,6 +158,7 @@ export function mountBoard(root, boardId) {
         epicForIssue: (issue, catalog = availableEpics()) =>
             selectEpicForIssue(issue, catalog),
         openCreateIssue: epic => issueCreator.open({ epic }),
+        readOnly,
         trans,
         signal
     });
@@ -186,7 +194,8 @@ export function mountBoard(root, boardId) {
         renderFilters: filters.render,
         writeEpicsToUrl: epicFilter.writeToUrl,
         renderBoard,
-        onError: message => shell.showToast(message, 'error')
+        onError: message => shell.showToast(message, 'error'),
+        api: request
     });
 
     const issueCreator = createIssueCreator({
@@ -195,6 +204,7 @@ export function mountBoard(root, boardId) {
         trans,
         showToast: shell.showToast,
         getEpics: () => state.data?.epics?.values || [],
+        api: request,
         signal,
         async onCreated(issue, creation) {
             if (!state.data?.issues || !issue?.key) {
@@ -232,7 +242,7 @@ export function mountBoard(root, boardId) {
         board.replaceChildren(loading);
 
         try {
-            state.data = await api(`/api/jira/board/${boardId}`, {
+            state.data = await request(`/board/${boardId}`, {
                 signal: requestSignal
             });
             issueRefresher.setCursor(state.data.issues?.snapshotAt);

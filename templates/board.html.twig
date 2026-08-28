@@ -25,6 +25,8 @@
 <body
     data-controller="board"
     data-board-board-id-value="{{ boardId }}"
+    data-board-api-base-url-value="{{ api_base_url|default('/api/jira') }}"
+    data-board-read-only-value="{{ read_only|default(false) ? 'true' : 'false' }}"
 >
 {{ include('board/_header.html.twig') }}
 

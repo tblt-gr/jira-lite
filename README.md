@@ -14,6 +14,7 @@
 <a href="#features">Features</a> &bull;
 <a href="#stack">Stack</a> &bull;
 <a href="#quick-start">Quick Start</a> &bull;
+<a href="#demo-data">Demo Data</a> &bull;
 <a href="#configuration">Configuration</a> &bull;
 <a href="#development">Development</a> &bull;
 <a href="#security">Security</a> &bull;
@@ -93,6 +94,15 @@ docker compose -f compose.prod.yaml up -d
 composer install
 php -S 127.0.0.1:8000 -t public public/index.php
 ```
+
+## Demo Data
+
+Open `/demo` on the running application to use the built-in screenshot data. The demo contains one
+populated board, one empty board, two epics, eight issues and three fictional users. Issue details
+and comments remain navigable, while creation, editing, transitions and worklogs are disabled.
+
+The demo uses dedicated `/api/demo` read endpoints and never contacts Jira. Return to `/` to use the
+normal Jira-backed application; no restart or configuration change is required.
 
 ## Configuration
 

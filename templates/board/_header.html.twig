@@ -2,7 +2,7 @@
     <div class="brand">
         <a
             class="secondary-button home-button"
-            href="{{ path('app_home') }}"
+            href="{{ path(home_route|default('app_home')) }}"
             title="{{ 'board.back_home'|trans }}"
             aria-label="{{ 'board.back_home'|trans }}"
         >
@@ -58,7 +58,10 @@
                         {% for board in boards %}
                             <option
                                 value="{{ board.id }}"
-                                data-url="{{ path('app_board', { boardId: board.id }) }}"
+                                data-url="{{ path(
+                                    board_route|default('app_board'),
+                                    { boardId: board.id }
+                                ) }}"
                                 {{ board.id == boardId ? 'selected' : '' }}
                             >{{ board.name|default('common.unnamed_board'|trans) }}</option>
                         {% endfor %}
@@ -90,6 +93,7 @@
             class="create-issue-button"
             type="button"
             aria-haspopup="dialog"
+            {% if read_only|default(false) %}hidden{% endif %}
         >
             <svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true">
                 <path d="M12 5v14M5 12h14" />

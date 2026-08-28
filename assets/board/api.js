@@ -46,3 +46,13 @@ export async function api(url, options = {}) {
 
     return response.json();
 }
+
+export function createApi(baseUrl = '/api/jira') {
+    const normalizedBaseUrl = String(baseUrl || '/api/jira')
+        .replace(/\/+$/, '');
+
+    return (path, options = {}) => api(
+        `${normalizedBaseUrl}/${String(path).replace(/^\/+/, '')}`,
+        options
+    );
+}

@@ -16,7 +16,9 @@ test('transition cache intersects status ids across issues', async () => {
     });
 
     try {
-        const cache = createTransitionCache();
+        const cache = createTransitionCache(path => fetch(
+            `/api/jira${path}`
+        ).then(response => response.json()));
         const statuses = await cache.allowedStatusIds([
             { key: 'APP-1', fields: { status: { id: '1' } } },
             { key: 'APP-2', fields: { status: { id: '1' } } }

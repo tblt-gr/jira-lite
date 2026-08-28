@@ -1,4 +1,3 @@
-import { api } from './api.js';
 import { epicLabel } from './jira.js';
 
 export function createIssueCreator(context) {
@@ -9,7 +8,8 @@ export function createIssueCreator(context) {
         showToast,
         onCreated,
         getEpics,
-        signal
+        signal,
+        api
     } = context;
     const trigger = root.querySelector('#create-issue');
     const dialog = root.querySelector('#create-issue-dialog');
@@ -143,7 +143,7 @@ export function createIssueCreator(context) {
 
         try {
             const response = await api(
-                `/api/jira/board/${boardId}/create-metadata`,
+                `/board/${boardId}/create-metadata`,
                 { signal: metadataRequest.signal }
             );
             populateMetadata(response);
@@ -200,7 +200,7 @@ export function createIssueCreator(context) {
         const data = new FormData(form);
 
         try {
-            const issue = await api(`/api/jira/board/${boardId}/issues`, {
+            const issue = await api(`/board/${boardId}/issues`, {
                 method: 'POST',
                 body: JSON.stringify({
                     issueTypeId: data.get('issueTypeId'),

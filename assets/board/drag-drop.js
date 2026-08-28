@@ -9,11 +9,13 @@ export function createDragDrop(context) {
         trans,
         showToast,
         renderBoard,
-        markIssuesUpdated
+        markIssuesUpdated,
+        api,
+        readOnly
     } = context;
     const lifecycleController = new AbortController();
     const listenerOptions = { signal: lifecycleController.signal };
-    const transitionCache = createTransitionCache();
+    const transitionCache = createTransitionCache(api);
     const columnStatusIds = new WeakMap();
     let dragScrollFrame = null;
     let dragScrollSpeed = 0;
@@ -239,6 +241,10 @@ export function createDragDrop(context) {
     }
 
     function enableDropZone(columnElement, column, workflow) {
+        if (readOnly) {
+            return;
+        }
+
         const targetStatusIds = new Set(
             (column.statuses || []).map(status => String(status.id))
         );
@@ -317,7 +323,8 @@ export function createDragDrop(context) {
                 renderBoard,
                 markIssuesUpdated,
                 updateColumnCount,
-                clearIssueSelection
+                clearIssueSelection,
+                api
             });
         }, listenerOptions);
     }

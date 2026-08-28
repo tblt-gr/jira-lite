@@ -61,7 +61,7 @@ export function createIssueForms({ root, state, api, adfToText, showToast, trans
             if (!state.issue) { return; }
             setFormBusy(form, true);
             try {
-                await api(`/api/jira/issue/${encodeURIComponent(state.issue.key)}`, { method: 'PATCH', body: JSON.stringify(fields) });
+                await api(`/issue/${encodeURIComponent(state.issue.key)}`, { method: 'PATCH', body: JSON.stringify(fields) });
                 await refreshCurrentIssue();
                 toggleEditor(editor, false);
                 showToast(trans('dialog.issue_updated'), 'success');
@@ -78,7 +78,7 @@ export function createIssueForms({ root, state, api, adfToText, showToast, trans
             if (!state.issue || !comment) { return; }
             setFormBusy(commentForm, true);
             try {
-                await api(`/api/jira/issue/${encodeURIComponent(state.issue.key)}/comments`, { method: 'POST', body: JSON.stringify({ comment, mentions }) });
+                await api(`/issue/${encodeURIComponent(state.issue.key)}/comments`, { method: 'POST', body: JSON.stringify({ comment, mentions }) });
                 commentInput.value = '';
                 state.commentMentions = [];
                 replyContext.hidden = true;
@@ -100,7 +100,7 @@ export function createIssueForms({ root, state, api, adfToText, showToast, trans
             if (!timeSpent) { return; }
             setFormBusy(worklogForm, true);
             try {
-                await api(`/api/jira/issue/${encodeURIComponent(state.issue.key)}/worklogs`, { method: 'POST', body: JSON.stringify({ timeSpent, comment }) });
+                await api(`/issue/${encodeURIComponent(state.issue.key)}/worklogs`, { method: 'POST', body: JSON.stringify({ timeSpent, comment }) });
                 root.querySelector('#worklog-time').value = '';
                 root.querySelector('#worklog-comment').value = '';
                 await refreshCurrentIssue();

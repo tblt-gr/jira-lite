@@ -103,7 +103,7 @@ export function createMentionMenu({
         const token = ++requestToken;
         searchTimer = scheduleTimeout(async () => {
             try {
-                const response = await api(`/api/jira/users?query=${encodeURIComponent(query)}`);
+                const response = await api(`/users?query=${encodeURIComponent(query)}`);
                 if (token === requestToken) {
                     render(response.users || []);
                 }

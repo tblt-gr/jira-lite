@@ -1,4 +1,3 @@
-import { api } from './api.js';
 import { canonicalEpicId } from './jira.js';
 import { replaceIssues } from './board-model.js';
 
@@ -25,8 +24,8 @@ export function createIssueRefresher(context) {
         );
 
         try {
-            const changes = await api(
-                `/api/jira/board/${context.boardId}/changes?since=${
+            const changes = await context.api(
+                `/board/${context.boardId}/changes?since=${
                     encodeURIComponent(cursor)
                 }`,
                 { signal: requestController.signal }

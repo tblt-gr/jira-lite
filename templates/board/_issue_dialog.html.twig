@@ -17,6 +17,7 @@
                     type="button"
                     title="{{ 'dialog.edit_title'|trans }}"
                     aria-label="{{ 'dialog.edit_title'|trans }}"
+                    {% if read_only|default(false) %}hidden{% endif %}
                 >
                     <svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true">
                         <path d="m4 20 4.5-1 10-10a2.1 2.1 0 0 0-3-3l-10 10L4 20Z" />
@@ -46,12 +47,14 @@
                 id="transition-picker"
                 class="filter-multiselect issue-transition-picker is-single"
                 aria-labelledby="transition-label"
+                {% if read_only|default(false) %}hidden{% endif %}
             ></div>
             <a
                 id="open-issue"
                 class="open-issue-button"
                 target="_blank"
                 rel="noopener noreferrer"
+                {% if read_only|default(false) %}hidden{% endif %}
             >{{ 'dialog.open_in_jira'|trans }}
                 <svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true">
                     <path d="M14 5h5v5M19 5l-9 9" />
@@ -76,7 +79,12 @@
             <section class="issue-content-section">
                 <div class="issue-section-heading">
                     <h3>{{ 'dialog.description'|trans }}</h3>
-                    <button id="edit-description" class="section-edit-button" type="button">
+                    <button
+                        id="edit-description"
+                        class="section-edit-button"
+                        type="button"
+                        {% if read_only|default(false) %}hidden{% endif %}
+                    >
                         {{ 'common.edit'|trans }}
                     </button>
                 </div>
@@ -121,7 +129,11 @@
                     <h3>{{ 'dialog.activity'|trans }}</h3>
                     <span class="activity-tab-label">{{ 'dialog.comments'|trans }}</span>
                 </div>
-                <form id="comment-form" class="comment-form">
+                <form
+                    id="comment-form"
+                    class="comment-form"
+                    {% if read_only|default(false) %}hidden{% endif %}
+                >
                     <div id="comment-reply-context" class="comment-reply-context" hidden>
                         <span id="comment-reply-label"></span>
                         <button id="cancel-reply" type="button" aria-label="{{ 'dialog.cancel_reply'|trans }}">×</button>
@@ -178,6 +190,7 @@
                     type="button"
                     title="{{ 'dialog.log_work'|trans }}"
                     aria-label="{{ 'dialog.log_work'|trans }}"
+                    {% if read_only|default(false) %}disabled{% endif %}
                 >
                     <span class="time-progress">
                         <span id="time-progress-bar"></span>
@@ -221,7 +234,12 @@
                 </summary>
                 <div class="sidebar-accordion-content">
                     <div class="sidebar-section-actions">
-                        <button id="edit-fields" class="section-edit-button" type="button">
+                        <button
+                            id="edit-fields"
+                            class="section-edit-button"
+                            type="button"
+                            {% if read_only|default(false) %}hidden{% endif %}
+                        >
                             {{ 'common.edit'|trans }}
                         </button>
                     </div>

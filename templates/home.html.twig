@@ -10,7 +10,10 @@
 </head>
 <body class="home-page">
 <header class="topbar">
-    <a class="brand brand-link" href="{{ path('app_home') }}">
+    <a
+        class="brand brand-link"
+        href="{{ path(home_route|default('app_home')) }}"
+    >
         <img class="brand-mark" src="{{ asset('images/favicon.png') }}" alt="">
         <div>
             <strong>{{ 'app.title'|trans }}</strong>
@@ -85,7 +88,10 @@
                     >
                     <a
                         class="home-board-card"
-                        href="{{ path('app_board', { boardId: board.id }) }}"
+                        href="{{ path(
+                            board_route|default('app_board'),
+                            { boardId: board.id }
+                        ) }}"
                     >
                         <span class="home-board-icon">
                             {% if icon %}

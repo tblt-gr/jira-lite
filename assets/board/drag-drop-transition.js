@@ -1,5 +1,3 @@
-import { api } from './api.js';
-
 // This module owns optimistic Jira transitions; drag-drop.js owns pointer and selection state.
 export async function moveIssuesToColumn({
     items,
@@ -13,7 +11,8 @@ export async function moveIssuesToColumn({
     renderBoard,
     markIssuesUpdated,
     updateColumnCount,
-    clearIssueSelection
+    clearIssueSelection,
+    api
 }) {
     const originalOrder = Array.from(sourceColumn.querySelectorAll('.card'));
     const optimisticStatusId = targetStatusIds.values().next().value;
@@ -40,7 +39,7 @@ export async function moveIssuesToColumn({
 
     try {
         const results = await Promise.allSettled(prepared.map(async ({ issue }) => {
-            const issueUrl = `/api/jira/issue/${encodeURIComponent(issue.key)}`;
+            const issueUrl = `/issue/${encodeURIComponent(issue.key)}`;
             const transitions = await api(`${issueUrl}/transitions`);
             const selected = (transitions.transitions || []).find(item =>
                 targetStatusIds.has(String(item.to?.id))

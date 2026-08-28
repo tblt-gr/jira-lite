@@ -5,11 +5,16 @@ const REFRESH_INTERVAL = 30_000;
 
 export default class extends Controller {
     static values = {
-        boardId: Number
+        boardId: Number,
+        apiBaseUrl: { type: String, default: '/api/jira' },
+        readOnly: { type: Boolean, default: false }
     };
 
     connect() {
-        this.board = mountBoard(this.element, this.boardIdValue);
+        this.board = mountBoard(this.element, this.boardIdValue, {
+            apiBaseUrl: this.apiBaseUrlValue,
+            readOnly: this.readOnlyValue
+        });
         this.refresh = () => this.board?.refresh();
         this.timer = window.setInterval(this.refresh, REFRESH_INTERVAL);
         document.addEventListener('visibilitychange', this.refresh);

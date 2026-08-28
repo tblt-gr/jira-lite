@@ -290,7 +290,12 @@ export function createBoardView(context) {
                 count.textContent = columnIssues.length;
                 head.append(title, count);
 
-                if (isCollapsible && group.epic && columnIndex === 0) {
+                if (
+                    !context.readOnly
+                    && isCollapsible
+                    && group.epic
+                    && columnIndex === 0
+                ) {
                     const create = document.createElement('button');
                     const createLabel = context.trans('create.in_epic', {
                         epic: epicLabel(group.epic, '')

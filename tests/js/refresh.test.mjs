@@ -37,7 +37,10 @@ test('does not overwrite a local transition with an older refresh response', asy
             writeEpicsToUrl() {},
             renderBoard() {
                 ++renderCalls;
-            }
+            },
+            api: path => fetch(`/api/jira${path}`).then(response =>
+                response.json()
+            )
         });
         const refresh = refresher.refresh();
 

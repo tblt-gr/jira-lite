@@ -1,5 +1,3 @@
-import { api } from './api.js';
-
 const CACHE_TTL = 60000;
 
 function issueCacheKey(issue) {
@@ -12,7 +10,7 @@ function intersect(sets) {
     ));
 }
 
-export function createTransitionCache() {
+export function createTransitionCache(api) {
     const entries = new Map();
 
     function reachableStatusIds(issue) {
@@ -24,7 +22,7 @@ export function createTransitionCache() {
         }
 
         const promise = api(
-            `/api/jira/issue/${encodeURIComponent(issue.key)}/transitions`
+            `/issue/${encodeURIComponent(issue.key)}/transitions`
         ).then(response => new Set(
             (response.transitions || [])
                 .map(transition => String(transition.to?.id || ''))

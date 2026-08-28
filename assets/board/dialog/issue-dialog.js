@@ -1,5 +1,4 @@
 // This module owns dialog orchestration and lifecycle; sibling modules own rendering and forms.
-import { api } from '../api.js';
 import { jiraMediaUrl } from '../dom.js';
 import { createIssueView } from '../issue-view.js';
 import { adfMentions, adfToText } from '../jira.js';
@@ -10,7 +9,15 @@ import { createMentionMenu } from './mentions.js';
 import { createTimeoutScheduler } from './timers.js';
 
 export function createIssueDialog(context) {
-    const { root, state, showToast, jiraIssueUrl, renderBoard, trans } = context;
+    const {
+        root,
+        state,
+        showToast,
+        jiraIssueUrl,
+        renderBoard,
+        trans,
+        api
+    } = context;
     const lifecycleController = new AbortController();
     const { signal } = lifecycleController;
     const dialog = root.querySelector('#issue-dialog');
@@ -44,7 +51,7 @@ export function createIssueDialog(context) {
         }
         renderComments({
             container, comments, currentUser: state.currentUser, locale: document.documentElement.lang,
-            trans, renderRichText: view.renderRichText,
+            trans, renderRichText: view.renderRichText, readOnly: context.readOnly,
             onReply: comment => replyToComment({ comment, commentInput: forms.commentInput, replyContext: forms.replyContext, mergeMention: mentions.merge, trans }),
             onEdit: (article, body, comment) => {
                 if (!state.issue) { return; }
@@ -56,7 +63,7 @@ export function createIssueDialog(context) {
 
     async function refreshIssueComments() {
         if (!state.issue) { return; }
-        const comments = await api(`/api/jira/issue/${encodeURIComponent(state.issue.key)}/comments`);
+        const comments = await api(`/issue/${encodeURIComponent(state.issue.key)}/comments`);
         renderIssueComments(comments);
     }
 
@@ -91,7 +98,7 @@ export function createIssueDialog(context) {
 
     async function refreshCurrentIssue() {
         if (!state.issue) { return null; }
-        const issue = await api(`/api/jira/issue/${encodeURIComponent(state.issue.key)}`);
+        const issue = await api(`/issue/${encodeURIComponent(state.issue.key)}`);
         renderIssueDetails(issue);
         return issue;
     }
@@ -103,9 +110,9 @@ export function createIssueDialog(context) {
         try {
             const key = encodeURIComponent(issueKey);
             const [issue, transitions, comments] = await Promise.all([
-                api(`/api/jira/issue/${key}`, { signal: requestSignal }),
-                api(`/api/jira/issue/${key}/transitions`, { signal: requestSignal }),
-                api(`/api/jira/issue/${key}/comments`, { signal: requestSignal }).catch(() => ({ unavailable: true }))
+                api(`/issue/${key}`, { signal: requestSignal }),
+                api(`/issue/${key}/transitions`, { signal: requestSignal }),
+                api(`/issue/${key}/comments`, { signal: requestSignal }).catch(() => ({ unavailable: true }))
             ]);
             if (requestSignal.aborted) { return; }
             const url = jiraIssueUrl(issue.key, issue);
@@ -139,7 +146,7 @@ export function createIssueDialog(context) {
         const trigger = transitionElement.querySelector('.filter-trigger');
         trigger.disabled = true;
         try {
-            const updatedIssue = await api(`/api/jira/issue/${encodeURIComponent(state.issue.key)}/transition`, { method: 'POST', body: JSON.stringify({ transitionId, boardId: context.boardId }) });
+            const updatedIssue = await api(`/issue/${encodeURIComponent(state.issue.key)}/transition`, { method: 'POST', body: JSON.stringify({ transitionId, boardId: context.boardId }) });
             renderIssueDetails(updatedIssue);
             renderBoard(false);
             dialog.close();
