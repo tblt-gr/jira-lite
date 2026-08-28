@@ -25,7 +25,8 @@ COPY docker/php/conf.d/app.ini $PHP_INI_DIR/conf.d/
 
 # Entrypoint configuration
 COPY docker/entrypoint.sh /usr/local/bin/docker-entrypoint
-RUN chmod +x /usr/local/bin/docker-entrypoint
+COPY docker/ensure-app-secret.sh /usr/local/bin/ensure-app-secret
+RUN chmod +x /usr/local/bin/docker-entrypoint /usr/local/bin/ensure-app-secret
 
 ENTRYPOINT ["docker-entrypoint"]
 CMD ["--config", "/etc/caddy/Caddyfile", "--adapter", "caddyfile"]
@@ -52,11 +53,17 @@ COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 # are only used to compile the container and warm the cache at build time —
 # actual runtime values are injected as real environment variables by
 # compose.yaml and take precedence over anything in this file.
-RUN cp .env.example .env && \
+RUN --mount=type=secret,id=custom_ca,required=false \
+    if [ -f /run/secrets/custom_ca ]; then \
+        cp /run/secrets/custom_ca /usr/local/share/ca-certificates/custom-ca.crt; \
+        update-ca-certificates; \
+    fi && \
+    cp .env.example .env && \
     composer install --no-dev --no-progress --no-interaction --optimize-autoloader && \
+    ensure-app-secret prod && \
     php bin/console asset-map:compile && \
     php bin/console cache:warmup && \
-    rm .env
+    truncate -s 0 .env
 
 # Production runtime stage
 FROM frankenphp_base AS frankenphp_prod

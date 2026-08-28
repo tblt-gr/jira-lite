@@ -16,10 +16,6 @@ services:
     environment:
       SERVER_NAME: :8080
       APP_ENV: ${APP_ENV:-dev}
-      APP_SECRET: ${APP_SECRET:-}
-      JIRA_BASE_URL: ${JIRA_BASE_URL:-}
-      JIRA_EMAIL: ${JIRA_EMAIL:-}
-      JIRA_API_TOKEN: ${JIRA_API_TOKEN:-}
     env_file:
       - path: .env
         required: false

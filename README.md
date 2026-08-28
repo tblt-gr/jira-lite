@@ -73,7 +73,8 @@ shape board data, and short-lived snapshots keep navigation responsive.
 
 ```bash
 cp .env.example .env.local
-# Set APP_SECRET, JIRA_BASE_URL, JIRA_EMAIL and JIRA_API_TOKEN in .env.local
+# Set JIRA_BASE_URL, JIRA_EMAIL and JIRA_API_TOKEN in .env.local,
+# or use the Symfony vault documented in the Configuration section.
 docker compose up -d
 ```
 
@@ -101,7 +102,7 @@ committed.
 | Scope | Variable | Description | Default |
 | --- | --- | --- | --- |
 | Shared | `APP_ENV` | Symfony environment | `dev` |
-| Shared | `APP_SECRET` | Random Symfony application secret | — |
+| Shared | `APP_SECRET` | Random Symfony application secret | generated automatically in Docker |
 | Shared | `DEFAULT_URI` | Symfony base URI | `http://localhost` |
 | Shared | `TRUSTED_HOSTS` | Loopback host allowlist | loopback regex |
 | Jira | `JIRA_BASE_URL` | Jira Cloud instance URL | — |
@@ -112,11 +113,53 @@ committed.
 | Docker | `BIND_ADDRESS` | Published address; keep loopback | `127.0.0.1` |
 | Docker | `PORT` | Local host port | `5472` |
 
-Generate a secret with:
+Docker generates `APP_SECRET` in the active Symfony vault when neither the environment, a `.env*`
+file nor the vault already defines it. Existing values are never replaced. Without Docker, generate
+it explicitly:
 
 ```bash
-php -r "echo bin2hex(random_bytes(32)), PHP_EOL;"
+php bin/console secrets:generate-keys --env=dev
+php bin/console secrets:set APP_SECRET --env=dev --random=64
 ```
+
+### Symfony secrets vault
+
+As an alternative to storing sensitive values in `.env.local`, Jira Lite can read them from
+Symfony's encrypted secrets vault. The Sodium PHP extension required by the vault is included in
+the Docker image.
+
+Start the development container, which creates `APP_SECRET` automatically, then enter each Jira
+value. Secret input is hidden, so the Jira token is not recorded in the shell history.
+
+```bash
+docker compose up -d
+docker compose exec app php bin/console secrets:set JIRA_BASE_URL --env=dev
+docker compose exec app php bin/console secrets:set JIRA_EMAIL --env=dev
+docker compose exec app php bin/console secrets:set JIRA_API_TOKEN --env=dev
+docker compose exec app php bin/console secrets:list --env=dev
+```
+
+For the immutable local production image, create a separate production vault before building it.
+The image build creates its `APP_SECRET` automatically when the production vault does not already
+contain one.
+
+```bash
+docker compose exec app php bin/console secrets:generate-keys --env=prod
+docker compose exec app php bin/console secrets:set JIRA_BASE_URL --env=prod
+docker compose exec app php bin/console secrets:set JIRA_EMAIL --env=prod
+docker compose exec app php bin/console secrets:set JIRA_API_TOKEN --env=prod
+docker compose exec app php bin/console secrets:list --env=prod
+docker compose -f compose.prod.yaml up -d --build
+```
+
+Real environment variables and values from `.env.local` or `.env.<environment>.local` take
+precedence over the vault. Remove duplicate definitions of these four names before relying on the
+vault. This repository ignores `config/secrets/`, including the private decryption keys, so the
+vault remains local to the workstation. Do not publish or share a production image containing a
+local vault and its decryption key.
+
+See the [Symfony secrets documentation](https://symfony.com/doc/7.4/configuration/secrets.html) for
+key deployment, rotation and team-sharing workflows.
 
 ## Development
 

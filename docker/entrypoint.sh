@@ -17,6 +17,10 @@ if [ "$1" = 'frankenphp' ] || [ "$1" = 'php' ] || [ "$1" = 'bin/console' ]; then
             composer install --prefer-dist --no-progress --no-interaction
         fi
     fi
+
+    if [ "$APP_ENV" != 'test' ]; then
+        ensure-app-secret "$APP_ENV"
+    fi
 fi
 
 exec docker-php-entrypoint "$@"
