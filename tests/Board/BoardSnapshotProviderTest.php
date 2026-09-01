@@ -54,6 +54,7 @@ final class BoardSnapshotProviderTest extends TestCase
 
         $first = $provider->getSnapshot(7);
         $second = $provider->getSnapshot(7);
+        $board = $provider->getBoard(7);
 
         $firstJson = json_decode(
             json_encode($first, JSON_THROW_ON_ERROR),
@@ -67,6 +68,7 @@ final class BoardSnapshotProviderTest extends TestCase
         );
 
         self::assertSame('Delivery', $firstJson['board']['name']);
+        self::assertSame('Delivery', $board['name']);
         self::assertArrayHasKey('snapshotAt', $firstJson['issues']);
         self::assertArrayNotHasKey(
             'description',

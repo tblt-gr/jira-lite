@@ -32,7 +32,7 @@ export default class extends Controller {
         };
         const dialog = this.element.querySelector('#issue-dialog');
 
-        this.issueDialog = createIssueDialog({
+        const issueDialogContext = {
             root: this.element,
             state,
             trans,
@@ -44,16 +44,22 @@ export default class extends Controller {
             closeAfterTransition: false,
             onClose: () => this.leave(),
             onIssueRendered: issue => {
-                const url = issueViewUrl(issue.key, this.boardIdValue);
+                const boardId = this.boardIdValue
+                    || issueBoardId(issue)
+                    || issueDialogContext.boardId;
+                const url = issueViewUrl(issue.key, boardId);
                 const currentUrl = `${window.location.pathname}${window.location.search}`;
 
+                issueDialogContext.boardId = boardId || undefined;
                 document.title = `${issue.key} · ${trans('app.title')}`;
+                this.element.querySelector('#issue-page-key').textContent = issue.key;
                 if (url && currentUrl !== url) {
                     window.history.replaceState({}, '', url);
                 }
-                this.updateIssueIcon(issue);
+                this.updateIssueIcon(issue, boardId);
             }
-        });
+        };
+        this.issueDialog = createIssueDialog(issueDialogContext);
 
         this.issueDialog.openIssue(this.issueKeyValue).then(opened => {
             const status = this.element.querySelector('#issue-page-status');
@@ -77,9 +83,7 @@ export default class extends Controller {
         this.issueDialog = null;
     }
 
-    async updateIssueIcon(issue) {
-        const boardId = this.boardIdValue || issueBoardId(issue);
-
+    async updateIssueIcon(issue, boardId) {
         if (boardId && String(boardId) === this.resolvedBoardId) {
             return;
         }

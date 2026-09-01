@@ -83,6 +83,10 @@ final class JiraHttpTest extends WebTestCase
             '/browse/INV-2566',
             $crawler->filterXPath('//*[@id="issue-key"]')->attr('href')
         );
+        self::assertSame(
+            'INV-2566',
+            $crawler->filterXPath('//*[@id="issue-page-key"]')->text()
+        );
         self::assertCount(1, $crawler->filterXPath('//section[@id="issue-dialog"]'));
         self::assertCount(0, $crawler->filterXPath('//dialog[@id="issue-dialog"]'));
         self::assertCount(0, $crawler->filterXPath('//*[@id="close-dialog"]'));

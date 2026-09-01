@@ -31,14 +31,7 @@ final class BoardSnapshotProvider
     public function getSnapshot(int $boardId): BoardSnapshot
     {
         return BoardSnapshot::fromJira([
-            'board' => $this->cache->get(
-                sprintf('jira.board.%d', $boardId),
-                function (ItemInterface $item) use ($boardId): array {
-                    $item->expiresAfter(300);
-
-                    return $this->jira->getBoard($boardId);
-                }
-            ),
+            'board' => $this->getBoard($boardId),
             'configuration' => $this->cache->get(
                 sprintf('jira.board.%d.configuration', $boardId),
                 function (ItemInterface $item) use ($boardId): array {
@@ -69,6 +62,19 @@ final class BoardSnapshotProvider
                 }
             ),
         ]);
+    }
+
+    /** @return array<string, mixed> */
+    public function getBoard(int $boardId): array
+    {
+        return $this->cache->get(
+            sprintf('jira.board.%d', $boardId),
+            function (ItemInterface $item) use ($boardId): array {
+                $item->expiresAfter(300);
+
+                return $this->jira->getBoard($boardId);
+            }
+        );
     }
 
     /**

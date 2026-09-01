@@ -91,16 +91,7 @@ final class JiraApiRequestHandler
 
     public function boardMetadata(int $boardId): JsonResponse
     {
-        $metadata = $this->cache->get(
-            sprintf('jira.board.%d.metadata', $boardId),
-            function (ItemInterface $item) use ($boardId): array {
-                $item->expiresAfter(300);
-
-                return $this->boards->getBoard($boardId);
-            }
-        );
-
-        return new JsonResponse($metadata);
+        return new JsonResponse($this->snapshots->getBoard($boardId));
     }
 
     public function createIssue(int $boardId, Request $request): JsonResponse
