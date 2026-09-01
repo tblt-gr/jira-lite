@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="{{ app.request.locale }}" data-theme="dark">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="csrf-token" content="{{ csrf_token('jira_api') }}">
+    <title>{{ issueKey }} · {{ 'app.title'|trans }}</title>
+    <link rel="icon" href="{{ asset('images/favicon.png') }}" type="image/png">
+    {{ importmap('app', {nonce: app.request.attributes.get('_csp_nonce')}) }}
+</head>
+<body
+    class="issue-page"
+    data-controller="issue"
+    data-issue-issue-key-value="{{ issueKey }}"
+    data-issue-home-url-value="{{ path('app_home') }}"
+>
+<header class="topbar">
+    <a class="brand brand-link" href="{{ path('app_home') }}">
+        <img class="brand-mark" src="{{ asset('images/favicon.png') }}" alt="">
+        <div>
+            <strong>{{ 'app.title'|trans }}</strong>
+            <span class="board-context">{{ issueKey }}</span>
+        </div>
+    </a>
+    <div class="topbar-actions">
+        <button
+            class="icon-button theme-toggle-button"
+            data-theme-toggle
+            data-theme-light-label="{{ 'theme.activate_light'|trans }}"
+            data-theme-dark-label="{{ 'theme.activate_dark'|trans }}"
+            type="button"
+            title="{{ 'theme.change'|trans }}"
+            aria-label="{{ 'theme.change'|trans }}"
+        >
+            <svg
+                class="ui-icon theme-icon"
+                data-theme-icon="light"
+                viewBox="0 0 24 24"
+                aria-hidden="true"
+            >
+                <circle cx="12" cy="12" r="4" />
+                <path d="M12 2v2M12 20v2M4.93 4.93l1.42 1.42M17.65 17.65l1.42 1.42M2 12h2M20 12h2M4.93 19.07l1.42-1.42M17.65 6.35l1.42-1.42" />
+            </svg>
+            <svg
+                class="ui-icon theme-icon"
+                data-theme-icon="dark"
+                viewBox="0 0 24 24"
+                aria-hidden="true"
+                hidden
+            >
+                <path d="M20.5 15.5A8.5 8.5 0 0 1 8.5 3.5a8.5 8.5 0 1 0 12 12Z" />
+            </svg>
+        </button>
+    </div>
+</header>
+
+<main class="issue-page-main">
+    <div id="issue-page-status" class="loading">{{ 'board.loading'|trans }}</div>
+    {{ include('board/_issue_dialog.html.twig', { issueStandalone: true }) }}
+</main>
+
+{{ include('board/_image_viewer.html.twig') }}
+{{ include('board/_toast_region.html.twig') }}
+{{ include('board/_translations.html.twig') }}
+</body>
+</html>

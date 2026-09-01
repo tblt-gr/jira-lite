@@ -94,6 +94,26 @@ body {
     font-optical-sizing: auto;
 }
 
+.issue-page-main {
+    height: calc(100% - 52px);
+    overflow: hidden;
+    background: var(--surface);
+}
+
+.issue-page-content {
+    width: 100%;
+    height: 100%;
+    min-height: 0;
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr);
+    overflow: hidden;
+    background: var(--surface);
+}
+
+.issue-page-content[hidden] {
+    display: none;
+}
+
 button,
 select,
 input {

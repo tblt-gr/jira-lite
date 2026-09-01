@@ -68,6 +68,25 @@ final class JiraHttpTest extends WebTestCase
         self::assertCount(1, $crawler->filterXPath('//html[@lang="en"]'));
     }
 
+    public function testItRendersALocalIssueRoute(): void
+    {
+        $client = static::createClient();
+        $crawler = $client->request('GET', '/browse/INV-2566');
+
+        self::assertResponseIsSuccessful();
+        self::assertCount(1, $crawler->filterXPath('//body[@data-controller="issue"]'));
+        self::assertSame(
+            'INV-2566',
+            $crawler->filterXPath('//body')->attr('data-issue-issue-key-value')
+        );
+        self::assertSame(
+            '/browse/INV-2566',
+            $crawler->filterXPath('//*[@id="issue-key"]')->attr('href')
+        );
+        self::assertCount(1, $crawler->filterXPath('//section[@id="issue-dialog"]'));
+        self::assertCount(0, $crawler->filterXPath('//dialog[@id="issue-dialog"]'));
+    }
+
     public function testValidationFailuresUseTheFrontendErrorContract(): void
     {
         $client = static::createClient();

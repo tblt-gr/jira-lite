@@ -1,5 +1,6 @@
 import { createBoardViewModel } from './board-model.js';
 import { epicColor, epicLabel } from './jira.js';
+import { issueViewUrl } from './urls.js';
 
 export function currentSprintName(issues) {
     const sprint = issues.find(issue => issue.fields?.sprint)?.fields?.sprint;
@@ -18,9 +19,19 @@ function createGroupHeader(context, group, sprintLabel, grouped, collapsed) {
 
     const color = document.createElement('span');
     color.className = 'group-color';
-    const key = document.createElement('span');
+    const epicKey = group.epic?.key;
+    const keyUrl = grouped ? issueViewUrl(epicKey) : null;
+    const key = document.createElement(keyUrl ? 'a' : 'span');
     key.className = 'board-group-key';
-    key.textContent = group.epic?.key || trans('board.without_key');
+    key.textContent = epicKey || trans('board.without_key');
+
+    if (keyUrl) {
+        key.href = keyUrl;
+        key.title = trans('issue.open');
+        key.addEventListener('click', event => event.stopPropagation(), {
+            signal: context.signal
+        });
+    }
     const issueUrl = grouped
         ? context.jiraIssueUrl(group.epic?.key, group.epic)
         : null;

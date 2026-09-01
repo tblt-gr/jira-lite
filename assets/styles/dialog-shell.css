@@ -232,4 +232,10 @@ dialog::backdrop {
     color: var(--text-subtle);
     font-size: 12px;
     font-weight: 500;
+    text-decoration: none;
+}
+
+.issue-key:hover {
+    color: var(--text);
+    text-decoration: underline;
 }

@@ -4,6 +4,7 @@ import { jiraMediaUrl } from '../dom.js';
 import { createIssueView } from '../issue-view.js';
 import { adfMentions, adfToText } from '../jira.js';
 import { createMultiSelect } from '../multi-select.js';
+import { issueViewUrl } from '../urls.js';
 import { openCommentEditor, removeComment, renderComments, replyToComment } from './comments.js';
 import { createIssueForms } from './forms.js';
 import { createMentionMenu } from './mentions.js';
@@ -14,6 +15,7 @@ export function createIssueDialog(context) {
     const lifecycleController = new AbortController();
     const { signal } = lifecycleController;
     const dialog = root.querySelector('#issue-dialog');
+    const isStandalone = context.standalone === true;
     const transitionElement = root.querySelector('#transition-picker');
     const selectedTransitionIds = new Set();
     const labels = { all: trans('dialog.choose_status'), title: trans('dialog.new_status'), clear: '', empty: trans('dialog.no_transition'), selected: () => '' };
@@ -69,7 +71,9 @@ export function createIssueDialog(context) {
         const fields = issue.fields || {};
         const typeIcon = root.querySelector('#issue-type-icon');
         state.issue = issue;
-        root.querySelector('#issue-key').textContent = issue.key;
+        const issueKey = root.querySelector('#issue-key');
+        issueKey.textContent = issue.key;
+        issueKey.href = issueViewUrl(issue.key);
         forms.summaryElement.textContent = fields.summary || issue.key;
         forms.summaryInput.value = fields.summary || '';
         forms.descriptionInput.value = adfToText(fields.description).trim();
@@ -87,6 +91,7 @@ export function createIssueDialog(context) {
         view.renderIssueAttachments(issue);
         const boardIssue = (state.data?.issues?.issues || []).find(candidate => candidate.key === issue.key);
         if (boardIssue) { boardIssue.fields = { ...boardIssue.fields, ...issue.fields }; }
+        context.onIssueRendered?.(issue);
     }
 
     async function refreshCurrentIssue() {
@@ -119,18 +124,22 @@ export function createIssueDialog(context) {
             labels.all = issue.fields?.status?.name ? trans('dialog.current_status', { status: issue.fields.status.name }) : trans('dialog.choose_status');
             selectedTransitionIds.clear();
             transitionPicker.setOptions((transitions.transitions || []).map(item => ({ id: String(item.id), name: item.name || item.to?.name || String(item.id) })));
-            if (!dialog.open) {
+            if (isStandalone) {
+                ['.issue-dialog-main', '.issue-sidebar', '.issue-dialog-layout'].forEach(selector => { root.querySelector(selector).scrollTop = 0; });
+            } else if (!dialog.open) {
                 restoreFocusElement = document.activeElement instanceof HTMLElement
                     ? document.activeElement : null;
                 dialog.showModal();
             } else {
                 ['.issue-dialog-main', '.issue-sidebar', '.issue-dialog-layout'].forEach(selector => { root.querySelector(selector).scrollTop = 0; });
             }
+            return true;
         } catch (error) {
             if (error.name !== 'AbortError') {
                 console.error(trans('dialog.open_error_log'), error);
                 showToast(error.message, 'error');
             }
+            return false;
         }
     }
 
@@ -142,7 +151,11 @@ export function createIssueDialog(context) {
             const updatedIssue = await api(`/api/jira/issue/${encodeURIComponent(state.issue.key)}/transition`, { method: 'POST', body: JSON.stringify({ transitionId, boardId: context.boardId }) });
             renderIssueDetails(updatedIssue);
             renderBoard(false);
-            dialog.close();
+            if (context.closeAfterTransition === false) {
+                await openIssue(updatedIssue.key);
+            } else {
+                closeIssue();
+            }
             showToast(trans('dialog.status_updated'), 'success');
         } catch (error) {
             console.error(trans('dialog.transition_error_log'), error);
@@ -154,13 +167,31 @@ export function createIssueDialog(context) {
         }
     }
 
-    root.querySelector('#close-dialog').addEventListener('click', () => dialog.close(), { signal });
-    dialog.addEventListener('close', () => {
-        const element = restoreFocusElement;
-        restoreFocusElement = null;
-        window.requestAnimationFrame(() => {
-            if (element?.isConnected) { element.focus(); }
-        });
-    }, { signal });
-    return { openIssue, destroy() { lifecycleController.abort(); issueRequestController?.abort(); clearTimers(); dialog.close(); } };
+    function closeIssue() {
+        if (isStandalone) {
+            context.onClose?.();
+        } else {
+            dialog.close();
+        }
+    }
+
+    root.querySelector('#close-dialog').addEventListener('click', closeIssue, { signal });
+    if (!isStandalone) {
+        dialog.addEventListener('close', () => {
+            const element = restoreFocusElement;
+            restoreFocusElement = null;
+            window.requestAnimationFrame(() => {
+                if (element?.isConnected) { element.focus(); }
+            });
+        }, { signal });
+    }
+    return {
+        openIssue,
+        destroy() {
+            lifecycleController.abort();
+            issueRequestController?.abort();
+            clearTimers();
+            if (!isStandalone && dialog.open) { dialog.close(); }
+        }
+    };
 }

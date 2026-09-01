@@ -74,6 +74,19 @@ final class AppController extends AbstractController
         ]);
     }
 
+    #[Route(
+        '/browse/{issueKey}',
+        name: 'app_issue',
+        requirements: ['issueKey' => '[A-Za-z][A-Za-z0-9_]*-[1-9]\\d*'],
+        methods: ['GET'],
+    )]
+    public function issue(string $issueKey): Response
+    {
+        return $this->render('issue.html.twig', [
+            'issueKey' => $issueKey,
+        ]);
+    }
+
     /**
      * @return list<array<string, mixed>>
      */

@@ -1,13 +1,29 @@
-<dialog
-    id="issue-dialog"
-    aria-modal="true"
-    aria-labelledby="issue-summary"
->
+{% set issueStandalone = issueStandalone|default(false) %}
+{% if issueStandalone %}
+    <section
+        id="issue-dialog"
+        class="issue-page-content"
+        aria-labelledby="issue-summary"
+        hidden
+    >
+{% else %}
+    <dialog
+        id="issue-dialog"
+        aria-modal="true"
+        aria-labelledby="issue-summary"
+    >
+{% endif %}
     <div class="dialog-head">
         <div class="issue-heading">
             <div class="issue-breadcrumb">
                 <img id="issue-type-icon" class="issue-type-icon" alt="">
-                <span id="issue-key" class="issue-key"></span>
+                <a
+                    id="issue-key"
+                    class="issue-key"
+                    {% if issueKey is defined %}
+                        href="{{ path('app_issue', { issueKey }) }}"
+                    {% endif %}
+                ></a>
             </div>
             <div class="issue-summary-row">
                 <h2 id="issue-summary"></h2>
@@ -256,4 +272,8 @@
             </details>
         </aside>
     </div>
-</dialog>
+{% if issueStandalone %}
+    </section>
+{% else %}
+    </dialog>
+{% endif %}

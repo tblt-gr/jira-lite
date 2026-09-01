@@ -415,6 +415,10 @@
     color: var(--text-muted);
 }
 
+.loading[hidden] {
+    display: none;
+}
+
 .empty-state strong {
     color: var(--text);
 }

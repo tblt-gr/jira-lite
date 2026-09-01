@@ -481,4 +481,10 @@
     color: var(--text-muted);
     font-size: 14px;
     font-weight: 700;
+    text-decoration: none;
+}
+
+a.board-group-key:hover {
+    color: var(--text);
+    text-decoration: underline;
 }
