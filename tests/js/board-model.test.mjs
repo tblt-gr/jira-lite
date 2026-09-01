@@ -9,10 +9,29 @@ import {
     availableIssueTypes,
     availableVersions,
     createBoardViewModel,
+    issueBoardId,
     issueMatchesSearch,
     replaceIssues,
     storyPoints
 } from '../../assets/board/board-model.js';
+
+test('finds the issue board from modern and legacy sprint fields', () => {
+    assert.equal(issueBoardId({
+        names: { customfield_10020: 'Sprint' },
+        fields: {
+            customfield_10020: [
+                { state: 'closed', boardId: 7 },
+                { state: 'active', boardId: 42 }
+            ]
+        }
+    }), 42);
+    assert.equal(issueBoardId({
+        fields: {
+            sprint: 'Sprint@1[id=3,rapidViewId=17,state=ACTIVE,name=Sprint 1]'
+        }
+    }), 17);
+    assert.equal(issueBoardId({ fields: {} }), null);
+});
 
 const filterData = {
     configuration: {

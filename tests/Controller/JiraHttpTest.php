@@ -85,6 +85,19 @@ final class JiraHttpTest extends WebTestCase
         );
         self::assertCount(1, $crawler->filterXPath('//section[@id="issue-dialog"]'));
         self::assertCount(0, $crawler->filterXPath('//dialog[@id="issue-dialog"]'));
+        self::assertCount(0, $crawler->filterXPath('//*[@id="close-dialog"]'));
+    }
+
+    public function testTheIssueRouteKeepsItsOriginatingBoard(): void
+    {
+        $client = static::createClient();
+        $crawler = $client->request('GET', '/browse/INV-2566?board=42');
+
+        self::assertResponseIsSuccessful();
+        self::assertSame(
+            '42',
+            $crawler->filterXPath('//body')->attr('data-issue-board-id-value')
+        );
     }
 
     public function testValidationFailuresUseTheFrontendErrorContract(): void

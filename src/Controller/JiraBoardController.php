@@ -26,6 +26,12 @@ final class JiraBoardController
         return new JsonResponse($this->snapshots->getSnapshot($boardId));
     }
 
+    #[Route('/{boardId}/metadata', methods: ['GET'])]
+    public function metadata(int $boardId): JsonResponse
+    {
+        return $this->handler->boardMetadata($boardId);
+    }
+
     #[Route('/{boardId}/changes', methods: ['GET'])]
     public function changes(int $boardId, Request $request): JsonResponse
     {

@@ -5,7 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token('jira_api') }}">
     <title>{{ issueKey }} · {{ 'app.title'|trans }}</title>
-    <link rel="icon" href="{{ asset('images/favicon.png') }}" type="image/png">
+    <link
+        id="page-icon"
+        rel="icon"
+        href="{{ asset('images/favicon.png') }}"
+        type="image/png"
+    >
     {{ importmap('app', {nonce: app.request.attributes.get('_csp_nonce')}) }}
 </head>
 <body
@@ -13,10 +18,16 @@
     data-controller="issue"
     data-issue-issue-key-value="{{ issueKey }}"
     data-issue-home-url-value="{{ path('app_home') }}"
+    data-issue-board-id-value="{{ app.request.query.getInt('board') }}"
 >
 <header class="topbar">
     <a class="brand brand-link" href="{{ path('app_home') }}">
-        <img class="brand-mark" src="{{ asset('images/favicon.png') }}" alt="">
+        <img
+            id="issue-board-icon"
+            class="brand-mark"
+            src="{{ asset('images/favicon.png') }}"
+            alt=""
+        >
         <div>
             <strong>{{ 'app.title'|trans }}</strong>
             <span class="board-context">{{ issueKey }}</span>

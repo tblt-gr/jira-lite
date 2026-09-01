@@ -29,6 +29,30 @@ use Symfony\Component\Validator\Validation;
 
 final class JiraControllerTest extends TestCase
 {
+    public function testBoardMetadataReturnsBoardIdentity(): void
+    {
+        $http = new MockHttpClient(new MockResponse(json_encode([
+            'id' => 7,
+            'name' => 'Delivery',
+            'location' => ['avatarURI' => 'https://jira.example.test/avatar'],
+        ], JSON_THROW_ON_ERROR)));
+        $controller = $this->createController($http);
+
+        $response = $controller->metadata(7);
+        $payload = json_decode(
+            (string) $response->getContent(),
+            true,
+            flags: JSON_THROW_ON_ERROR
+        );
+
+        self::assertSame(7, $payload['id']);
+        self::assertSame('Delivery', $payload['name']);
+        self::assertSame(
+            'https://jira.example.test/avatar',
+            $payload['location']['avatarURI']
+        );
+    }
+
     public function testTransitionReturnsTheUpdatedIssue(): void
     {
         $http = new MockHttpClient([

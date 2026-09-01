@@ -1,5 +1,14 @@
-export function issueViewUrl(issueKey) {
+export function issueViewUrl(issueKey, boardId = null) {
     const key = String(issueKey || '').trim();
 
-    return key ? `/browse/${encodeURIComponent(key)}` : null;
+    if (!key) {
+        return null;
+    }
+
+    const url = `/browse/${encodeURIComponent(key)}`;
+    const numericBoardId = Number(boardId);
+
+    return Number.isInteger(numericBoardId) && numericBoardId > 0
+        ? `${url}?board=${numericBoardId}`
+        : url;
 }

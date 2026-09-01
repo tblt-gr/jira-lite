@@ -73,7 +73,7 @@ export function createIssueDialog(context) {
         state.issue = issue;
         const issueKey = root.querySelector('#issue-key');
         issueKey.textContent = issue.key;
-        issueKey.href = issueViewUrl(issue.key);
+        issueKey.href = issueViewUrl(issue.key, context.boardId);
         forms.summaryElement.textContent = fields.summary || issue.key;
         forms.summaryInput.value = fields.summary || '';
         forms.descriptionInput.value = adfToText(fields.description).trim();
@@ -175,7 +175,7 @@ export function createIssueDialog(context) {
         }
     }
 
-    root.querySelector('#close-dialog').addEventListener('click', closeIssue, { signal });
+    root.querySelector('#close-dialog')?.addEventListener('click', closeIssue, { signal });
     if (!isStandalone) {
         dialog.addEventListener('close', () => {
             const element = restoreFocusElement;

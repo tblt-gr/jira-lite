@@ -42,6 +42,45 @@ export function storyPoints(issue, names = {}) {
         : null;
 }
 
+function sprintBoardId(sprint) {
+    const value = sprint && typeof sprint === 'object'
+        ? sprint.boardId ?? sprint.rapidViewId
+        : String(sprint || '').match(
+            /(?:^|[[,])\s*(?:boardId|rapidViewId)=([0-9]+)/i
+        )?.[1];
+    const boardId = Number(value);
+
+    return Number.isInteger(boardId) && boardId > 0 ? boardId : null;
+}
+
+function sprintState(sprint) {
+    if (sprint && typeof sprint === 'object') {
+        return String(sprint.state || '').toLowerCase();
+    }
+
+    return String(sprint || '').match(
+        /(?:^|[[,])\s*state=([^,\]]+)/i
+    )?.[1]?.trim().toLowerCase() || '';
+}
+
+export function issueBoardId(issue) {
+    const value = issue.fields?.sprint
+        ?? fieldValueByName(issue, null, /sprint/i);
+    const sprints = Array.isArray(value) ? value : [value];
+    const activeSprint = sprints.find(sprint =>
+        sprintState(sprint) === 'active' && sprintBoardId(sprint)
+    );
+
+    if (activeSprint) {
+        return sprintBoardId(activeSprint);
+    }
+
+    return sprints.reduceRight(
+        (boardId, sprint) => boardId ?? sprintBoardId(sprint),
+        null
+    );
+}
+
 export function availableEpics(
     data,
     issues = (data?.issues?.issues || []).filter(isActiveIssue)

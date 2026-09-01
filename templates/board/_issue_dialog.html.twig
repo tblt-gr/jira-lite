@@ -74,16 +74,18 @@
                     <path d="M19 13v5a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h5" />
                 </svg>
             </a>
-            <button
-                id="close-dialog"
-                type="button"
-                aria-label="{{ 'common.close'|trans }}"
-                title="{{ 'common.close'|trans }}"
-            >
-                <svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true">
-                    <path d="M6 6l12 12M18 6 6 18" />
-                </svg>
-            </button>
+            {% if not issueStandalone %}
+                <button
+                    id="close-dialog"
+                    type="button"
+                    aria-label="{{ 'common.close'|trans }}"
+                    title="{{ 'common.close'|trans }}"
+                >
+                    <svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M6 6l12 12M18 6 6 18" />
+                    </svg>
+                </button>
+            {% endif %}
         </div>
     </div>
 

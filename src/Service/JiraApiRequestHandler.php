@@ -89,6 +89,20 @@ final class JiraApiRequestHandler
         return new JsonResponse($metadata);
     }
 
+    public function boardMetadata(int $boardId): JsonResponse
+    {
+        $metadata = $this->cache->get(
+            sprintf('jira.board.%d.metadata', $boardId),
+            function (ItemInterface $item) use ($boardId): array {
+                $item->expiresAfter(300);
+
+                return $this->boards->getBoard($boardId);
+            }
+        );
+
+        return new JsonResponse($metadata);
+    }
+
     public function createIssue(int $boardId, Request $request): JsonResponse
     {
         if ($response = $this->unsupportedContentType($request)) {

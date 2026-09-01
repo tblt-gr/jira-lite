@@ -20,7 +20,7 @@ function createGroupHeader(context, group, sprintLabel, grouped, collapsed) {
     const color = document.createElement('span');
     color.className = 'group-color';
     const epicKey = group.epic?.key;
-    const keyUrl = grouped ? issueViewUrl(epicKey) : null;
+    const keyUrl = grouped ? issueViewUrl(epicKey, context.boardId) : null;
     const key = document.createElement(keyUrl ? 'a' : 'span');
     key.className = 'board-group-key';
     key.textContent = epicKey || trans('board.without_key');
