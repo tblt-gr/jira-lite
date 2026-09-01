@@ -49,8 +49,36 @@ jobs:
             echo "CI gate did not succeed for the release commit" >&2
             exit 1
           fi
+      - name: Build release notes
+        env:
+          TAG: ${{ github.ref_name }}
+        run: |
+          PREVIOUS_TAG="$(git describe --tags --abbrev=0 "$TAG^" 2>/dev/null || true)"
+          RANGE="$TAG"
+          if [ -n "$PREVIOUS_TAG" ]; then
+            RANGE="$PREVIOUS_TAG..$TAG"
+          fi
+
+          {
+            echo "## Changes"
+            echo
+            git log --reverse --format='%s%x09%h' "$RANGE" |
+              while IFS=$'\t' read -r SUBJECT SHORT_SHA; do
+                if [ "$SUBJECT" = "$TAG" ] || [ "$SUBJECT" = "${TAG#v}" ]; then
+                  continue
+                fi
+                printf -- '- %s (`%s`)\n' "$SUBJECT" "$SHORT_SHA"
+              done
+
+            if [ -n "$PREVIOUS_TAG" ]; then
+              echo
+              printf '**Full changelog**: https://github.com/%s/compare/%s...%s\n' \
+                "$GITHUB_REPOSITORY" "$PREVIOUS_TAG" "$TAG"
+            fi
+          } > release-notes.md
+
       - name: Create GitHub release
         env:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ github.ref_name }}
-        run: gh release create "$TAG" --title "$TAG" --generate-notes
+        run: gh release create "$TAG" --title "$TAG" --notes-file release-notes.md
