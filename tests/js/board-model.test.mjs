@@ -242,6 +242,38 @@ test('applies filters to the epic view too', () => {
     );
 });
 
+test('shows completed issues in the epic view when their column is selected', () => {
+    const data = {
+        ...filterData,
+        epics: {
+            values: [{ id: '20', key: 'APP-20', name: 'Terminé' }]
+        },
+        issues: {
+            issues: filterData.issues.issues.map(issue => issue.key === 'APP-3'
+                ? {
+                    ...issue,
+                    fields: {
+                        ...issue.fields,
+                        epic: { id: '20' }
+                    }
+                }
+                : issue)
+        }
+    };
+    const model = createBoardViewModel({
+        data,
+        selectedEpicIds: new Set(),
+        view: 'epic',
+        searchQuery: '',
+        selectedColumnIds: new Set(['Terminé'])
+    });
+
+    assert.deepEqual(
+        model.groups.flatMap(group => group.issues.map(issue => issue.key)),
+        ['APP-3']
+    );
+});
+
 test('supports an active epic filter with no selected epic', () => {
     const model = createBoardViewModel({
         data: filterData,

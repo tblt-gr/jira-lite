@@ -42,28 +42,29 @@ export function storyPoints(issue, names = {}) {
         : null;
 }
 
-export function availableEpics(data) {
-    const activeEpicIds = new Set();
+export function availableEpics(
+    data,
+    issues = (data?.issues?.issues || []).filter(isActiveIssue)
+) {
+    const availableEpicIds = new Set();
     const candidates = [...(data?.epics?.values || [])];
 
-    (data?.issues?.issues || [])
-        .filter(isActiveIssue)
-        .forEach(issue => {
-            issueEpicIds(issue).forEach(id => activeEpicIds.add(id));
+    issues.forEach(issue => {
+        issueEpicIds(issue).forEach(id => availableEpicIds.add(id));
 
-            const issueEpic = issueEpicObject(issue);
-            const issueIds = issueEpic ? epicIds(issueEpic) : [];
-            const alreadyKnown = issueEpic && candidates.some(epic =>
-                epicIds(epic).some(id => issueIds.includes(id))
-            );
+        const issueEpic = issueEpicObject(issue);
+        const issueIds = issueEpic ? epicIds(issueEpic) : [];
+        const alreadyKnown = issueEpic && candidates.some(epic =>
+            epicIds(epic).some(id => issueIds.includes(id))
+        );
 
-            if (issueEpic && !alreadyKnown) {
-                candidates.push(issueEpic);
-            }
-        });
+        if (issueEpic && !alreadyKnown) {
+            candidates.push(issueEpic);
+        }
+    });
 
     return candidates
-        .filter(epic => epicIds(epic).some(id => activeEpicIds.has(id)))
+        .filter(epic => epicIds(epic).some(id => availableEpicIds.has(id)))
         .filter((epic, index, values) =>
             values.findIndex(candidate =>
                 canonicalEpicId(candidate) === canonicalEpicId(epic)
@@ -281,7 +282,15 @@ export function createBoardViewModel({
         && issueMatchesTypes(issue, selectedTypeIds)
         && issueMatchesColumns(issue, selectedColumnIds, statusToColumn)
     );
-    const epics = availableEpics(data);
+    const hasIssueFilters = String(searchQuery || '').trim() !== ''
+        || Boolean(selectedAssigneeIds?.size)
+        || Boolean(selectedVersionIds?.size)
+        || Boolean(selectedTypeIds?.size)
+        || Boolean(selectedColumnIds?.size);
+    const epics = availableEpics(
+        data,
+        hasIssueFilters ? matchingIssues : undefined
+    );
     const epicsById = new Map(
         epics.map(epic => [canonicalEpicId(epic), epic])
     );
@@ -299,18 +308,13 @@ export function createBoardViewModel({
 
     if (view === 'epic') {
         const displayedEpics = filtersByEpic ? selectedEpics : epics;
-        const hidesEmptyGroups = String(searchQuery || '').trim() !== ''
-            || Boolean(selectedAssigneeIds?.size)
-            || Boolean(selectedVersionIds?.size)
-            || Boolean(selectedTypeIds?.size)
-            || Boolean(selectedColumnIds?.size);
 
         groups = displayedEpics.map(epic => ({
             epic,
             issues: matchingIssues.filter(issue =>
                 issueBelongsToEpic(issue, canonicalEpicId(epic))
             )
-        })).filter(group => !hidesEmptyGroups || group.issues.length > 0);
+        })).filter(group => !hasIssueFilters || group.issues.length > 0);
 
         if (!filtersByEpic) {
             const withoutEpic = matchingIssues.filter(issue =>
