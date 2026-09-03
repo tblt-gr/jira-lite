@@ -119,6 +119,7 @@ dialog.change_status: Changer l’état
 dialog.time_tracking: Suivi temporel
 dialog.log_work: Consigner du temps
 dialog.no_logged_time: Aucun temps consigné
+dialog.worklog_date: Date
 dialog.time_spent: Temps passé
 dialog.time_example: Ex. 1h 30m
 dialog.time_formats: 'Formats Jira acceptés : 2w, 3d, 4h, 30m.'

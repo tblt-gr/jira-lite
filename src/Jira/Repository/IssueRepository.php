@@ -140,8 +140,13 @@ final class IssueRepository
         string $issueKey,
         string $timeSpent,
         ?string $comment = null,
+        ?string $started = null,
     ): array {
         $payload = ['timeSpent' => $timeSpent];
+
+        if (null !== $started && '' !== $started) {
+            $payload['started'] = $started;
+        }
 
         if (null !== $comment && '' !== $comment) {
             $payload['comment'] = $this->documents->plainTextDocument($comment);

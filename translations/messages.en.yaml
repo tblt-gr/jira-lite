@@ -119,6 +119,7 @@ dialog.change_status: Change status
 dialog.time_tracking: Time tracking
 dialog.log_work: Log work
 dialog.no_logged_time: No logged time
+dialog.worklog_date: Date
 dialog.time_spent: Time spent
 dialog.time_example: E.g. 1h 30m
 dialog.time_formats: 'Accepted Jira formats: 2w, 3d, 4h, 30m.'

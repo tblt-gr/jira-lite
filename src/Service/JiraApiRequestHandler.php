@@ -219,12 +219,19 @@ final class JiraApiRequestHandler
         }
 
         $data = $request->toArray();
-        $payload = new AddWorklogRequest(trim((string) ($data['timeSpent'] ?? '')), $this->nullableString($data, 'comment'));
+        $payload = new AddWorklogRequest(
+            trim((string) ($data['timeSpent'] ?? '')),
+            $this->nullableString($data, 'comment'),
+            $this->nullableString($data, 'started'),
+        );
         if ($response = $this->validationResponse($payload)) {
             return $response;
         }
 
-        return new JsonResponse($this->issues->addIssueWorklog($issueKey, $payload->timeSpent, $payload->comment), 201);
+        return new JsonResponse(
+            $this->issues->addIssueWorklog($issueKey, $payload->timeSpent, $payload->comment, $payload->started),
+            201,
+        );
     }
 
     public function transition(string $issueKey, Request $request): JsonResponse

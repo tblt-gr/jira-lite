@@ -14,6 +14,8 @@ final readonly class AddWorklogRequest
         #[JiraDuration]
         public string $timeSpent,
         public ?string $comment = null,
+        #[Assert\DateTime(format: 'Y-m-d\TH:i:s.vO')]
+        public ?string $started = null,
     ) {
     }
 }

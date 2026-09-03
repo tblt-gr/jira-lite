@@ -206,6 +206,13 @@
                     </span>
                 </button>
                 <form id="worklog-form" class="stacked-edit-form worklog-form" hidden>
+                    <label for="worklog-date">{{ 'dialog.worklog_date'|trans }}</label>
+                    <input
+                        id="worklog-date"
+                        name="startedDate"
+                        type="date"
+                        required
+                    >
                     <label for="worklog-time">{{ 'dialog.time_spent'|trans }}</label>
                     <input
                         id="worklog-time"

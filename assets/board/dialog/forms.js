@@ -42,6 +42,26 @@ export function createIssueForms({ root, state, api, adfToText, showToast, trans
         emojiPickerTrigger.setAttribute('aria-expanded', 'false');
     }
 
+    function localTodayDate() {
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const day = String(now.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    }
+
+    function worklogStartedAt(dateStr) {
+        const [year, month, day] = dateStr.split('-').map(Number);
+        const date = new Date(year, month - 1, day, 12, 0, 0, 0);
+        const pad = value => String(value).padStart(2, '0');
+        const offsetMinutes = -date.getTimezoneOffset();
+        const sign = offsetMinutes >= 0 ? '+' : '-';
+        const absoluteOffset = Math.abs(offsetMinutes);
+        const offsetHours = pad(Math.floor(absoluteOffset / 60));
+        const offsetMins = pad(absoluteOffset % 60);
+        return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T12:00:00.000${sign}${offsetHours}${offsetMins}`;
+    }
+
     function resetIssueEditors(issue, closeMentionMenu) {
         summaryInput.value = issue.fields?.summary || '';
         descriptionInput.value = adfToText(issue.fields?.description).trim();
@@ -52,6 +72,7 @@ export function createIssueForms({ root, state, api, adfToText, showToast, trans
         closeMentionMenu();
         closeEmojiMenu();
         root.querySelector('#worklog-time').value = '';
+        root.querySelector('#worklog-date').value = localTodayDate();
         root.querySelector('#worklog-comment').value = '';
         ['summary', 'description', 'fields', 'worklog'].forEach(name => toggleEditor(name, false));
     }
@@ -96,12 +117,17 @@ export function createIssueForms({ root, state, api, adfToText, showToast, trans
             event.preventDefault();
             if (!state.issue) { return; }
             const timeSpent = root.querySelector('#worklog-time').value.trim();
+            const startedDate = root.querySelector('#worklog-date').value;
             const comment = root.querySelector('#worklog-comment').value.trim();
-            if (!timeSpent) { return; }
+            if (!timeSpent || !startedDate) { return; }
             setFormBusy(worklogForm, true);
             try {
-                await api(`/api/jira/issue/${encodeURIComponent(state.issue.key)}/worklogs`, { method: 'POST', body: JSON.stringify({ timeSpent, comment }) });
+                await api(`/api/jira/issue/${encodeURIComponent(state.issue.key)}/worklogs`, {
+                    method: 'POST',
+                    body: JSON.stringify({ timeSpent, started: worklogStartedAt(startedDate), comment })
+                });
                 root.querySelector('#worklog-time').value = '';
+                root.querySelector('#worklog-date').value = localTodayDate();
                 root.querySelector('#worklog-comment').value = '';
                 await refreshCurrentIssue();
                 toggleEditor('worklog', false);
@@ -115,7 +141,10 @@ export function createIssueForms({ root, state, api, adfToText, showToast, trans
         root.querySelector('#edit-summary').addEventListener('click', () => toggleEditor('summary', true), { signal });
         root.querySelector('#edit-description').addEventListener('click', () => toggleEditor('description', true), { signal });
         root.querySelector('#edit-fields').addEventListener('click', () => toggleEditor('fields', true), { signal });
-        root.querySelector('#toggle-worklog').addEventListener('click', () => toggleEditor('worklog', true), { signal });
+        root.querySelector('#toggle-worklog').addEventListener('click', () => {
+            root.querySelector('#worklog-date').value = localTodayDate();
+            toggleEditor('worklog', true);
+        }, { signal });
         root.querySelectorAll('[data-cancel-edit]').forEach(button => button.addEventListener('click', () => {
             if (state.issue) { resetIssueEditors(state.issue, closeMentionMenu); renderEditableFields(state.issue); }
             toggleEditor(button.dataset.cancelEdit, false);
