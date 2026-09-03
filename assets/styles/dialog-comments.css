@@ -200,7 +200,6 @@ a.issue-image-preview {
     color: var(--text-muted);
     font-size: 13.5px;
     line-height: 1.6;
-    white-space: pre-wrap;
 }
 
 .sr-only {

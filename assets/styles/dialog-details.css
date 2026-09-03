@@ -155,7 +155,120 @@
     padding: 0;
     color: var(--text-muted);
     line-height: 1.65;
+}
+
+.description > :first-child,
+.issue-comment-body > :first-child {
+    margin-top: 0;
+}
+
+.description > :last-child,
+.issue-comment-body > :last-child {
+    margin-bottom: 0;
+}
+
+.description p,
+.issue-comment-body p {
+    margin: 0 0 0.75em;
+}
+
+.description ul,
+.description ol,
+.issue-comment-body ul,
+.issue-comment-body ol {
+    margin: 0 0 0.75em;
+    padding-left: 1.5em;
+}
+
+.description li,
+.issue-comment-body li {
+    margin: 0.25em 0;
+}
+
+.description li > p,
+.issue-comment-body li > p {
+    margin: 0;
+}
+
+.description h1,
+.description h2,
+.description h3,
+.description h4,
+.description h5,
+.description h6,
+.issue-comment-body h1,
+.issue-comment-body h2,
+.issue-comment-body h3,
+.issue-comment-body h4,
+.issue-comment-body h5,
+.issue-comment-body h6 {
+    margin: 0 0 0.5em;
+    color: var(--text);
+    font-weight: 600;
+    line-height: 1.35;
+}
+
+.description h1,
+.issue-comment-body h1 { font-size: 1.35em; }
+
+.description h2,
+.issue-comment-body h2 { font-size: 1.2em; }
+
+.description h3,
+.issue-comment-body h3 { font-size: 1.05em; }
+
+.description blockquote,
+.issue-comment-body blockquote {
+    margin: 0 0 0.75em;
+    border-left: 3px solid var(--border-soft);
+    color: var(--text-subtle);
+    padding-left: 0.85em;
+}
+
+.description pre,
+.issue-comment-body pre {
+    margin: 0 0 0.75em;
+    border: 1px solid var(--border-soft);
+    border-radius: var(--radius-card);
+    background: var(--card);
+    overflow-x: auto;
+    padding: 0.75em 0.85em;
+}
+
+.description code,
+.issue-comment-body code {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 0.92em;
+}
+
+.description pre code,
+.issue-comment-body pre code {
     white-space: pre-wrap;
+}
+
+.description hr,
+.issue-comment-body hr {
+    height: 1px;
+    margin: 0.85em 0;
+    border: 0;
+    background: var(--border-soft);
+}
+
+.description table,
+.issue-comment-body table {
+    width: 100%;
+    margin: 0 0 0.75em;
+    border-collapse: collapse;
+}
+
+.description th,
+.description td,
+.issue-comment-body th,
+.issue-comment-body td {
+    border: 1px solid var(--border-soft);
+    padding: 0.45em 0.6em;
+    text-align: left;
+    vertical-align: top;
 }
 
 .description a,

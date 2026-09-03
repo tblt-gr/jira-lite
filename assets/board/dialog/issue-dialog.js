@@ -2,12 +2,13 @@
 import { api } from '../api.js';
 import { jiraMediaUrl } from '../dom.js';
 import { createIssueView } from '../issue-view.js';
-import { adfMentions, adfToText } from '../jira.js';
+import { adfMentions } from '../jira.js';
 import { createMultiSelect } from '../multi-select.js';
 import { issueViewUrl } from '../urls.js';
 import { openCommentEditor, removeComment, renderComments, replyToComment } from './comments.js';
 import { createIssueForms } from './forms.js';
 import { createMentionMenu } from './mentions.js';
+import { adfToEditableText } from './rich-text.js';
 import { createTimeoutScheduler } from './timers.js';
 
 export function createIssueDialog(context) {
@@ -22,7 +23,7 @@ export function createIssueDialog(context) {
     let issueRequestController = null;
     let restoreFocusElement = null;
     const { clear: clearTimers, schedule: scheduleTimeout } = createTimeoutScheduler();
-    const forms = createIssueForms({ root, state, api, adfToText, showToast, trans, signal });
+    const forms = createIssueForms({ root, state, api, adfToText: adfToEditableText, showToast, trans, signal });
     const mentions = createMentionMenu({
         api, commentInput: forms.commentInput, menu: root.querySelector('#mention-menu'),
         state, trans, scheduleTimeout, closeEmojiMenu: forms.closeEmojiMenu,
@@ -50,7 +51,7 @@ export function createIssueDialog(context) {
             onReply: comment => replyToComment({ comment, commentInput: forms.commentInput, replyContext: forms.replyContext, mergeMention: mentions.merge, trans }),
             onEdit: (article, body, comment) => {
                 if (!state.issue) { return; }
-                openCommentEditor({ article, body, comment, issueKey: state.issue.key, api, adfToText, adfMentions, refresh: refreshIssueComments, setFormBusy: forms.setFormBusy, showToast, trans });
+                openCommentEditor({ article, body, comment, issueKey: state.issue.key, api, adfToText: adfToEditableText, adfMentions, refresh: refreshIssueComments, setFormBusy: forms.setFormBusy, showToast, trans });
             },
             onDelete: deleteComment
         });
@@ -76,7 +77,7 @@ export function createIssueDialog(context) {
         issueKey.href = issueViewUrl(issue.key, context.boardId);
         forms.summaryElement.textContent = fields.summary || issue.key;
         forms.summaryInput.value = fields.summary || '';
-        forms.descriptionInput.value = adfToText(fields.description).trim();
+        forms.descriptionInput.value = adfToEditableText(fields.description).trim();
         if (fields.issuetype?.iconUrl) {
             typeIcon.src = jiraMediaUrl(fields.issuetype.iconUrl);
             typeIcon.hidden = false;

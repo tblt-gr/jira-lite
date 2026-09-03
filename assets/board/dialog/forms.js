@@ -21,20 +21,58 @@ export function createIssueForms({ root, state, api, adfToText, showToast, trans
         form.setAttribute('aria-busy', String(busy));
     }
 
+    const editorConfigurations = {
+        summary: { form: summaryForm, preview: summaryElement, trigger: root.querySelector('#edit-summary'), confirmTrigger: root.querySelector('#confirm-summary'), focus: summaryInput },
+        description: { form: descriptionForm, preview: root.querySelector('#issue-description'), trigger: root.querySelector('#edit-description'), confirmTrigger: root.querySelector('#confirm-description'), focus: descriptionInput },
+        fields: { form: fieldsForm, preview: root.querySelector('#editable-fields-preview'), trigger: root.querySelector('#edit-fields'), focus: root.querySelector('#labels-input') },
+        worklog: { form: worklogForm, preview: root.querySelector('.time-tracking-summary'), trigger: root.querySelector('#toggle-worklog'), focus: root.querySelector('#worklog-time') }
+    };
+
+    function fitTextareaToContent(textarea) {
+        textarea.style.height = 'auto';
+        textarea.style.height = `${Math.max(70, textarea.scrollHeight)}px`;
+    }
+
     function toggleEditor(name, visible) {
-        const configurations = {
-            summary: { form: summaryForm, preview: summaryElement, trigger: root.querySelector('#edit-summary'), confirmTrigger: root.querySelector('#confirm-summary'), focus: summaryInput },
-            description: { form: descriptionForm, preview: root.querySelector('#issue-description'), trigger: root.querySelector('#edit-description'), confirmTrigger: root.querySelector('#confirm-description'), focus: descriptionInput },
-            fields: { form: fieldsForm, preview: root.querySelector('#editable-fields-preview'), trigger: root.querySelector('#edit-fields'), focus: root.querySelector('#labels-input') },
-            worklog: { form: worklogForm, preview: root.querySelector('.time-tracking-summary'), trigger: root.querySelector('#toggle-worklog'), focus: root.querySelector('#worklog-time') }
-        };
-        const editor = configurations[name];
+        const editor = editorConfigurations[name];
         if (!editor) { return; }
         editor.form.hidden = !visible;
         editor.preview.hidden = visible;
         editor.trigger.hidden = visible;
         if (editor.confirmTrigger) { editor.confirmTrigger.hidden = !visible; }
-        if (visible) { editor.focus.focus(); }
+        if (visible) {
+            editor.focus.focus();
+            if (name === 'description') {
+                fitTextareaToContent(descriptionInput);
+            }
+        }
+    }
+
+    function cancelEditor(name, renderEditableFields) {
+        if (!state.issue) {
+            toggleEditor(name, false);
+            return;
+        }
+
+        if (name === 'summary') {
+            summaryInput.value = state.issue.fields?.summary || '';
+        }
+
+        if (name === 'description') {
+            descriptionInput.value = adfToText(state.issue.fields?.description).trim();
+        }
+
+        if (name === 'fields') {
+            renderEditableFields(state.issue);
+        }
+
+        if (name === 'worklog') {
+            root.querySelector('#worklog-time').value = '';
+            root.querySelector('#worklog-date').value = localTodayDate();
+            root.querySelector('#worklog-comment').value = '';
+        }
+
+        toggleEditor(name, false);
     }
 
     function closeEmojiMenu() {
@@ -140,6 +178,7 @@ export function createIssueForms({ root, state, api, adfToText, showToast, trans
         };
         root.querySelector('#edit-summary').addEventListener('click', () => toggleEditor('summary', true), { signal });
         root.querySelector('#edit-description').addEventListener('click', () => toggleEditor('description', true), { signal });
+        descriptionInput.addEventListener('input', () => fitTextareaToContent(descriptionInput), { signal });
         root.querySelector('#edit-fields').addEventListener('click', () => toggleEditor('fields', true), { signal });
         root.querySelector('#toggle-worklog').addEventListener('click', () => {
             root.querySelector('#worklog-date').value = localTodayDate();
@@ -187,6 +226,26 @@ export function createIssueForms({ root, state, api, adfToText, showToast, trans
             commentInput.focus();
         }, { signal });
         document.addEventListener('click', event => { if (!emojiPicker.contains(event.target)) { closeEmojiMenu(); } }, { signal });
+        document.addEventListener('mousedown', event => {
+            const openEditor = Object.entries(editorConfigurations).find(([, config]) => !config.form.hidden);
+
+            if (!openEditor) {
+                return;
+            }
+
+            const [name, config] = openEditor;
+            const target = event.target;
+
+            if (!(target instanceof Node)) {
+                return;
+            }
+
+            if (config.form.contains(target) || config.trigger?.contains(target) || config.confirmTrigger?.contains(target)) {
+                return;
+            }
+
+            cancelEditor(name, renderEditableFields);
+        }, { signal });
         document.addEventListener('keydown', event => { if (event.key === 'Escape') { closeEmojiMenu(); } }, { signal });
     }
 

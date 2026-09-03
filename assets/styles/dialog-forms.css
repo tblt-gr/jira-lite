@@ -185,7 +185,9 @@
 }
 
 .description-edit-form {
-    position: relative;
+    display: flex;
+    align-items: flex-start;
+    gap: 4px;
     max-width: none;
     margin: 0;
     padding: 0;
@@ -195,17 +197,20 @@
 }
 
 .description-edit-form #description-input {
-    width: 100%;
+    flex: 1 1 auto;
+    width: auto;
+    min-width: 0;
     min-height: 70px;
     border: none;
     border-radius: var(--radius);
     background: transparent;
     padding: 2px 4px;
     margin: -2px -4px;
-    padding-right: 38px;
     color: var(--text-muted);
     line-height: 1.65;
     font: inherit;
+    resize: none;
+    overflow: hidden;
 }
 
 .description-edit-form #description-input:focus {
@@ -213,9 +218,8 @@
 }
 
 .description-edit-form .confirm-button {
-    position: absolute;
-    right: 4px;
-    bottom: 4px;
+    flex: 0 0 auto;
+    margin-top: 2px;
 }
 
 .stacked-edit-form textarea,
