@@ -8,6 +8,7 @@ import { createCardView } from './card-view.js';
 import { createIssueCreator } from './create-issue-dialog.js';
 import { createDragDrop } from './drag-drop.js';
 import { createEpicFilter } from './epic-filter.js';
+import { createEpicJump } from './epic-jump.js';
 import { trans } from './i18n.js';
 import { createIssueDialog } from './dialog/issue-dialog.js';
 import { createIssueRefresher } from './refresh.js';
@@ -294,6 +295,7 @@ export function mountBoard(root, boardId) {
         }
     }
 
+    createEpicJump({ board, root, state, signal });
     search.addEventListener('input', () => renderBoard(), listenerOptions);
     window.addEventListener('popstate', handlePopstate, listenerOptions);
     reloadButton.addEventListener('click', refreshBoardInPlace, listenerOptions);
