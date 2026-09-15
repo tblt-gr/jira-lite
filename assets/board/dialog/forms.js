@@ -12,9 +12,14 @@ export function createIssueForms({ root, state, api, adfToText, showToast, trans
     const commentInput = root.querySelector('#comment-input');
     const replyContext = root.querySelector('#comment-reply-context');
     const worklogForm = root.querySelector('#worklog-form');
+    const worklogDateInput = root.querySelector('#worklog-date');
     const emojiPicker = root.querySelector('#emoji-picker');
     const emojiPickerTrigger = root.querySelector('#emoji-picker-trigger');
     const emojiMenu = root.querySelector('#emoji-menu');
+
+    if (worklogDateInput && typeof worklogDateInput.showPicker === 'function') {
+        worklogDateInput.addEventListener('click', () => worklogDateInput.showPicker(), { signal });
+    }
 
     function setFormBusy(form, busy) {
         form.querySelectorAll('button, input, textarea, select').forEach(control => { control.disabled = busy; });
