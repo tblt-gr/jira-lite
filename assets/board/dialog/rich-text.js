@@ -99,6 +99,16 @@ function buildInlineTree(nodes) {
             }];
         }
 
+        if (node.type === 'inlineCard' || node.type === 'embedCard') {
+            const url = node.attrs?.url || '';
+
+            return [{
+                tag: 'a',
+                attrs: { href: url, target: '_blank', rel: 'noopener noreferrer' },
+                children: [{ type: 'text', value: url }]
+            }];
+        }
+
         if (Array.isArray(node.content)) {
             return buildInlineTree(node.content);
         }
@@ -158,6 +168,18 @@ function buildBlockTree(node) {
             }];
         case 'rule':
             return [{ tag: 'hr' }];
+        case 'blockCard': {
+            const url = node.attrs?.url || '';
+
+            return [{
+                tag: 'p',
+                children: [{
+                    tag: 'a',
+                    attrs: { href: url, target: '_blank', rel: 'noopener noreferrer' },
+                    children: [{ type: 'text', value: url }]
+                }]
+            }];
+        }
         case 'panel':
             return [{
                 tag: 'div',
