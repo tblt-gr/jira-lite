@@ -315,6 +315,17 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    text-transform: lowercase;
+}
+
+.epic-filter-option > span:nth-of-type(2)::first-letter,
+.filter-option > span:nth-of-type(2)::first-letter {
+    text-transform: uppercase;
+}
+
+.filter-option-mark {
+    display: flex;
+    align-items: center;
 }
 
 .epic-dot,
