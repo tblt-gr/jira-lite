@@ -97,6 +97,7 @@ jobs:
         with:
           context: .
           target: frankenphp_prod
+          pull: true
           push: false
           load: true
           tags: jira-lite:ci
