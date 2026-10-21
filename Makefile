@@ -39,7 +39,7 @@ check: ## Run the complete PHP check and JavaScript lint
 	npm run lint
 
 build-prod: ## Build the immutable local production image
-	docker build --target frankenphp_prod -t jira-lite:prod .
+	docker build --pull --target frankenphp_prod -t jira-lite:prod .
 
 help: ## Show this help
 	@awk 'BEGIN {FS = ":.*##"} /^[a-zA-Z_-]+:.*##/ {printf "%-14s %s\n", $$1, $$2}' $(MAKEFILE_LIST)
